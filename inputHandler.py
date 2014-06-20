@@ -16,7 +16,7 @@ from Dunkel_pars import parameters
 
 
 class InputDevice(pm.Input):
-    def __init__(self,name):
+    def __init__(self, name):
         id = self.__getDeviceId(name)
         if id == -1:
             print "SETUP WARNING!!! input: "+name+" not available!!!"
@@ -25,7 +25,7 @@ class InputDevice(pm.Input):
             super(InputDevice,self).__init__(id)
             print "SETUP input: "+name+" connected with id", id
         
-    def __getDeviceId(self,name):
+    def __getDeviceId(self, name):
         n_device = pm.get_count()
         foundId = -1
         for id in range(n_device):
@@ -65,7 +65,7 @@ class InputHandler(object):
             self.__inputs[name] = InputDevice(name)
     
     def getFired(self):
-        fired = array(self.__fired,int)
+        fired = array(self.__fired, int)
         self.__fired = []
         return fired
     
@@ -97,7 +97,7 @@ class InputHandler(object):
             # extract data from keys
             key_data = MIDI_data[MIDI_data[:, 0] == self.pars['midistat_keys'], :]
             if key_data.__len__() > 0 and self.pars['midistat_keys'] is not None:
-                key_data_on = key_data[key_data[:, 2] > 0, :] # take only "note on"
+                key_data_on = key_data[key_data[:, 2] > 0, :]  # take only "note on"
                 if key_data_on.__len__() > 0:
                     # maps the key inputs to external inputs to specific notes (1-to-1)
                     '''  TO BE RE-IMPLEMENTED
@@ -124,8 +124,7 @@ class InputHandler(object):
                                          self.pars['slide_ids_pars'])
             if slide_ids_pars.__len__() > 0:
                 self.__MIDI2pars(slide_data, slide_ids_pars, 'slide')
-  
-                    
+
     def __MIDI2external(self, MIDI_data, in_ids, in_type):
          # convert the MIDI-input to the external input to the neurons
         ids = list(unique(MIDI_data[:, 1]))
@@ -178,7 +177,7 @@ class InputHandler(object):
                     
     def __MIDI2pars(self, MIDI_data, in_ids, in_type):
         # convert the MIDI-input into parameter values
-        ids = list(unique(MIDI_data[:,1]))
+        ids = list(unique(MIDI_data[:, 1]))
         if in_type=='slide':
             for id in in_ids:
                 param = \
@@ -186,35 +185,42 @@ class InputHandler(object):
                 
                 self.pars[param] = \
                     self.pars[param+'_def'] + \
-                    self.pars[param+'_step'] * MIDI_data[ids.index(id),2]
+                    self.pars[param+'_step'] * MIDI_data[ids.index(id), 2]
         elif in_type == 'keys':
             for id in in_ids:
                 parid = self.pars['key_action_pars'][self.pars['key_ids_pars'].index(id)]
                 if parid == 0:
-                    self.pars['s_e'] += -self.pars['s_e_step'] * \
-                                        (self.pars['s_e'] > self.pars['s_e_range'][0])
+                    self.pars['s_e'] += \
+                        -self.pars['s_e_step'] *\
+                        (self.pars['s_e'] > self.pars['s_e_range'][0])
                 if parid == 1:
-                    self.pars['s_e'] += self.pars['s_e_step'] * \
-                                        (self.pars['s_e'] < self.pars['s_e_range'][1])
+                    self.pars['s_e'] += \
+                        self.pars['s_e_step'] *\
+                        (self.pars['s_e'] < self.pars['s_e_range'][1])
                 if parid == 2:
-                    self.pars['s_i'] += -self.pars['s_i_step'] * \
-                                        (self.pars['s_i'] > self.pars['s_i_range'][0])
+                    self.pars['s_i'] += \
+                        -self.pars['s_i_step'] *\
+                        (self.pars['s_i'] > self.pars['s_i_range'][0])
                 if parid == 3:
-                    self.pars['s_i'] += self.pars['s_i_step'] * \
-                                        (self.pars['s_i'] < self.pars['s_i_range'][1])
+                    self.pars['s_i'] += \
+                        self.pars['s_i_step'] *\
+                        (self.pars['s_i'] < self.pars['s_i_range'][1])
                 if parid == 4:
-                    self.pars['tau_e'] += -self.pars['tau_e_step'] * \
-                                          (self.pars['tau_e'] >
-                                           self.pars['tau_e_range'][0])
+                    self.pars['tau_e'] += \
+                        -self.pars['tau_e_step'] * \
+                        (self.pars['tau_e'] >
+                         self.pars['tau_e_range'][0])
                 if parid == 5:
-                    self.pars['tau_e'] += self.pars['tau_e_step'] * \
-                                          (self.pars['tau_e'] <
-                                           self.pars['tau_e_range'][1])
+                    self.pars['tau_e'] += \
+                        self.pars['tau_e_step'] * \
+                            (self.pars['tau_e'] <
+                             self.pars['tau_e_range'][1])
                 if parid == 6:
-                    self.pars['tau_i'] += - self.pars['tau_i_step'] * \
-                                          (self.pars['tau_i'] >
-                                           self.pars['tau_i_range'][0])
+                    self.pars['tau_i'] += \
+                        -self.pars['tau_i_step'] * \
+                        (self.pars['tau_i'] >
+                         self.pars['tau_i_range'][0])
                 if parid == 7:
-                    self.pars['tau_i'] += self.pars['tau_i_step'] * \
-                                          (self.pars['tau_i'] <
-                                           self.pars['tau_i_range'][1])
+                    self.pars['tau_i'] += \
+                        self.pars['tau_i_step'] * \
+                        (self.pars['tau_i'] < self.pars['tau_i_range'][1])
