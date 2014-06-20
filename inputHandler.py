@@ -9,7 +9,6 @@ __date__ = 140620
 from pygame import midi as pm
 from numpy import array, intersect1d, unique
 
-
 from webcam import Webcam
 
 from Dunkel_functions import note2neuron
@@ -30,8 +29,8 @@ class InputDevice(pm.Input):
         n_device = pm.get_count()
         foundId = -1
         for id in range(n_device):
-            if int(pm.get_device_info(id)[1]==name) & \
-                    int(pm.get_device_info(id)[2]==1):
+            if int(pm.get_device_info(id)[1] == name) & \
+                    int(pm.get_device_info(id)[2] == 1):
                 foundId = id 
         return foundId
     
@@ -58,7 +57,7 @@ class InputHandler(object):
     def webcamOpen(self):
         return self.webcam.window.has_exit
     
-    def __setupInputs(self,inputList):
+    def __setupInputs(self, inputList):
         pm.init()
         self.__inputs = {}
         for name in inputList:
@@ -105,7 +104,10 @@ class InputHandler(object):
                     v[note2neuron(key_ids_ext)]=self.pars['threshold']
                     '''
                     # this maps key inputs to changes in parameters and external inputs, i.e. gradual up/down changes
-                    key_ids_pars = intersect1d(unique(key_data_on[:, 1]), self.pars['key_ids_pars'])
+                    key_ids_pars = intersect1d(
+                        unique(key_data_on[:, 1]),
+                        self.pars['key_ids_pars']
+                    )
                     self.MIDI2pars(key_data, key_ids_pars, 'keys')
                     
             # extract data from sliders
