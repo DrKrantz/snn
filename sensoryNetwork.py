@@ -29,13 +29,11 @@ from connectivityMatrix import ConnectivityMatrix
 
 import pickle
 
+
 class SensoryNetwork(object):
     def __init__(self):
-        super(SensoryNetwork,self).__init__()
-        self.inputHandler = InputHandler(
-                inputList=[InputHandler.PARAMETERS],
-                pars = parameters()
-        )
+        super(SensoryNetwork, self).__init__()
+        self.inputHandler = InputHandler(inputList=[InputHandler.PARAMETERS], pars=parameters())
         
         self.pars = self.inputHandler.pars
         self.outputHandler = OutputHandler(outputList=[OutputHandler.NEURON_NOTES])
@@ -46,23 +44,23 @@ class SensoryNetwork(object):
         
         N = self.pars['N']
         #vectors with parameters of adaptation and synapses
-        self.__a = ones((N))
+        self.__a = ones(N)
         self.__a[self.pars['Exc_ids']] = self.pars['a_e']
         self.__a[self.pars['Inh_ids']] = self.pars['a_i']
-        self.__b = ones((N))
+        self.__b = ones(N)
         self.__b[self.pars['Exc_ids']] = self.pars['b_e']
         self.__b[self.pars['Inh_ids']] = self.pars['b_i']
-        self.__ge = self.pars['s_e']*ones((N)) # conductances of excitatory synapses
-        self.__gi = self.pars['s_i']*ones((N)) # conductances of inhibitory synapses
+        self.__ge = self.pars['s_e']*ones((N))  # conductances of excitatory synapses
+        self.__gi = self.pars['s_i']*ones((N))  # conductances of inhibitory synapses
         
-        self.__v=self.pars['EL']*ones((N))    # Initial values of the mmbrane potential v
-        self.__w=self.__b#s0*ones((N))                        # Initial values of adaptation variable w
-        self.__neurons=array([])             # neuron IDs
+        self.__v = self.pars['EL']*ones((N))    # Initial values of the mmbrane potential v
+        self.__w = self.__b  # Initial values of adaptation variable w
+        self.__neurons = array([])   # neuron IDs
         self.__hasPrinted = False
         
     def start(self):
-        t=0
-        deaddur = array([])            # duration (secs) the dead neurons have been dead
+        t = 0
+        deaddur = array([])  # duration (secs) the dead neurons have been dead
         deadIDs = array([],int)
         fired = array([])
         spiketimes = array([])       # spike times
@@ -81,26 +79,26 @@ class SensoryNetwork(object):
             ##### GET WEBCAM IMAGE AND UPDATE VIEWER ###########
             self.inputHandler.update()
             cam_external = self.inputHandler.webcam.getExternal()
-            external = self.pars['midi_external'] + cam_external#self.pars['cam_ext']
+            external = self.pars['midi_external'] + cam_external  # self.pars['cam_ext']
 #            print external
             self.outputHandler.turnOff()
             ########## UPDATE DEADIMES AND GET FIRED IDs  ###########
             # update deadtimes
-            deaddur = deaddur+self.pars['h']    # increment the time of the dead
-            aliveID = nonzero(deaddur>self.pars['dead'])[0]
+            deaddur = deaddur + self.pars['h']    # increment the time of the dead
+            aliveID = nonzero(deaddur > self.pars['dead'])[0]
             if len(aliveID)>0:
                 deaddur = deaddur[aliveID[-1]+1::]
                 deadIDs = deadIDs[aliveID[-1]+1::]
-            fired=nonzero(self.__v>=self.pars['threshold'])[0]    # indices of spiked neurons, as type "set"
-            deadIDs = concatenate((deadIDs,fired))        # put fired neuron to death
-            deaddur = concatenate((deaddur,zeros(shape(fired))))
+            fired = nonzero(self.__v >= self.pars['threshold'])[0]    # indices of spiked neurons, as type "set"
+            deadIDs = concatenate((deadIDs, fired))        # put fired neuron to death
+            deaddur = concatenate((deaddur, zeros(shape(fired))))
 #            spiketimes=concatenate((spiketimes,t*pars['h']*1000+0*fired))
 #            neurons = concatenate((neurons,fired+1))
             extFired = self.inputHandler.getFired()
-            fired = array(union1d(fired,extFired),int)
+            fired = array(union1d(fired, extFired), int)
 #            print 'fired: vor', fired, type(fired), 'nach', postfired, type(fired)
             self.__v[fired] = self.pars['EL'] #set spiked neurons to reset potential
-            self.__w[fired]+=self.__b[fired] #increment adaptation variable of spiked neurons
+            self.__w[fired] += self.__b[fired] #increment adaptation variable of spiked neurons
             
 #            allfired.extend(fired)
 #            alltimes.extend(ones(shape(fired))*t*pars['h'])
