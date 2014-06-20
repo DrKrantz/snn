@@ -1,4 +1,6 @@
-'''
+#!/usr/bin/env python
+
+"""
 NEEDS: 
     - Dunkel_pars.py
     - Dunkel_functions.py
@@ -6,8 +8,7 @@ NEEDS:
     # Created by B. Staude to simulate the Thalamic Network (Figs. 3 and 4) of Destexhe 2009, J Comp Neurosci.
 # Taken From Dunkel_Master_Cam
 # version 1.0: included deadtime, 04.08.2011
-
-'''
+"""
 
 from scipy import *
 from numpy import *
@@ -24,71 +25,23 @@ import sys
 from Dunkel_pars import parameters
 from outputHandler import OutputHandler
 from inputHandler import InputHandler, Webcam
+from connectivityMatrix import ConnectivityMatrix
 
 import pickle
-
-#global pars
-#pars = parameters()
-
-
-
-##################    DEFINE THE DEFAULT PARAMETERS  #########################
-
-
-def ConnectivityMatrix(type='random',pars=parameters()):
-#    global pars
-    if type == 'random':
-        ee = (rand(pars['Ne'],pars['Ne'])<pars['p_ee']).round()
-        ei = (rand(pars['Ne'],pars['Ni'])<pars['p_ei']).round()
-        ii = (rand(pars['Ni'],pars['Ni'])<pars['p_ii']).round()#zeros((pars['Ni'],pars['Ni']))
-        ie = (rand(pars['Ni'],pars['Ne'])<pars['p_ie']).round()
-        A = vstack((hstack((ee,ei)),hstack((ie,ii))))
-        A[range(pars['Ne']+pars['Ni']),range(pars['Ne']+pars['Ni'])]=0 #remove selfloops 
-    elif type == 'none':
-        A=zeros((pars['N'],pars['N'])) # no connectivity
-    elif type == 'uni_torus': # torus with uniform connectivity profile
-        A=zeros((pars['N'],pars['N'])) 
-        # construct matrix of pairwise distance
-        distMat = zeros((pars['N'],pars['N'])) 
-        for n1 in range(pars['N']):
-            coord1 = linear2grid(n1,pars['N_col'])
-            for n2 in arange(n1+1,pars['N']):
-                coord2 = linear2grid(n2,pars['N_col']) -coord1 # this sets neuron n1 to the origin
-                distMat[n1,n2] = toric_length(coord2,pars['N_row'],pars['N_col'])    
-        distMat = distMat+distMat.transpose()
-        # construct adjajency matrix
-        for n1 in range(pars['N']):
-            neighbor_ids = pylab.find(distMat[:,n1]<pars['sigma_con'])
-            random.shuffle(neighbor_ids)
-            idx = neighbor_ids[0:min([pars['ncon'],len(neighbor_ids)])]
-            A[idx,n1]=1
-    else:
-        print "type "+type+ " not yet implemented"
-#        A = zeros((pars['N'],pars['N'])) 
-#        for Nid in range(pars['N']-1)+1:
-#            A=get_LCRN_post(1,pars['N_row'],pars['N_col'],pars['N_row'],pars['N_col'],pars['ncon'],pars['sigma_con'])
-#            A = vstack((A,get_LCRN_post(Nid,pars['N_row'],pars['N_col'],pars['N_row'],pars['N_col'],pars['ncon'],pars['sigma_con'])))
-    return A
-    
 
 class SensoryNetwork(object):
     def __init__(self):
         super(SensoryNetwork,self).__init__()
         self.inputHandler = InputHandler(
                 inputList=[InputHandler.PARAMETERS],
-                        pars = parameters()) #,InputHandler.OBJECT
+                pars = parameters()
+        )
         
         self.pars = self.inputHandler.pars
-        self.outputHandler = OutputHandler(
-                outputList = [OutputHandler.NEURON_NOTES
-                                        ])
-#        ,OutputHandler.PIANO,
-#                              OutputHandler.OBJECT,OutputHandler.VISUALS
-        
-#        self.pars['cam_shape'] = shape(self.inputHandler.webcam.arr)
-        
+        self.outputHandler = OutputHandler(outputList=[OutputHandler.NEURON_NOTES])
+
         print "wiring...."
-        self.__A = ConnectivityMatrix()#
+        self.__A = ConnectivityMatrix().get()
         print 'wiring completed'
         
         N = self.pars['N']
