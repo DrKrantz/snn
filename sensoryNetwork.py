@@ -24,7 +24,7 @@ import sys
 
 from Dunkel_pars import parameters
 from outputHandler import OutputHandler
-from inputHandler import InputHandler, Webcam
+from inputHandler import InputHandler
 from connectivityMatrix import ConnectivityMatrix
 
 import pickle
@@ -131,4 +131,3 @@ class SensoryNetwork(object):
     
 if __name__ == '__main__':
     SensoryNetwork().start()
-         
