@@ -8,13 +8,12 @@ from pygame.locals import *
 import pygame.font
 
 from numpy import intersect1d, array
-import numpy as np
-
 
 from Dunkel_pars import parameters
 from Dunkel_functions import small2string, neuron2note, linear2grid
 from display import Display
 global pars
+
 pars = parameters()
 
 class DeviceStruct(dict):
@@ -27,11 +26,10 @@ class DeviceStruct(dict):
         self['velocity'] = velocity
 
 class OutputDevice(pm.Output):
-    def __init__(self,deviceStruct):
+    def __init__(self, deviceStruct):
         id = self.__getDeviceId(deviceStruct['name'])
         if id == -1:
-            print "SETUP Warning: output: "+deviceStruct['name']+ " not available!!!"
-            return None
+            print "SETUP Warning: output: " + deviceStruct['name'] + " not available!!!"
         else:
             super(OutputDevice,self).__init__(id)
             self.__name = deviceStruct['name']
@@ -55,7 +53,7 @@ class OutputDevice(pm.Output):
                 foundId = id 
         return foundId
         
-    def note_on(self,note,velocity):
+    def note_on(self, note, velocity):
         """
         turn the midi-note on
         If maxNumSignals has been set, the note is only turned on if less than
@@ -82,7 +80,7 @@ class OutputDevice(pm.Output):
                     else:
                         done = True
             self.__now = now
-            if len(self.__activeTimes)<self.__maxNumSignals:
+            if len(self.__activeTimes) < self.__maxNumSignals:
 #                print self.__name, note
                 super(OutputDevice,self).note_on(note,self.__velocity)
 #                if self.__name == OutputHandler.OBJECT:
@@ -96,7 +94,7 @@ class OutputDevice(pm.Output):
             
     def turnAllOff(self):
         for note in self.__onNotes:
-            self.note_off(note,100)
+            self.note_off(note, 100)
         self.__onNotes = set()
 
 class OutputHandler(object):
@@ -104,28 +102,27 @@ class OutputHandler(object):
     OBJECT = 'MIDISPORT 2x2 Anniv Port A'
     PIANO = 'MIDISPORT 2x2 Anniv Port B'
     VISUALS = 'Ploytec MIDI Cable'
-    def __init__(self,outputList=[],neuron2NoteConversion=4):
-        super(OutputHandler,self).__init__()
-        self.__display = Display(pars['N_col'],pars['N_row'],\
-                ['Ne','Ni','s_e','s_i','tau_e','tau_i','midi_ext_e','midi_ext_i',
-                 'cam_ext','cam_external_max'],
-                'lines')
+    def __init__(self, outputList=[], neuron2NoteConversion=4):
+        super(OutputHandler, self).__init__()
+        self.__display = Display(pars['N_col'], pars['N_row'],\
+                ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
+                 'cam_ext', 'cam_external_max'], 'lines')
         self.__name2DeviceStruct = {
-                self.NEURON_NOTES:DeviceStruct(),
+                self.NEURON_NOTES: DeviceStruct(),
 #                'BCF2000':'Virtual BCF2000',
-                self.OBJECT:DeviceStruct(name=self.OBJECT,
-                                      maxNumSignals=3,
-                                      updateInterval=45,
-                                      velocity=30),
-                self.PIANO:DeviceStruct(name=self.PIANO,
-                                      maxNumSignals=10,
-                                      updateInterval=15),
-                self.VISUALS:DeviceStruct(name=self.VISUALS,
-                                          maxNumSignals=5,
-                                          updateInterval=30)
+                self.OBJECT: DeviceStruct(name = self.OBJECT,
+                                      maxNumSignals = 3,
+                                      updateInterval = 45,
+                                      velocity = 30),
+                self.PIANO: DeviceStruct(name = self.PIANO,
+                                      maxNumSignals = 10,
+                                      updateInterval = 15),
+                self.VISUALS: DeviceStruct(name = self.VISUALS,
+                                          maxNumSignals = 5,
+                                          updateInterval = 30)
                 }
         pm.init()
-         #,self.OBJECT,self.PIANO
+
         self.__setupOutputs(outputList)
         if self.VISUALS in self.__output:
             self.__output[self.VISUALS].note_on(1,100)
@@ -133,43 +130,33 @@ class OutputHandler(object):
         
         self.__now = time.time()
         self.__activeNotes = set()
-        self.__neuron2NoteConversion=neuron2NoteConversion
+        self.__neuron2NoteConversion = neuron2NoteConversion
         
         #Start with one note
 #        self.__output['MIDI B'].note_on(1,100)
     
-    def __getDevice(self,deviceStruct,instrument=1,maxNumSignals=None):
-#        n_device = pm.get_count()
-#        foundId = -1
-#        for id in range(n_device):
-#            if int(pm.get_device_info(id)[1]==deviceStruct['name']) & \
-#                    int(pm.get_device_info(id)[3]==1):
-#                foundId = id 
-#                print 'SETUP: output', deviceStruct['name'], 'connected'
-#        print 'SETUP: output', deviceStruct['name'], 'connected'
+    def __getDevice(self, deviceStruct, instrument=1, maxNumSignals=None):
         return OutputDevice(deviceStruct)
                 
 #        print "SETUP Warning: output: "+deviceStruct['name']+ " not available!!!"
 
-    def __setupInputs(self,inputList):
+    def __setupInputs(self, inputList):
         self.__input = {}
         for name in inputList:
-            self.__input[name] = self.__getDevice(self.__name2Identifier[name],type='input')
+            self.__input[name] = \
+                self.__getDevice(self.__name2Identifier[name], type = 'input')
             
-    def __setupOutputs(self,outputList):
+    def __setupOutputs(self, outputList):
         self.__output = {}
         for name in outputList:
             self.__output[name] = self.__getDevice(self.__name2DeviceStruct[name])
             
-    def updateObjekt(self,fired):
-        neuron_ids = intersect1d(fired,pars['note_ids'])
+    def updateObject(self, fired):
+        neuron_ids = intersect1d(fired, pars['note_ids'])
         for neuron_id in neuron_ids:
-            self.__output[self.OBJECT].note_on(neuron_id,pars['velocity'])
-        
-        
-    
+            self.__output[self.OBJECT].note_on(neuron_id, pars['velocity'])
+
     def update(self,fired):
-#        global pars
 #        print 'es feuern', fired
         '''
         if len(self.__midi_timeactive>0):
@@ -177,21 +164,21 @@ class OutputHandler(object):
             self.__midi_timeactive = midi_timeactive[midi_timeactive>=0]
         now = time.time()
         '''
-        neuron_ids = intersect1d(fired,pars['note_ids'])
+        neuron_ids = intersect1d(fired, pars['note_ids'])
         ##################################################
                 
         # turn new notes and concious states on and update the allfired-list
-        N_fired = neuron_ids.__len__()
+        n_fired = neuron_ids.__len__()
         if neuron_ids.__contains__(1):
-            self.__neuron2NoteConversion=(4 if self.__neuron2NoteConversion==5 else 5)
+            self.__neuron2NoteConversion = (4 if self.__neuron2NoteConversion==5 else 5)
             print '----------------------------------------key change'
-        if N_fired>0:
-            #print neuron_ids
+        if n_fired > 0:
             for neuron_id in neuron_ids:
-                for name,output in self.__output.iteritems():
+                for name, output in self.__output.iteritems():
                     if name != self.OBJECT:
                         output.note_on(
-                            neuron2note(neuron_id,self.__neuron2NoteConversion),pars['velocity'])
+                            neuron2note(neuron_id,self.__neuron2NoteConversion),
+                                        pars['velocity'])
                 #if neuron_id>(pars['N']-80):
                 #    midi.ausgang_concious.note_on(neuron2note(neuron_id,neuron2note_conversion),pars['velocity'])
                 
@@ -210,13 +197,15 @@ class OutputHandler(object):
 #        self.__membraneViewer.move()        
         # display spikes and update display
         self.__display.update_fired(fired)
-        self.__display.update_pars(['cam_ext','midi_ext_e','midi_ext_i','s_e','s_i','tau_e','tau_i','cam_external_max'])
+        self.__display.update_pars(
+            ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
+             'tau_e', 'tau_i', 'cam_external_max'])
         pygame.display.update()
         
         
     def turnOff(self):
         for outputName in self.__output.iterkeys():
-            if outputName  == OutputHandler.NEURON_NOTES:
+            if outputName == OutputHandler.NEURON_NOTES:
                 self.__output[outputName].turnAllOff()
         '''
                 # turn old notes off    

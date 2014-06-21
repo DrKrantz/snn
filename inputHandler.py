@@ -12,8 +12,6 @@ from numpy import array, intersect1d, unique
 from webcam import Webcam
 
 from Dunkel_functions import note2neuron
-from Dunkel_pars import parameters
-
 
 class InputDevice(pm.Input):
     def __init__(self, name, n_read):
@@ -25,7 +23,7 @@ class InputDevice(pm.Input):
             return None
         else:
             super(InputDevice,self).__init__(id)
-            print "SETUP input: "+name+" connected with id", id
+            print "SETUP input: " + name + " connected with id", id
         
     def __getDeviceId(self, name):
         n_device = pm.get_count()
