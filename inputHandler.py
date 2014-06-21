@@ -16,8 +16,10 @@ from Dunkel_pars import parameters
 
 
 class InputDevice(pm.Input):
-    def __init__(self, name):
+    def __init__(self, name, n_read):
+        self.nread = n_read
         id = self.__getDeviceId(name)
+
         if id == -1:
             print "SETUP WARNING!!! input: "+name+" not available!!!"
             return None
@@ -33,6 +35,12 @@ class InputDevice(pm.Input):
                     int(pm.get_device_info(id)[2] == 1):
                 foundId = id 
         return foundId
+
+    def getData(self):
+        if self.poll():
+            data = self.read(self.nread)
+            data.reverse()
+            return array([dd[0] for dd in data])
     
     def map_keys(self):
         while True:
@@ -62,7 +70,7 @@ class InputHandler(object):
         pm.init()
         self.__inputs = {}
         for name in inputList:
-            self.__inputs[name] = InputDevice(name)
+            self.__inputs[name] = InputDevice(name, self.pars['n_read'])
     
     def getFired(self):
         fired = array(self.__fired, int)
@@ -76,25 +84,21 @@ class InputHandler(object):
 #        self.__updateObject()
 
     def __updateObject(self):
-        device = self.__inputs[self.OBJECT]
-#        print 'wird gemacht:', device 
-        if device.poll():
+        MIDI_data = self.__inputs[self.OBJECT].getData()
+        if MIDI_data is not None:
             self.__fired = []
-            data = device.read(self.pars['n_read'])
-            data.reverse()
-            MIDI_data = array([dd[0] for dd in data])
             [self.__fired.append(dd[1]) for dd in MIDI_data]
             print 'object:', MIDI_data, self.__fired
-            
-     
+
     def __updateBCF(self):
-        device = self.__inputs[self.PARAMETERS]
-        if device.poll():
-            data = device.read(self.pars['n_read'])
-#            print data
-            data.reverse()
-            MIDI_data = array([dd[0] for dd in data])
-            # extract data from keys
+        MIDI_data = self.__inputs[self.PARAMETERS].getData()
+        if MIDI_data is not None:
+#         if device.poll():
+#             data = device.read(self.pars['n_read'])
+# #            print data
+#             data.reverse()
+#             MIDI_data = array([dd[0] for dd in data])
+        # extract data from keys
             key_data = MIDI_data[MIDI_data[:, 0] == self.pars['midistat_keys'], :]
             if key_data.__len__() > 0 and self.pars['midistat_keys'] is not None:
                 key_data_on = key_data[key_data[:, 2] > 0, :]  # take only "note on"
@@ -112,9 +116,9 @@ class InputHandler(object):
                         self.pars['key_ids_pars']
                     )
                     self.__MIDI2pars(key_data, key_ids_pars, 'keys')
-                    
+
             # extract data from sliders
-            slide_data = MIDI_data[MIDI_data[:, 0] == self.pars['midistat_slide'],: ]
+            slide_data = MIDI_data[MIDI_data[:, 0] == self.pars['midistat_slide'], :]
             slide_ids_ext = intersect1d(unique(slide_data[:, 1]),
                                         self.pars['slide_ids_ext'])
             if slide_ids_ext.__len__() > 0:

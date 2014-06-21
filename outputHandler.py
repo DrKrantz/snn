@@ -11,7 +11,6 @@ from numpy import intersect1d, array
 import numpy as np
 
 
-
 from Dunkel_pars import parameters
 from Dunkel_functions import small2string, neuron2note, linear2grid
 from display import Display
@@ -19,13 +18,13 @@ global pars
 pars = parameters()
 
 class DeviceStruct(dict):
-    def __init__(self,name='SimpleSynth virtual input',maxNumSignals=None,
-                 updateInterval=1,instrument=1,velocity=64):
-        self['name']=name
-        self['maxNumSignals']=maxNumSignals
-        self['updateInterval']=updateInterval
-        self['instrument']=instrument
-        self['velocity']=velocity
+    def __init__(self, name='SimpleSynth virtual input', maxNumSignals=None,
+                 updateInterval=1, instrument=1, velocity=64):
+        self['name'] = name
+        self['maxNumSignals'] = maxNumSignals
+        self['updateInterval'] = updateInterval
+        self['instrument'] = instrument
+        self['velocity'] = velocity
 
 class OutputDevice(pm.Output):
     def __init__(self,deviceStruct):
@@ -45,44 +44,43 @@ class OutputDevice(pm.Output):
                 self.__activeNotes = []
                 self.__activeTimes = []
                 self.__now = time.time()
-            print "SETUP output: "+deviceStruct['name']+" connected" 
+            print "SETUP output: " + deviceStruct['name'] + " connected"
             
-    def __getDeviceId(self,name):
+    def __getDeviceId(self, name):
         n_device = pm.get_count()
         foundId = -1
         for id in range(n_device):
-            if int(pm.get_device_info(id)[1]==name) & \
-                    int(pm.get_device_info(id)[3]==1):
+            if int(pm.get_device_info(id)[1] == name) & \
+                    int(pm.get_device_info(id)[3] == 1):
                 foundId = id 
         return foundId
         
     def note_on(self,note,velocity):
-        '''
+        """
         turn the midi-note on
         If maxNumSignals has been set, the note is only turned on if less than
         maxNumSignals are on. Additionally, notes that started more than updateInterval 
         ago are removed from the activeNotes list.
-        
-        '''  
+        """
         self.__onNotes.add(note)
         if self.__maxNumSignals is None:
-            super(OutputDevice,self).note_on(note,self.__velocity)
+            super(OutputDevice,self).note_on(note, self.__velocity)
         else:
             now = time.time()
             # update active times of active notes and remove notes from list
-            if len(self.__activeTimes)>0:
+            if len(self.__activeTimes) > 0:
                 done = False
                 idx = 0
                 while not done:
-                    if idx<len(self.__activeTimes):
-                        self.__activeTimes[idx]+=now-self.__now
-                        if self.__activeTimes[idx]>self.__updateInterval:
+                    if idx < len(self.__activeTimes):
+                        self.__activeTimes[idx] += now-self.__now
+                        if self.__activeTimes[idx] > self.__updateInterval:
                             self.__activeTimes.pop(idx)
                             self.__activeNotes.pop(idx)
                         else:
-                            idx+=1
+                            idx += 1
                     else:
-                        done=True
+                        done = True
             self.__now = now
             if len(self.__activeTimes)<self.__maxNumSignals:
 #                print self.__name, note

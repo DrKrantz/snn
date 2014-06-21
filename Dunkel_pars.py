@@ -119,15 +119,15 @@ def parameters():
     pars['midi_spikeneuron'] = range(64,107)
     
     keys = 'virtual'
-    if keys == 'home': #my home-configuration
-        pars['midistat_keys'] = 146 # the MIDI status that identifies keys (black and white)
-        pars['key_ids_ext'] = range(36, 85) # the 0-octave keyboard notes
+    if keys == 'home':  # my home-configuration
+        pars['midistat_keys'] = 146  # the MIDI status that identifies keys
+        pars['key_ids_ext'] = range(36, 85)  # the 0-octave keyboard notes
         pars['key_ids_pars'] = array((),int)
         pars['key_action_pars'] = array((),int)
-        pars['midistat_slide'] = 178 # the MIDI status that identifies sliders
-        pars['slide_ids_pars'] = [71, 5, 84, 7] # these IDs control parameters
+        pars['midistat_slide'] = 178  # the MIDI status that identifies sliders
+        pars['slide_ids_pars'] = [71, 5, 84, 7]  # these IDs control parameters
         pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
-        pars['slide_action_ext'] = [0,  1,  2,  3,  4] # the actions corresponding
+        pars['slide_action_ext'] = [0,  1,  2,  3,  4]  # the actions corresponding
                                                         # to the slide_ids
             # 0: input to all neurons
             # 1: input to excitatory neurons (ids 1:pars['Ne'])
