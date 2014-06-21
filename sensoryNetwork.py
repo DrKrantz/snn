@@ -23,7 +23,8 @@ import sys
 #import scipy.io as sio
 
 from Dunkel_pars import parameters
-from outputHandler import OutputHandler, DeviceFactory
+from outputHandler import OutputHandler
+from outputDevices import DeviceFactory
 from inputHandler import InputHandler
 from connectivityMatrix import ConnectivityMatrix
 
