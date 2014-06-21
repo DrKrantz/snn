@@ -23,7 +23,7 @@ import sys
 #import scipy.io as sio
 
 from Dunkel_pars import parameters
-from outputHandler import OutputHandler
+from outputHandler import OutputHandler, DeviceFactory
 from inputHandler import InputHandler
 from connectivityMatrix import ConnectivityMatrix
 
@@ -37,7 +37,11 @@ class SensoryNetwork(object):
                                          pars=parameters())
         
         self.pars = self.inputHandler.pars
-        self.outputHandler = OutputHandler(outputList=[OutputHandler.NEURON_NOTES])
+        outputDeviceNames = [DeviceFactory.NEURON_NOTES]
+        outputDevices = {}
+        [outputDevices.__setitem__(
+            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames]
+        self.outputHandler = OutputHandler(outputDevices)
 
         print "wiring...."
         self.__A = ConnectivityMatrix().get()

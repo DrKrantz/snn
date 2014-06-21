@@ -25,6 +25,32 @@ class DeviceStruct(dict):
         self['instrument'] = instrument
         self['velocity'] = velocity
 
+class DeviceFactory(object):
+    NEURON_NOTES = 'SimpleSynth'
+    OBJECT = 'MIDISPORT 2x2 Anniv Port A'
+    PIANO = 'MIDISPORT 2x2 Anniv Port B'
+    VISUALS = 'Ploytec MIDI Cable'
+
+    def __init__(self):
+        self.__name2DeviceStruct = {
+            self.NEURON_NOTES: DeviceStruct(),
+#                'BCF2000':'Virtual BCF2000',
+            self.OBJECT: DeviceStruct(name = self.OBJECT,
+                                  maxNumSignals = 3,
+                                  updateInterval = 45,
+                                  velocity = 30),
+            self.PIANO: DeviceStruct(name = self.PIANO,
+                                  maxNumSignals = 10,
+                                  updateInterval = 15),
+            self.VISUALS: DeviceStruct(name = self.VISUALS,
+                                      maxNumSignals = 5,
+                                      updateInterval = 30)
+            }
+
+    def create(self, name):
+        return OutputDevice(self.__name2DeviceStruct[name])
+
+
 class OutputDevice(pm.Output):
     def __init__(self, deviceStruct):
         id = self.__getDeviceId(deviceStruct['name'])
@@ -98,34 +124,18 @@ class OutputDevice(pm.Output):
         self.__onNotes = set()
 
 class OutputHandler(object):
-    NEURON_NOTES = 'SimpleSynth'
-    OBJECT = 'MIDISPORT 2x2 Anniv Port A'
-    PIANO = 'MIDISPORT 2x2 Anniv Port B'
-    VISUALS = 'Ploytec MIDI Cable'
-    def __init__(self, outputList=[], neuron2NoteConversion=4):
+
+    def __init__(self, outputs, neuron2NoteConversion=4):
         super(OutputHandler, self).__init__()
         self.__display = Display(pars['N_col'], pars['N_row'],\
                 ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
                  'cam_ext', 'cam_external_max'], 'lines')
-        self.__name2DeviceStruct = {
-                self.NEURON_NOTES: DeviceStruct(),
-#                'BCF2000':'Virtual BCF2000',
-                self.OBJECT: DeviceStruct(name = self.OBJECT,
-                                      maxNumSignals = 3,
-                                      updateInterval = 45,
-                                      velocity = 30),
-                self.PIANO: DeviceStruct(name = self.PIANO,
-                                      maxNumSignals = 10,
-                                      updateInterval = 15),
-                self.VISUALS: DeviceStruct(name = self.VISUALS,
-                                          maxNumSignals = 5,
-                                          updateInterval = 30)
-                }
-        pm.init()
 
-        self.__setupOutputs(outputList)
-        if self.VISUALS in self.__output:
-            self.__output[self.VISUALS].note_on(1,100)
+        pm.init()
+        self.__output = outputs
+
+        if DeviceFactory.VISUALS in self.__output:
+            self.__output[DeviceFactory.VISUALS].note_on(1,100)
 #        self.__membraneViewer = Test()
         
         self.__now = time.time()
@@ -134,27 +144,17 @@ class OutputHandler(object):
         
         #Start with one note
 #        self.__output['MIDI B'].note_on(1,100)
-    
-    def __getDevice(self, deviceStruct, instrument=1, maxNumSignals=None):
-        return OutputDevice(deviceStruct)
-                
-#        print "SETUP Warning: output: "+deviceStruct['name']+ " not available!!!"
 
     def __setupInputs(self, inputList):
         self.__input = {}
         for name in inputList:
             self.__input[name] = \
                 self.__getDevice(self.__name2Identifier[name], type = 'input')
-            
-    def __setupOutputs(self, outputList):
-        self.__output = {}
-        for name in outputList:
-            self.__output[name] = self.__getDevice(self.__name2DeviceStruct[name])
-            
+
     def updateObject(self, fired):
         neuron_ids = intersect1d(fired, pars['note_ids'])
         for neuron_id in neuron_ids:
-            self.__output[self.OBJECT].note_on(neuron_id, pars['velocity'])
+            self.__output[DeviceFactory.OBJECT].note_on(neuron_id, pars['velocity'])
 
     def update(self,fired):
 #        print 'es feuern', fired
@@ -175,7 +175,7 @@ class OutputHandler(object):
         if n_fired > 0:
             for neuron_id in neuron_ids:
                 for name, output in self.__output.iteritems():
-                    if name != self.OBJECT:
+                    if name != DeviceFactory.OBJECT:
                         output.note_on(
                             neuron2note(neuron_id,self.__neuron2NoteConversion),
                                         pars['velocity'])
@@ -205,7 +205,7 @@ class OutputHandler(object):
         
     def turnOff(self):
         for outputName in self.__output.iterkeys():
-            if outputName == OutputHandler.NEURON_NOTES:
+            if outputName == DeviceFactory.NEURON_NOTES:
                 self.__output[outputName].turnAllOff()
         '''
                 # turn old notes off    
