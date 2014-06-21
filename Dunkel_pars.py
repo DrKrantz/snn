@@ -115,8 +115,8 @@ def parameters():
     # parameters of conciousness 
     pars['N_concious'] = 10  # the numbers of synchronous neurons to generate 'concious' events
     
-    pars['midi_spikepitch'] = range(64,107) 
-    pars['midi_spikeneuron'] = range(64,107)
+    pars['midi_spikepitch'] = range(64, 107)
+    pars['midi_spikeneuron'] = range(64, 107)
     
     keys = 'virtual'
     if keys == 'home':  # my home-configuration

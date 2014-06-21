@@ -19,6 +19,7 @@ class DeviceStruct(dict):
         self['instrument'] = instrument
         self['velocity'] = velocity
 
+
 class DeviceFactory(object):
     NEURON_NOTES = 'SimpleSynth'
     OBJECT = 'MIDISPORT 2x2 Anniv Port A'

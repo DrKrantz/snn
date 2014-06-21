@@ -14,33 +14,32 @@ from webcam import Webcam
 from Dunkel_functions import note2neuron
 
 class InputDevice(pm.Input):
-    def __init__(self, name, n_read):
+    def __init__(self, name, n_read=100):
         self.nread = n_read
         id = self.__getDeviceId(name)
 
         if id == -1:
-            print "SETUP WARNING!!! input: "+name+" not available!!!"
+            print "SETUP WARNING!!! input: " + name + " not available!!!"
             return None
         else:
             super(InputDevice,self).__init__(id)
             print "SETUP input: " + name + " connected with id", id
         
     def __getDeviceId(self, name):
-        n_device = pm.get_count()
-        foundId = -1
-        for id in range(n_device):
+        for id in range(pm.get_count()):
             if int(pm.get_device_info(id)[1] == name) & \
                     int(pm.get_device_info(id)[2] == 1):
-                foundId = id 
-        return foundId
+                return id
+        return -1
 
     def getData(self):
         if self.poll():
             data = self.read(self.nread)
             data.reverse()
             return array([dd[0] for dd in data])
-    
+
     def map_keys(self):
+        """  print device's input """
         while True:
             try:
                 if self.poll():
@@ -51,7 +50,7 @@ class InputDevice(pm.Input):
 
 class InputHandler(object):
     PARAMETERS = 'Virtual BCF2000'
-    OBJECT = 'USB MIDI Device'
+    OBJECT = 'MIDISPORT 2x2 Anniv Port A'  # 'USB MIDI Device'
     WEBCAM = 'webcam'
 
     def __init__(self, inputList=[], pars={}):
@@ -226,3 +225,9 @@ class InputHandler(object):
                     self.pars['tau_i'] += \
                         self.pars['tau_i_step'] * \
                         (self.pars['tau_i'] < self.pars['tau_i_range'][1])
+
+
+if __name__ == '__main__':
+    pm.init()
+    device = InputDevice('Virtual BCF2000')  # USB MIDI Device
+    device.map_keys()

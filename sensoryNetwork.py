@@ -34,15 +34,12 @@ import pickle
 class SensoryNetwork(object):
     def __init__(self):
         super(SensoryNetwork, self).__init__()
-        self.inputHandler = InputHandler(inputList=[InputHandler.PARAMETERS],
+        self.inputHandler = InputHandler(inputList=[InputHandler.PARAMETERS,
+                                                    InputHandler.OBJECT],
                                          pars=parameters())
-        
         self.pars = self.inputHandler.pars
-        outputDeviceNames = [DeviceFactory.NEURON_NOTES]
-        outputDevices = {}
-        [outputDevices.__setitem__(
-            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames]
-        self.outputHandler = OutputHandler(outputDevices)
+
+        self.__createOutputHandler([DeviceFactory.NEURON_NOTES])
 
         print "wiring...."
         self.__A = ConnectivityMatrix().get()
@@ -135,9 +132,16 @@ class SensoryNetwork(object):
             self.__v[deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
             self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                           self.__w)/self.pars['tau_w']
-            print 'g_e', self.__ge
-            print 'g_i', self.__gi
-            # raw_input('ok?')
-    
+            # print 'g_e', self.__ge
+            # print 'g_i', self.__gi
+            raw_input('ok?')
+
+    def __createOutputHandler(self, outputDeviceNames):
+        outputDevices = {}
+        [outputDevices.__setitem__(
+            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames]
+        self.outputHandler = OutputHandler(outputDevices)
+
+
 if __name__ == '__main__':
     SensoryNetwork().start()

@@ -18,7 +18,6 @@ global pars
 pars = parameters()
 
 
-
 class OutputHandler(object):
 
     def __init__(self, outputs, neuron2NoteConversion=4):
