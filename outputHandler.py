@@ -61,7 +61,7 @@ class OutputHandler(object):
             for neuron_id in neuron_ids:
                 for name, output in self.__output.iteritems():
                     if name != DeviceFactory.OBJECT:
-                        output.note_on(neuron_id, pars['velocity'])
+                        output.note_on(neuron_id)
                 
 #        self.__membraneViewer.move()        
         # display spikes and update display
@@ -79,7 +79,7 @@ class OutputHandler(object):
 
 
     def __checkKeyChange(self, neuron_ids):
-        if neuron_ids.__contains__(1):
+        if len(neuron_ids)>20:
             self.__neuron2NoteConversion = (4 if self.__neuron2NoteConversion==5 else 5)
             [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
                         name, output in self.__output.iteritems()]

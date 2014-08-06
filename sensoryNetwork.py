@@ -100,16 +100,11 @@ class SensoryNetwork(object):
             #spiketimes=concatenate((spiketimes,t*pars['h']*1000+0*fired))
             #neurons = concatenate((neurons,fired+1))
             extFired = self.inputHandler.getFired()
-            # extFired = array([], int)
-            #this is a dirty hack, but the union1d-part threw a ValueError fo reasons
-            # I don't understand
-            frd = union1d(fired, extFired)
-            # try:
-            #
-            # except ValueError as E:
-            #     frd = []
-            fired = array(frd, int)
-            print fired, extFired
+
+            fired = union1d(fired, extFired)
+
+            if len(fired)>0:
+                print 'fired', fired
 
             # print 'fired: vor', fired, type(fired), 'nach', postfired, type(fired)
             self.__v[fired] = self.pars['EL']  # set spiked neurons to reset potential
