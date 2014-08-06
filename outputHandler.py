@@ -47,12 +47,13 @@ class OutputHandler(object):
                 self.__getDevice(self.__name2Identifier[name], type = 'input')
 
     def updateObject(self, fired):
+        # print 'ans Objekt gehen', fired
         neuron_ids = intersect1d(fired, pars['note_ids'])
         for neuron_id in neuron_ids:
             self.__output[DeviceFactory.OBJECT].note_on(neuron_id, pars['velocity'])
 
     def update(self,fired):
-#        print 'es feuern', fired
+        # print 'es feuern', fired
         '''
         if len(self.__midi_timeactive>0):
             self.__midi_timeactive-=time.time()-now
@@ -72,7 +73,7 @@ class OutputHandler(object):
                 for name, output in self.__output.iteritems():
                     if name != DeviceFactory.OBJECT:
                         output.note_on(
-                            neuron2note(neuron_id,self.__neuron2NoteConversion),
+                            neuron2note(neuron_id, self.__neuron2NoteConversion),
                                         pars['velocity'])
                 #if neuron_id>(pars['N']-80):
                 #    midi.ausgang_concious.note_on(neuron2note(neuron_id,neuron2note_conversion),pars['velocity'])

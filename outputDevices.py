@@ -22,8 +22,9 @@ class DeviceStruct(dict):
 
 class DeviceFactory(object):
     NEURON_NOTES = 'SimpleSynth'
-    OBJECT = 'MIDISPORT 2x2 Anniv Port A'
-    PIANO = 'MIDISPORT 2x2 Anniv Port B'
+    OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
+    SYNTH = 'MIDISPORT 2x2 Anniv Port B'
+    PIANO = 'MIDISPORT 2x2 Anniv Port A'
     VISUALS = 'Ploytec MIDI Cable'
 
     def __init__(self):
@@ -35,8 +36,11 @@ class DeviceFactory(object):
                                   updateInterval = 45,
                                   velocity = 30),
             self.PIANO: DeviceStruct(name = self.PIANO,
-                                  maxNumSignals = 10,
-                                  updateInterval = 15),
+                                  maxNumSignals = 2,
+                                  updateInterval = 60),
+            self.SYNTH: DeviceStruct(name = self.SYNTH,
+                                  maxNumSignals = 4,
+                                  updateInterval = 5),
             self.VISUALS: DeviceStruct(name = self.VISUALS,
                                       maxNumSignals = 5,
                                       updateInterval = 30)
@@ -83,7 +87,7 @@ class OutputDevice(pm.Output):
         """
         self.__onNotes.add(note)
         if self.__maxNumSignals is None:
-            super(OutputDevice,self).note_on(note, self.__velocity)
+            super(OutputDevice, self).note_on(note, self.__velocity)
         else:
             now = time.time()
             # update active times of active notes and remove notes from list
@@ -103,7 +107,7 @@ class OutputDevice(pm.Output):
             self.__now = now
             if len(self.__activeTimes) < self.__maxNumSignals:
 #                print self.__name, note
-                super(OutputDevice,self).note_on(note,self.__velocity)
+                super(OutputDevice, self).note_on(note, self.__velocity)
 #                if self.__name == OutputHandler.OBJECT:
                 print 'note sent', self.__name, self.__now
                 if self.__activeNotes.__contains__(note):

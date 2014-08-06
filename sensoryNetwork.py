@@ -26,24 +26,25 @@ from Dunkel_pars import parameters
 from outputHandler import OutputHandler
 from outputDevices import DeviceFactory
 from inputHandler import InputHandler
+import inputDevices
 from connectivityMatrix import ConnectivityMatrix
 
 import pickle
 
-
 class SensoryNetwork(object):
-    def __init__(self):
+    def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix):
         super(SensoryNetwork, self).__init__()
-        self.inputHandler = InputHandler(inputList=[InputHandler.PARAMETERS,
-                                                    InputHandler.OBJECT],
-                                         pars=parameters())
-        self.pars = self.inputHandler.pars
+        self.inputHandler = inputHandler
+        self.pars = pars
+        self.outputHandler = outputHandler
 
-        self.__createOutputHandler([DeviceFactory.NEURON_NOTES])
 
-        print "wiring...."
-        self.__A = ConnectivityMatrix().get()
-        print 'wiring completed'
+        # value = raw_input('setup ok? [y]/n \n')
+        # if value == 'n':
+        #     return
+
+        self.__A = connectivityMatrix
+
         
         N = self.pars['N']
         #vectors with parameters of adaptation and synapses
@@ -67,7 +68,7 @@ class SensoryNetwork(object):
         deadIDs = array([],int)
         fired = array([])
         spiketimes = array([])  # spike times
-        print self.pars
+
         while not self.inputHandler.webcamOpen:  # t<int(self.pars['Ts']/self.pars['h'])
             t += 1
             if t == 20:
@@ -78,8 +79,9 @@ class SensoryNetwork(object):
                  
             time.sleep(self.pars['pause'])
             
-            ##### GET WEBCAM IMAGE AND UPDATE VIEWER ###########
+            ##### GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
             self.inputHandler.update()
+            self.pars.update(self.inputHandler.getPars())
             cam_external = self.inputHandler.webcam.getExternal()
             external = self.pars['midi_external'] + cam_external  # self.pars['cam_ext']
             self.outputHandler.turnOff()
@@ -98,7 +100,17 @@ class SensoryNetwork(object):
             #spiketimes=concatenate((spiketimes,t*pars['h']*1000+0*fired))
             #neurons = concatenate((neurons,fired+1))
             extFired = self.inputHandler.getFired()
-            fired = array(union1d(fired, extFired), int)
+            # extFired = array([], int)
+            #this is a dirty hack, but the union1d-part threw a ValueError fo reasons
+            # I don't understand
+            frd = union1d(fired, extFired)
+            # try:
+            #
+            # except ValueError as E:
+            #     frd = []
+            fired = array(frd, int)
+            print fired, extFired
+
             # print 'fired: vor', fired, type(fired), 'nach', postfired, type(fired)
             self.__v[fired] = self.pars['EL']  # set spiked neurons to reset potential
             self.__w[fired] += self.__b[fired]  # increment adaptation variable of
@@ -109,7 +121,7 @@ class SensoryNetwork(object):
                 
             #### SEND TO HANDLER ###
             self.outputHandler.update(fired)
-            self.outputHandler.updateObject(extFired)
+            # self.outputHandler.updateObject(extFired)
                         
             # update conductances of excitatory synapses
             fired_e = intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
@@ -134,14 +146,28 @@ class SensoryNetwork(object):
                                           self.__w)/self.pars['tau_w']
             # print 'g_e', self.__ge
             # print 'g_i', self.__gi
-            raw_input('ok?')
-
-    def __createOutputHandler(self, outputDeviceNames):
-        outputDevices = {}
-        [outputDevices.__setitem__(
-            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames]
-        self.outputHandler = OutputHandler(outputDevices)
+            # raw_input('ok?')
 
 
 if __name__ == '__main__':
-    SensoryNetwork().start()
+    pars=parameters()
+    bcf = inputDevices.BCF(pars)
+    # sensoryObject = inputDevices.SensoryObject(pars)
+    inputHandler = InputHandler(
+        inputDevices=[bcf], #,InputHandler.OBJECT
+        pars=pars
+    )
+    outputDevices = {}
+    outputDeviceNames = [DeviceFactory.NEURON_NOTES] #DeviceFactory.PIANO, DeviceFactory.SYNTH
+    [outputDevices.__setitem__(
+        devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
+    ]
+    outputHandler = OutputHandler(outputDevices)
+
+    print "wiring...."
+    connectivityMatrix = ConnectivityMatrix().get()
+    print 'wiring completed'
+
+    network = SensoryNetwork(inputHandler, outputHandler, pars, connectivityMatrix)
+    if network is not None:
+        network.start()

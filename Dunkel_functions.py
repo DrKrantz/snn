@@ -23,66 +23,65 @@ pars = parameters()
 
 
 def chordConversion():
-	#dur
-	a = array([0,2,4,5,7,9,11])
-	b = []
-	[b.append(a+k*12) for k in range(11)]
-	durlist = array(b).flatten()
-	#moll
-	a = array([0,2,3,5,7,8,10])
-	b = []
-	[b.append(a+k*12) for k in range(11)]
-	molllist = array(b).flatten()
-	#print molllist,durlist
-	return (durlist,molllist)
+    #dur
+    a = array([0, 2, 4, 5, 7, 9, 11])
+    b = []
+    [b.append(a + k * 12) for k in range(11)]
+    durlist = array(b).flatten()
+
+    #moll
+    a = array([0, 2, 3, 5, 7, 8, 10])
+    b = []
+    [b.append(a + k * 12) for k in range(11)]
+    molllist = array(b).flatten()
+    return durlist, molllist
 
 def note2neuron(note_id):
 #	pars = parameters()
-	return note_id-pars['note_add']
+    return note_id-pars['note_add']
 
-def neuron2note(neuron_id,conversion_type):
-#	pars = parameters()
-	# conversion_type: 1 - linear tonal arrangement
-	#		2 - neurons are arranged on a grid, the row determines the note
-	#		3 - all excitatory have one note, all inhibitory have another
-	#		4 - linear tonal arrangement in C-dur
-	#		5 - linear tonal arrangement in C-moll
-	#print conversion_type
-	
-	if conversion_type==1:
-		note = int(mod(neuron_id,127)+1)
-	if conversion_type==2:
-		coord = linear2grid(neuron_id,pars['N_col'])
-		note = coord[1]
-	if conversion_type==3:
-		if any((pars['Exc_ids']-neuron_id)==0):
-			note = 120
-		else: 
-			note = 20
-	if conversion_type==4:
-		(durlist,mollist)=chordConversion()
-		nnotes=len(durlist)
-		note = durlist[int(mod(neuron_id,nnotes))]
-	if conversion_type==5:
-		(durlist,molllist)=chordConversion()
-		nnotes=len(molllist)
-		#print mod(neuron_id,nnotes)
-		#print molllist
-		note = molllist[int(mod(neuron_id,nnotes))]
-	return note
-	
+def neuron2note(neuron_id, conversion_type):
+    # conversion_type: 1 - linear tonal arrangement
+    #		2 - neurons are arranged on a grid, the row determines the note
+    #		3 - all excitatory have one note, all inhibitory have another
+    #		4 - linear tonal arrangement in C-dur
+    #		5 - linear tonal arrangement in C-moll
+    #print conversion_type
+
+    if conversion_type == 1:
+        note = int(mod(neuron_id, 127)+1)
+    if conversion_type == 2:
+        coord = linear2grid(neuron_id,pars['N_col'])
+        note = coord[1]
+    if conversion_type == 3:
+        if any((pars['Exc_ids'] - neuron_id) == 0):
+            note = 120
+        else:
+            note = 20
+    if conversion_type == 4:
+        durlist, mollist = chordConversion()
+        nnotes = len(durlist)
+        note = durlist[int(mod(neuron_id, nnotes))]
+    if conversion_type == 5:
+        durlist, molllist = chordConversion()
+        nnotes=len(molllist)
+        #print mod(neuron_id,nnotes)
+        #print molllist
+        note = molllist[int(mod(neuron_id, nnotes))]
+    return note
+
 def linear2grid(Nid,N_col):
-	# neuron 0 will be in the bottom left corner with coordintates (0,0), neuron 1 is (1,0)
-	#Nnotes = 120
-	# the equation is N_col*row_id+col_id = Nid
-	col_id = mod(Nid,N_col)
-	row_id = ceil((Nid-col_id)/N_col)
-	coord = array([col_id, row_id],int)
-	return coord		
-	
+    # neuron 0 will be in the bottom left corner with coordintates (0,0), neuron 1 is (1,0)
+    #Nnotes = 120
+    # the equation is N_col*row_id+col_id = Nid
+    col_id = mod(Nid, N_col)
+    row_id = ceil((Nid-col_id)/N_col)
+    coord = array([col_id, row_id],int)
+    return coord
+
 def grid2linear(coord,N_col):
-	Nid = N_col*coord[1]+coord[0]
-	return Nid
+    Nid = N_col*coord[1]+coord[0]
+    return Nid
 	
 def toric_length(coord,nrow,ncol):
 	# the length of the vector coord, assuming a torus. coord can have negative entries!
