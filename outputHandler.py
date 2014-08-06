@@ -37,8 +37,6 @@ class OutputHandler(object):
         self.__activeNotes = set()
         self.__neuron2NoteConversion = neuron2NoteConversion
         
-        #Start with one note
-#        self.__output['MIDI B'].note_on(1,100)
 
     def __setupInputs(self, inputList):
         self.__input = {}
@@ -54,41 +52,16 @@ class OutputHandler(object):
 
     def update(self,fired):
         # print 'es feuern', fired
-        '''
-        if len(self.__midi_timeactive>0):
-            self.__midi_timeactive-=time.time()-now
-            self.__midi_timeactive = midi_timeactive[midi_timeactive>=0]
-        now = time.time()
-        '''
+
         neuron_ids = intersect1d(fired, pars['note_ids'])
-        ##################################################
-                
-        # turn new notes and concious states on and update the allfired-list
+        self.__checkKeyChange(neuron_ids)
+
         n_fired = neuron_ids.__len__()
-        if neuron_ids.__contains__(1):
-            self.__neuron2NoteConversion = (4 if self.__neuron2NoteConversion==5 else 5)
-            print '----------------------------------------key change'
         if n_fired > 0:
             for neuron_id in neuron_ids:
                 for name, output in self.__output.iteritems():
                     if name != DeviceFactory.OBJECT:
-                        output.note_on(
-                            neuron2note(neuron_id, self.__neuron2NoteConversion),
-                                        pars['velocity'])
-                #if neuron_id>(pars['N']-80):
-                #    midi.ausgang_concious.note_on(neuron2note(neuron_id,neuron2note_conversion),pars['velocity'])
-                
-#                if neuron_id<20:
-#                     if midi_timeactive is None:
-#                        midi.ausgang_soundextern.note_on(neuron2note(neuron_id,neuron2note_conversion),pars['velocity'])
-#                        midi_timeactive = array([1])
-#                    elif len(midi_timeactive)<=pars['midi_per_sec']:
-#                        midi.ausgang_soundextern.note_on(neuron2note(neuron_id,neuron2note_conversion),pars['velocity'])
-#                        midi_timeactive = array(midi_timeactive.tolist().append(1))
-#            #if N_fired>=pars['N_concious']:
-                #midi_id = mod(N_fired,127)
-                #midi_id_extern = mod(N_fired,50)+70
-                #print midi_id, N_fired
+                        output.note_on(neuron_id, pars['velocity'])
                 
 #        self.__membraneViewer.move()        
         # display spikes and update display
@@ -103,24 +76,12 @@ class OutputHandler(object):
         for outputName in self.__output.iterkeys():
             if outputName == DeviceFactory.NEURON_NOTES:
                 self.__output[outputName].turnAllOff()
-        '''
-                # turn old notes off    
-        neuron_ids = intersect1d(fired,pars['note_ids'])
-        for neuron_id in neuron_ids:
-            midi.ausgang.note_off(neuron2note(neuron_id,neuron2note_conversion),100)
-            #midi.ausgang_concious.note_off(neuron2note(neuron_id,neuron2note_conversion),100)
-#            midi.ausgang_soundextern.note_off(neuron2note(neuron_id,neuron2note_conversion),100)
-            #if neuron_id>(pars['N']-80):
-            #    midi.ausgang_concious.note_off(neuron2note(neuron_id,neuron2note_conversion),100)
-            #if neuron_id<20:
-            #    midi.ausgang_soundextern.note_off(neuron2note(neuron_id,neuron2note_conversion),100)
-        #if N_fired>=pars['N_concious']:
-        #    midi.ausgang_concious.note_off(midi_id,100)
-        #    midi.ausgang_soundextern.note_off(midi_id_extern,100)
-        for note_id in range(len(fired)):
-            midi.ausgang.note_off(neuron2note(fired[note_id],neuron2note_conversion),100)
-        '''
 
 
+    def __checkKeyChange(self, neuron_ids):
+        if neuron_ids.__contains__(1):
+            self.__neuron2NoteConversion = (4 if self.__neuron2NoteConversion==5 else 5)
+            [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
+                        name, output in self.__output.iteritems()]
 
-
+            print '----------------------------------------key change'

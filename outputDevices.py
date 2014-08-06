@@ -9,6 +9,8 @@ __date__ = 140621
 import pygame
 import pygame.midi as pm
 import time
+from Dunkel_functions import neuron2note
+
 
 class DeviceStruct(dict):
     def __init__(self, name='SimpleSynth virtual input', maxNumSignals=None,
@@ -51,12 +53,13 @@ class DeviceFactory(object):
 
 
 class OutputDevice(pm.Output):
-    def __init__(self, deviceStruct):
+    def __init__(self, deviceStruct, neuron2NoteConversion=4):
         id = self.__getDeviceId(deviceStruct['name'])
         if id == -1:
             print "SETUP Warning: output: " + deviceStruct['name'] + " not available!!!"
         else:
             super(OutputDevice,self).__init__(id)
+            self.__neuron2NoteConversion = neuron2NoteConversion;
             self.__name = deviceStruct['name']
             self.__velocity = deviceStruct['velocity']
             self.set_instrument(deviceStruct['instrument'])
@@ -78,7 +81,11 @@ class OutputDevice(pm.Output):
                 foundId = id
         return foundId
 
-    def note_on(self, note, velocity):
+    def setNeuron2NoteConversion(self, conversion):
+        self.__neuron2NoteConversion = conversion
+
+    def note_on(self, neuron_id, velocity):
+        note = neuron2note(neuron_id, self.__neuron2NoteConversion)
         """
         turn the midi-note on
         If maxNumSignals has been set, the note is only turned on if less than
