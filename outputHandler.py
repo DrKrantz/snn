@@ -29,8 +29,8 @@ class OutputHandler(object):
         pm.init()
         self.__output = outputs
 
-        if DeviceFactory.VISUALS in self.__output:
-            self.__output[DeviceFactory.VISUALS].note_on(1,100)
+        # if DeviceFactory.VISUALS in self.__output:
+        #     self.__output[DeviceFactory.VISUALS].note_on(1,100)
 #        self.__membraneViewer = Test()
         
         self.__now = time.time()
@@ -79,9 +79,12 @@ class OutputHandler(object):
 
 
     def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids)>20:
-            self.__neuron2NoteConversion = (4 if self.__neuron2NoteConversion==5 else 5)
-            [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
-                        name, output in self.__output.iteritems()]
+        if len(neuron_ids)>17:
+            self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion==7 else 7)
+            self.__output[DeviceFactory.NEURON_NOTES].setNeuron2NoteConversion(
+                self.__neuron2NoteConversion
+            )
+            # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
+            #             name, output in self.__output.iteritems()]
 
             print '----------------------------------------key change'

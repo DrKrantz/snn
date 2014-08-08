@@ -47,7 +47,10 @@ class InputHandler(object):
         ########## CONVERT MIDI INPUT TO NETWORK INPUT AND PROPERTIES ###############
         for device in self.__inputDevices:
             inputDict = device.update(self.pars)
-            self.__fired += inputDict['fired']
+            if len(self.__fired) == 0: #avoid shape mismatch error when adding [1,2] to []
+                self.__fired = inputDict['fired']
+            else:
+                self.__fired += inputDict['fired']
             self.__fired = unique(self.__fired)
             self.pars.update(inputDict['pars'])
 

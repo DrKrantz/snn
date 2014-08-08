@@ -73,7 +73,7 @@ def parameters():
     pars['p_ie'] = 0.1  # probability of e->i connections
     pars['p_ii'] = 0.1  # probability of e->i connections
     pars['ncon'] = 30
-    pars['sigma_con'] = double(pars['N_col']) / 4
+    pars['sigma_con'] = pars['N_col'] / 4.
 
     # parameters of external drive in the beginning phase of the simulation
     pars['p_ext'] = 0  # probability for a neuron to receive external stimulation

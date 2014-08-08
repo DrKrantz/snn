@@ -103,8 +103,8 @@ class SensoryNetwork(object):
 
             fired = union1d(fired, extFired)
 
-            if len(fired)>0:
-                print 'fired', fired
+            # if len(fired)>0:
+            #     print 'fired', fired
 
             # print 'fired: vor', fired, type(fired), 'nach', postfired, type(fired)
             self.__v[fired] = self.pars['EL']  # set spiked neurons to reset potential
@@ -147,13 +147,13 @@ class SensoryNetwork(object):
 if __name__ == '__main__':
     pars=parameters()
     bcf = inputDevices.BCF(pars)
-    # sensoryObject = inputDevices.SensoryObject(pars)
+    sensoryObject = inputDevices.SensoryObject(pars)
     inputHandler = InputHandler(
-        inputDevices=[bcf], #,InputHandler.OBJECT
+        inputDevices=[bcf, sensoryObject], #,InputHandler.OBJECT
         pars=pars
     )
     outputDevices = {}
-    outputDeviceNames = [DeviceFactory.NEURON_NOTES] #DeviceFactory.PIANO, DeviceFactory.SYNTH
+    outputDeviceNames = [DeviceFactory.NEURON_NOTES, DeviceFactory.VISUALS] #DeviceFactory.PIANO, DeviceFactory.SYNTH
     [outputDevices.__setitem__(
         devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
     ]

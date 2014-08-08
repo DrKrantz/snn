@@ -10,16 +10,20 @@ import pygame
 import pygame.midi as pm
 import time
 import numpy as np
-from Dunkel_functions import chordConversion, linear2grid
+from Dunkel_functions import chordConversion, linear2grid, chromaticConversion
 
 class Neuron2NoteConverter(object):
-    def __init__(self, conversion=4, noteRange=range(1, 127)):
+    def __init__(self, conversion=1, noteRange=range(1, 127)):
         self.__conversion = conversion
         self.__noteRange = noteRange
 
         alldur, allmoll = chordConversion()
         self.__durlist = np.intersect1d(self.__noteRange, alldur, True)
         self.__mollist = np.intersect1d(self.__noteRange, allmoll, True)
+        chromatic1, chromatic2 = chromaticConversion()
+        self.__cromatic1 = np.intersect1d(self.__noteRange, chromatic1, True)
+        self.__cromatic2 = np.intersect1d(self.__noteRange, chromatic2, True)
+
 
     def convert(self, neuron_id):
         # conversion_type: 1 - linear tonal arrangement
@@ -29,8 +33,8 @@ class Neuron2NoteConverter(object):
         #		5 - linear tonal arrangement in C-moll
         #print conversion_type
 
-        # if self.__neuron2NoteConversion == 1:
-        #     note = int(mod(neuron_id, 127)+1)
+        if self.__conversion == 1:
+            note = int(np.mod(neuron_id, 127)+1)
         # if self.__neuron2NoteConversion == 2:
         #     coord = linear2grid(neuron_id, pars['N_col'])
         #     note = coord[1]
@@ -43,22 +47,23 @@ class Neuron2NoteConverter(object):
             note = self.__durlist[int(np.mod(neuron_id, len(self.__durlist)))]
         if self.__conversion == 5:
             note = self.__molllist[int(np.mod(neuron_id, len(self.__molllist)))]
-
-        print note
+        if self.__conversion == 6:
+            note = self.__cromatic1[int(np.mod(neuron_id, len(self.__cromatic1)))]
+        if self.__conversion == 7:
+            note = self.__cromatic2[int(np.mod(neuron_id, len(self.__cromatic2)))]
         return note
-
-
-
 
 class DeviceStruct(dict):
     def __init__(self, name='SimpleSynth virtual input', maxNumSignals=None,
-                 updateInterval=1, instrument=1, velocity=64, noteRange=range(1,127)):
+                 updateInterval=1, instrument=1, velocity=64, noteRange=range(1,127),
+                 neuron2NoteConversion=1):
         self['name'] = name
         self['maxNumSignals'] = maxNumSignals
         self['updateInterval'] = updateInterval
         self['instrument'] = instrument
         self['velocity'] = velocity
         self['noteRange'] = noteRange
+        self['neuron2NoteConversion'] = neuron2NoteConversion
 
 
 class DeviceFactory(object):
@@ -66,11 +71,11 @@ class DeviceFactory(object):
     OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
     SYNTH = 'MIDISPORT 2x2 Anniv Port B'
     PIANO = 'MIDISPORT 2x2 Anniv Port A'
-    VISUALS = 'Ploytec MIDI Cable'
+    VISUALS = 'MIDISPORT 2x2 Anniv Port A'
 
     def __init__(self):
         self.__name2DeviceStruct = {
-            self.NEURON_NOTES: DeviceStruct(noteRange = range(80,127)),
+            self.NEURON_NOTES: DeviceStruct(neuron2NoteConversion=7, noteRange = range(1,127)),
 
             self.OBJECT: DeviceStruct(name = self.OBJECT,
                                       maxNumSignals = 3,
@@ -81,7 +86,7 @@ class DeviceFactory(object):
                                      maxNumSignals = 2,
                                      updateInterval = 60,
                                      velocity = 80,
-                                     noteRange = range(35,96)),
+                                     noteRange = range(1,96)),
 
             self.SYNTH: DeviceStruct(name = self.SYNTH,
                                   maxNumSignals = 4,
@@ -89,15 +94,19 @@ class DeviceFactory(object):
                                   velocity = 80),
 
             self.VISUALS: DeviceStruct(name = self.VISUALS,
-                                      maxNumSignals = 5,
-                                      updateInterval = 30),
+                                      maxNumSignals = 1,
+                                      updateInterval = 10,
+                                      neuron2NoteConversion=1),
             }
 
     def create(self, name):
-        return OutputDevice(self.__name2DeviceStruct[name],
-                            Neuron2NoteConverter(
-                                noteRange=self.__name2DeviceStruct[name]['noteRange']
-                            ))
+        return OutputDevice(
+            self.__name2DeviceStruct[name],
+            Neuron2NoteConverter(
+                noteRange=self.__name2DeviceStruct[name]['noteRange'],
+                conversion=self.__name2DeviceStruct[name]['neuron2NoteConversion'],
+                )
+        )
 
 
 class OutputDevice(pm.Output):

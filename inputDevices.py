@@ -204,7 +204,7 @@ class BCF(InputDevice):
 
 
 class SensoryObject(InputDevice):
-    NAME = 'USB MIDI Device'
+    NAME = 'USB MIDI ADC 64       '
 
     def __init__(self, pars):
         super(SensoryObject, self).__init__(self.NAME)
@@ -216,5 +216,10 @@ class SensoryObject(InputDevice):
         fired = []
         if MIDI_data is not None:
             [fired.append(dd[1]) for dd in MIDI_data]
-            print 'object:', MIDI_data, fired
-        return {'pars': self.pars, 'fired':fired}
+            print 'object:', fired
+        return {'pars': self.pars, 'fired':array(fired, int)}
+
+if __name__=='__main__':
+    import Dunkel_pars
+    input = SensoryObject(Dunkel_pars.parameters())
+    input.map_keys()

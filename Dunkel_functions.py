@@ -23,6 +23,11 @@ pars = parameters()
 
 
 def chordConversion():
+    """
+    create the midi notes of a major and a minor scale
+    :return:
+    """
+
     #dur
     a = array([0, 2, 4, 5, 7, 9, 11])
     b = []
@@ -36,9 +41,30 @@ def chordConversion():
     molllist = array(b).flatten()
     return durlist, molllist
 
+
+def chromaticConversion():
+    """
+    create the midi notes of a major scale and its transpose (half-tome up)
+    :return:
+    """
+    #low
+    a = array([0, 2, 4, 5, 7, 9, 11])
+    b = []
+    [b.append(a + k * 12) for k in range(11)]
+    listLow = array(b).flatten()
+
+    #high
+    a += 1
+    b = []
+    [b.append(a + k * 12) for k in range(11)]
+    listHigh = array(b).flatten()
+    return listLow, listHigh
+
 def note2neuron(note_id):
 #	pars = parameters()
     return note_id-pars['note_add']
+
+
 
 def neuron2note(neuron_id, conversion_type):
     # conversion_type: 1 - linear tonal arrangement
