@@ -22,18 +22,8 @@ class InputHandler(object):
 
     def __init__(self, inputDevices=[], pars={}):
         self.pars=pars
-        self.webcam = Webcam()
-        # self.__inputs = {'webcam': self.webcam}
-        # self.__setupInputs(inputList)
         self.__fired = array([], int)
         self.__inputDevices = inputDevices
-        # self.__updateFunctions = {'Virtual BCF2000': self.__updateBCF,
-        #                           'USB MIDI Device': self.__updateObject,
-        #                           'webcam': self.webcam.update}
-        #
-    @property    
-    def webcamOpen(self):
-        return self.webcam.window.has_exit
 
     def getFired(self):
         return self.__fired
@@ -43,7 +33,6 @@ class InputHandler(object):
     
     def update(self):
         self.__fired = array([], int)
-        self.webcam.update()
         ########## CONVERT MIDI INPUT TO NETWORK INPUT AND PROPERTIES ###############
         for device in self.__inputDevices:
             inputDict = device.update(self.pars)

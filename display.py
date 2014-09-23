@@ -10,12 +10,13 @@ __date__ = 140620
 import matplotlib
 matplotlib.use('TkAgg') # do this before importing pylab
 import matplotlib.pyplot as plt
-
+import numpy as np
 from Dunkel_pars import parameters
 from Dunkel_functions import *
 
 class Display:
     def __init__(self, N_col, N_row, parnames=[], disp_type='dot'):  # disp_type='dot'
+        pygame.init()
         pars = parameters()
         # parnames: list of names for the parameters
         self.parnames = parnames
@@ -101,6 +102,8 @@ class Display:
             pygame.draw.rect(self.spikeScreen, self.spike_color, coord, 1)
 
 
+
+
 class Membrane_Display:
     def __init__(self, N, vrange=[0, 1]):
         plt.rcParams['backend'] = 'macosx'
@@ -179,6 +182,6 @@ class displayTest:
     #
 
 if __name__ == '__main__':
-    uwe = Membrane_Display(4)
-#    uwe = displayTest()
-    uwe.test()
+    # uwe = Membrane_Display(4)
+    uwe = displayTest()
+    uwe.start()

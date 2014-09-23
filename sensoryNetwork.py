@@ -69,7 +69,7 @@ class SensoryNetwork(object):
         fired = array([])
         spiketimes = array([])  # spike times
 
-        while not self.inputHandler.webcamOpen:  # t<int(self.pars['Ts']/self.pars['h'])
+        while True:
             t += 1
             if t == 20:
                 output = open('networkPars.pkl', 'wb')
@@ -82,8 +82,7 @@ class SensoryNetwork(object):
             ##### GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
             self.inputHandler.update()
             self.pars.update(self.inputHandler.getPars())
-            cam_external = self.inputHandler.webcam.getExternal()
-            external = self.pars['midi_external'] + cam_external  # self.pars['cam_ext']
+            external = self.pars['midi_external']
             self.outputHandler.turnOff()
 
             ########## UPDATE DEADIMES AND GET FIRED IDs  ###########
@@ -101,7 +100,7 @@ class SensoryNetwork(object):
             #neurons = concatenate((neurons,fired+1))
             extFired = self.inputHandler.getFired()
 
-            fired = union1d(fired, extFired)
+            fired = array(union1d(fired, extFired), int)
 
             # if len(fired)>0:
             #     print 'fired', fired
@@ -147,13 +146,13 @@ class SensoryNetwork(object):
 if __name__ == '__main__':
     pars=parameters()
     bcf = inputDevices.BCF(pars)
-    sensoryObject = inputDevices.SensoryObject(pars)
+    # sensoryObject = inputDevices.SensoryObject(pars)
     inputHandler = InputHandler(
-        inputDevices=[bcf, sensoryObject], #,InputHandler.OBJECT
+        inputDevices=[bcf], #,InputHandler.OBJECT, , sensoryObject
         pars=pars
     )
     outputDevices = {}
-    outputDeviceNames = [DeviceFactory.NEURON_NOTES, DeviceFactory.VISUALS] #DeviceFactory.PIANO, DeviceFactory.SYNTH
+    outputDeviceNames = [DeviceFactory.NEURON_NOTES] #DeviceFactory.PIANO, DeviceFactory.SYNTH, , DeviceFactory.VISUALS
     [outputDevices.__setitem__(
         devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
     ]
