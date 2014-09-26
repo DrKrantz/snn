@@ -9,7 +9,7 @@ __date__ = 140620
 from pygame import midi as pm
 from numpy import array, intersect1d, unique
 
-from webcam import Webcam
+# from webcam import Webcam
 from inputDevices import InputDevice
 
 from Dunkel_functions import note2neuron
@@ -23,18 +23,17 @@ class InputHandler(object):
     def __init__(self, inputDevices=[], pars={}):
         self.pars=pars
         self.__fired = array([], int)
-        self.__inputDevices = inputDevices
+        self.inputDevices = inputDevices
 
     def getFired(self):
         return self.__fired
 
     def getPars(self):
         return self.pars
-    
     def update(self):
         self.__fired = array([], int)
         ########## CONVERT MIDI INPUT TO NETWORK INPUT AND PROPERTIES ###############
-        for device in self.__inputDevices:
+        for device in self.inputDevices:
             inputDict = device.update(self.pars)
             if len(self.__fired) == 0: #avoid shape mismatch error when adding [1,2] to []
                 self.__fired = inputDict['fired']

@@ -99,7 +99,7 @@ def parameters():
     pars['cam_ext'] = pars['cam_ext_start']
 
     ''' parameters of MIDI stimulation generation '''
-    pars['pause'] = 0
+    pars['pause'] = 0.01
     pars['n_read'] = 100 # buffersize to be read from the input in each simulation step
     pars['velocity'] = 64 
     pars['note_add'] = 36
@@ -143,12 +143,13 @@ def parameters():
         pars['key_action_pars'] = array((), int)
         pars['midistat_slide'] = 176  # the MIDI status that identifies sliders
         pars['slide_ids_pars'] = range(81, 86) # these IDs control parameters
-        pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i', 'cam_external_max']
+        pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
+        pars['slide_ids_ext'] = [86, 87, 88]  # MIDI controllers for external input
         pars['slide_action_ext'] = [0, 1, 2]  # the actions corresponding to the slide_ids
             # 0: input to all neurons
             # 1: input to excitatory neurons, i.e. pars['Exc_ids']
             # 2: input to inhibitory neurons, i.e. pars['Inh_ids']
-        pars['slide_ids_ext'] = [86, 87, 88]  # MIDI controllers for external input
+
     elif keys=='boris':  # joens sein usb-keyboars
         pars['midistat_keys'] = 144 # the MIDI status that identifies keys
         pars['key_ids_ext'] = range(36, 85) # the 0-octave keyboard notes

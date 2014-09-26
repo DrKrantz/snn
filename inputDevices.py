@@ -7,7 +7,7 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
 from pygame import midi as pm
-from numpy import array, intersect1d, unique
+from numpy import array, intersect1d, unique, union1d
 
 
 class InputDevice(pm.Input):
@@ -202,9 +202,21 @@ class BCF(InputDevice):
                     self.pars['midi_external'][self.pars['Inh_ids']] += \
                         self.pars['ext_step']
 
+class KeyboardInput:
+    def __init__(self):
+        self.triggered = array([], int)
+
+    def update(self, pars):
+        fired = self.triggered
+        self.triggered = array([], int)
+        return {'pars': pars, 'fired': fired}
+
+    def triggerSpike(self, key):
+        self.triggered = union1d(self.triggered, array([key]))
+
 
 class SensoryObject(InputDevice):
-    NAME = 'USB MIDI ADC 64       '
+    NAME = 'USB MIDI Device'
 
     def __init__(self, pars):
         super(SensoryObject, self).__init__(self.NAME)

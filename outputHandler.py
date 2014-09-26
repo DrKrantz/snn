@@ -22,14 +22,14 @@ class OutputHandler(object):
 
     def __init__(self, outputs, neuron2NoteConversion=4):
         super(OutputHandler, self).__init__()
-        self.__display = Display(pars['N_col'], pars['N_row'],\
+        self.display = Display(pars['N_col'], pars['N_row'],\
                 ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
                  'cam_ext', 'cam_external_max'], 'lines')
         pm.init()
         self.__output = outputs
 
-        # if DeviceFactory.VISUALS in self.__output:
-        #     self.__output[DeviceFactory.VISUALS].note_on(1,100)
+        if DeviceFactory.VISUALS in self.__output:
+            self.__output[DeviceFactory.VISUALS].note_on(1)
 #        self.__membraneViewer = Test()
         
         self.__now = time.time()
@@ -64,8 +64,8 @@ class OutputHandler(object):
                 
 #        self.__membraneViewer.move()        
         # display spikes and update display
-        self.__display.update_fired(fired)
-        self.__display.update_pars(
+        self.display.update_fired(fired)
+        self.display.update_pars(
             ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
              'tau_e', 'tau_i', 'cam_external_max'])
         pygame.display.update()
@@ -78,7 +78,7 @@ class OutputHandler(object):
 
 
     def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids)>17:
+        if len(neuron_ids)>20:
             self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion==7 else 7)
             self.__output[DeviceFactory.NEURON_NOTES].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
