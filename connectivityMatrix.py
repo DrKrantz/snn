@@ -9,7 +9,6 @@ __date__ = 140620
 from numpy import ones, zeros, nonzero, sum, shape
 from scipy import rand, vstack, hstack, arange
 import random
-import pylab
 
 
 from Dunkel_pars import parameters
@@ -44,7 +43,7 @@ class ConnectivityMatrix(object):
 
             # construct adjajency matrix
             for n1 in range(pars['N']):
-                neighbor_ids = pylab.find(distMat[:, n1] < pars['sigma_con'])
+                neighbor_ids = nonzero(distMat[:, n1] < pars['sigma_con'])[0]
                 random.shuffle(neighbor_ids)
                 idx = neighbor_ids[0:min([pars['ncon'], len(neighbor_ids)])]
                 self.A[idx, n1] = 1
