@@ -24,6 +24,7 @@ from outputDevices import DeviceFactory
 from inputHandler import InputHandler
 import inputDevices
 from connectivityMatrix import ConnectivityMatrix
+import settingsReader
 
 class SensoryNetwork(object):
     def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix):
@@ -131,6 +132,23 @@ class SensoryNetwork(object):
         # print 'g_e', self.__ge
         # print 'g_i', self.__gi
         # raw_input('ok?')
+
+class DeviceManager:
+    def __init__(self):
+        settingsReaderClass = settingsReader.SettingsReader()
+        self.devices = settingsReaderClass.getDevices()
+        self.inputs = {}
+        # print self.devices
+        self.__createInputDevices()
+
+    def __createInputDevices(self):
+        inputs = {}
+        for devicename, midiport in self.devices['inputs'].iteritems():
+            self.inputs[devicename] = getattr(inputDevices, devicename)
+        # for devices in self.devices['inputs']:
+        #     print devices
+
+
 
 class MainApp:
     def __init__(self):
