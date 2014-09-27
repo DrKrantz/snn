@@ -31,7 +31,7 @@ class SensoryNetwork(object):
         self.inputHandler = inputHandler
         self.pars = pars
         self.outputHandler = outputHandler
-
+	self.outputHandler.update(array([1]))
 
         # value = raw_input('setup ok? [y]/n \n')
         # if value == 'n':
@@ -59,7 +59,6 @@ class SensoryNetwork(object):
         self.deadIDs = array([],int)
         
     def update(self): # spike times ):
-
 
         # t += 1
         # if t == 20:
@@ -140,17 +139,17 @@ class MainApp:
         self.keyboardInput = inputDevices.KeyboardInput()
         pars=parameters()
         bcf = inputDevices.BCF(pars)
-        # sensoryObject = inputDevices.SensoryObject(pars)
+        sensoryObject = inputDevices.SensoryObject(pars)
         inputHandler = InputHandler(
-            inputDevices=[bcf, self.keyboardInput], #,InputHandler.OBJECT, , sensoryObject, sensoryObject
+            inputDevices=[bcf, self.keyboardInput, sensoryObject], #,InputHandler.OBJECT, , sensoryObject,
             pars=pars
         )
         outputDevices = {}
-        outputDeviceNames = [DeviceFactory.NEURON_NOTES,
-                             ]
-        '''DeviceFactory.SYNTH,
+        outputDeviceNames = [DeviceFactory.NEURON_NOTES, DeviceFactory.SYNTH,
                              DeviceFactory.VISUALS,
-                             DeviceFactory.ATHMOS'''
+                             DeviceFactory.ATHMOS
+                             ]
+        ''''''
 
         [outputDevices.__setitem__(
             devname, DeviceFactory().create(devname)) for devname in outputDeviceNames

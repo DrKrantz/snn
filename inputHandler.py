@@ -7,7 +7,7 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
 from pygame import midi as pm
-from numpy import array, intersect1d, unique
+from numpy import array, intersect1d, unique, union1d
 
 # from webcam import Webcam
 from inputDevices import InputDevice
@@ -38,7 +38,7 @@ class InputHandler(object):
             if len(self.__fired) == 0: #avoid shape mismatch error when adding [1,2] to []
                 self.__fired = inputDict['fired']
             else:
-                self.__fired += inputDict['fired']
+                self.__fired = union1d(inputDict['fired'], self.__fired)
             self.__fired = unique(self.__fired)
             self.pars.update(inputDict['pars'])
 

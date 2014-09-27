@@ -7,9 +7,9 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
 
-import matplotlib
-matplotlib.use('TkAgg') # do this before importing pylab
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('TkAgg') # do this before importing pylab
+#import matplotlib.pyplot as plt
 import numpy as np
 from Dunkel_pars import parameters
 from Dunkel_functions import *
@@ -25,7 +25,7 @@ class Display:
         self.N_col = N_col
         self.N_row = N_row
 
-        self.spikeScreenSize = (960,525)  # (1920,1050) #(960,525)#
+        self.spikeScreenSize = (1680,1050)  # (1920,1050) #(960,525)#
         self.text_color = (100, 100, 100, 0)
         self.textfill_color = (255, 255, 255, 255)
         self.spikefill_color = (0, 0, 0, 0)

@@ -212,7 +212,7 @@ class KeyboardInput:
         return {'pars': pars, 'fired': fired}
 
     def triggerSpike(self, key):
-        self.triggered = union1d(self.triggered, array([key]))
+        self.triggered = union1d(self.triggered, array([key], int))
 
 
 class SensoryObject(InputDevice):

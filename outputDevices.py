@@ -18,11 +18,11 @@ class Neuron2NoteConverter(object):
         self.__noteRange = noteRange
 
         alldur, allmoll = chordConversion()
-        self.__durlist = np.intersect1d(self.__noteRange, alldur, True)
-        self.__mollist = np.intersect1d(self.__noteRange, allmoll, True)
+        self.__durlist = np.intersect1d(self.__noteRange, alldur)
+        self.__mollist = np.intersect1d(self.__noteRange, allmoll)
         chromatic1, chromatic2 = chromaticConversion()
-        self.__cromatic1 = np.intersect1d(self.__noteRange, chromatic1, True)
-        self.__cromatic2 = np.intersect1d(self.__noteRange, chromatic2, True)
+        self.__cromatic1 = np.intersect1d(self.__noteRange, chromatic1)
+        self.__cromatic2 = np.intersect1d(self.__noteRange, chromatic2)
 
 
     def convert(self, neuron_id):
@@ -180,7 +180,7 @@ class OutputDevice(pm.Output):
 #                print self.__name, note
                 super(OutputDevice, self).note_on(note, self.__velocity)
 #                if self.__name == OutputHandler.OBJECT:
-                print 'note sent', self.__name, self.__now
+                #print 'note sent', self.__name, self.__now
                 if self.__activeNotes.__contains__(note):
                     idx = self.__activeNotes.index(note)
                     self.__activeNotes.remove(note)
@@ -190,7 +190,8 @@ class OutputDevice(pm.Output):
 
     def turnAllOff(self):
         for note in self.__onNotes:
-            self.note_off(note, 100)
+	    if note != 1:
+                self.note_off(note, 100)
         self.__onNotes = set()
 
 
