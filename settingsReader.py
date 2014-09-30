@@ -7,18 +7,33 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
 import csv
+import fileSelector
+import time
 
 
 class SettingsReader:
-    def __init__(self, filename='settings.csv'):
+    def __init__(self, filename=''):
         self.devices = {'inputs': {}, 'outputs': {}}
-        self.readSettings(filename)
+        self.filename = filename
+        if self.filename == '':
+            selector = fileSelector.FileSelector(self.setFilename)
+            # while selector:
+            selector.mainloop()
+
+        self.readSettings(self.filename)
 
     def getDevices(self):
         return self.devices
 
+    def setFilename(self, filename):
+        self.filename = filename
+
     def readSettings(self, filename):
-        with open(filename, 'rb') as csvfile:
+        if filename[-3::] != 'csv':
+            print 'wrong file type: ' + filename[-3::]
+            return
+
+        with open(self.filename, 'rb') as csvfile:
             csvreader = csv.reader(csvfile, delimiter=',')
 
             category = 'inputs'

@@ -70,9 +70,9 @@ class DeviceFactory(object):
     NEURON_NOTES = 'SimpleSynth'
     OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
     SYNTH = 'uMIDI/O22 Port 2'
-    PIANO = 'MIDISPORT 2x2 Anniv Port A'
-    VISUALS = 'MIDISPORT 2x2 Anniv Port A'
-    ATHMOS = 'MIDISPORT 2x2 Anniv Port B'#'uMIDI/O22 Port 2'
+    PIANO = 'MIDISPORT 2x2 Anniv Port 1'
+    VISUALS = 'MIDISPORT 2x2 Anniv Port 1'
+    ATHMOS = 'MIDISPORT 2x2 Anniv Port 2'#'uMIDI/O22 Port 2'
 
     def __init__(self):
         self.__name2DeviceStruct = {
