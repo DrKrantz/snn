@@ -68,8 +68,6 @@ class SensoryNetwork(object):
         #     print 'parameters saved'
         #     output.close()
 
-        time.sleep(self.pars['pause'])
-
         ##### GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
@@ -153,7 +151,7 @@ class MainApp:
     def __init__(self, deviceManager, pars):
         self.__fullscreen = False
         pygame.init()
-        pars=pars
+        self.pars=pars
         bcf = inputDevices.BCF(pars)
         # sensoryObject = inputDevices.SensoryObject(pars)
         inputHandler = InputHandler(
@@ -172,7 +170,8 @@ class MainApp:
         # [outputDevices.__setitem__(
         #     devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
         # ]
-        outputHandler = OutputHandler(outputDevices)
+        # outputHandler = OutputHandler(outputDevices)
+
 
         print "wiring...."
         connectivityMatrix = ConnectivityMatrix().get()
@@ -222,15 +221,14 @@ class MainApp:
                     self.keyboardInput.triggerSpike(180)
 
     def run(self):
-        updInt = .05
-        now = time.time()
+        lastUpdated = time.time()
         while True:
             self.input(pygame.event.get())
-            # if time.time()-now<updInt:
-            #     pass
-            # else:
-            self.network.update()
-            now = time.time()
+            if time.time()-lastUpdated<self.pars['pause']:
+                pass
+            else:
+                self.network.update()
+                lastUpdated = time.time()
 
 
 if __name__ == '__main__':
@@ -238,8 +236,7 @@ if __name__ == '__main__':
     settingsReaderClass = settingsReader.SettingsReader(
         os.getenv("HOME") + "/" + "settings.csv")
     devices = settingsReaderClass.getDevices()
-    settingsReaderClass = None
-    dm = DeviceManager(devices, pars)
 
+    dm = DeviceManager(devices, pars)
     app = MainApp(dm, pars)
     app.run()

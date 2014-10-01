@@ -195,3 +195,8 @@ class OutputDevice(pm.Output):
         self.__onNotes = set()
 
 
+if __name__=='__main__':
+    pm.init()
+    simple = DeviceFactory().create('SimpleSynth virtual input')
+
+
