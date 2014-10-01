@@ -12,7 +12,7 @@ from numpy import intersect1d, array
 from Dunkel_pars import parameters
 from Dunkel_functions import small2string, neuron2note, linear2grid
 from display import Display
-from outputDevices import DeviceFactory
+from outputDevices import DeviceFactory, SimpleSynth
 global pars
 
 pars = parameters()
@@ -80,7 +80,7 @@ class OutputHandler(object):
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids)>20:
             self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion==7 else 7)
-            self.__output[DeviceFactory.NEURON_NOTES].setNeuron2NoteConversion(
+            self.__output[SimpleSynth.NAME].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
             )
             # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
