@@ -12,7 +12,7 @@ from numpy import intersect1d, array
 from Dunkel_pars import parameters
 from Dunkel_functions import small2string, neuron2note, linear2grid
 from display import Display
-from outputDevices import DeviceFactory, SimpleSynth
+from outputDevices import *
 global pars
 
 pars = parameters()
@@ -28,8 +28,8 @@ class OutputHandler(object):
         pm.init()
         self.__output = outputs
 
-        if DeviceFactory.VISUALS in self.__output:
-            self.__output[DeviceFactory.VISUALS].note_on(1)
+        if Visuals.NAME in self.__output:
+            self.__output[Visuals.NAME].note_on(1)
 #        self.__membraneViewer = Test()
         
         self.__now = time.time()
@@ -43,12 +43,6 @@ class OutputHandler(object):
             self.__input[name] = \
                 self.__getDevice(self.__name2Identifier[name], type = 'input')
 
-    def updateObject(self, fired):
-        # print 'ans Objekt gehen', fired
-        neuron_ids = intersect1d(fired, pars['note_ids'])
-        for neuron_id in neuron_ids:
-            self.__output[DeviceFactory.OBJECT].note_on(neuron_id, pars['velocity'])
-
     def update(self,fired):
         # print 'es feuern', fired
 
@@ -59,8 +53,7 @@ class OutputHandler(object):
         if n_fired > 0:
             for neuron_id in neuron_ids:
                 for name, output in self.__output.iteritems():
-                    if name != DeviceFactory.OBJECT:
-                        output.note_on(neuron_id)
+                    output.note_on(neuron_id)
                 
 #        self.__membraneViewer.move()        
         # display spikes and update display
@@ -73,14 +66,14 @@ class OutputHandler(object):
         
     def turnOff(self):
         for outputName in self.__output.iterkeys():
-            if outputName == DeviceFactory.NEURON_NOTES:
+            if outputName == NeuronNotes.NAME:
                 self.__output[outputName].turnAllOff()
 
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids)>20:
             self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion==7 else 7)
-            self.__output[SimpleSynth.NAME].setNeuron2NoteConversion(
+            self.__output[NeuronNotes.NAME].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
             )
             # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for

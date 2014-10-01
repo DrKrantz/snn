@@ -20,8 +20,8 @@ import sys
 
 from Dunkel_pars import parameters
 from outputHandler import OutputHandler
-from outputDevices import DeviceFactory
 from inputHandler import InputHandler
+import outputDevices
 import inputDevices
 from connectivityMatrix import ConnectivityMatrix
 import settingsReader
@@ -133,16 +133,22 @@ class SensoryNetwork(object):
 
 class DeviceManager:
     def __init__(self, devices, pars):
-        self.devices = devices
+        self.deviceSettings = devices
         self.pars = pars
         self.inputs = {}
+        self.outputs = {}
         # print self.devices
         self.__createInputDevices(pars)
+        self.__createOutputDevices()
 
     def __createInputDevices(self, pars):
         inputs = {}
-        for devicename, midiport in self.devices['inputs'].iteritems():
-            self.inputs[devicename] = getattr(inputDevices, devicename)(pars)
+        for devicename, midiport in self.deviceSettings['inputs'].iteritems():
+            self.inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
+
+    def __createOutputDevices(self):
+        for devicename, midiport in self.deviceSettings['outputs'].iteritems():
+            self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
 
     def getInputDevices(self):
         return self.inputs.values()
@@ -152,26 +158,13 @@ class MainApp:
         self.__fullscreen = False
         pygame.init()
         self.pars=pars
-        bcf = inputDevices.BCF(pars)
-        # sensoryObject = inputDevices.SensoryObject(pars)
+        self.keyboardInput = deviceManager.inputs['KeyboardInput']
+
         inputHandler = InputHandler(
-            inputDevices=deviceManager.getInputDevices(), #,, sensoryObjectInputHandler.OBJECT, , sensoryObject,
+            inputDevices=deviceManager.getInputDevices(),
             pars=pars
         )
-        simpleSynth = DeviceFactory().create(DeviceFactory.NEURON_NOTES)
-        print 'created'
-        outputDevices = {DeviceFactory.NEURON_NOTES: simpleSynth}
-        # outputDeviceNames = [DeviceFactory.NEURON_NOTES]
-        # ''', DeviceFactory.SYNTH,
-        #                      DeviceFactory.VISUALS,
-        #                      DeviceFactory.ATHMOS
-        # '''
-        #
-        # [outputDevices.__setitem__(
-        #     devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
-        # ]
-        # outputHandler = OutputHandler(outputDevices)
-
+        outputHandler = OutputHandler(deviceManager.outputs)
 
         print "wiring...."
         connectivityMatrix = ConnectivityMatrix().get()

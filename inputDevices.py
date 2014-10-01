@@ -57,8 +57,8 @@ class InputDevice(pm.Input):
 class BCF(InputDevice):
     NAME = 'Virtual BCF2000'
 
-    def __init__(self, pars):
-        super(BCF, self).__init__(self.NAME)
+    def __init__(self, midiport, pars):
+        super(BCF, self).__init__(midiport)
         self.pars = pars
 
     def update(self, pars):
@@ -218,8 +218,8 @@ class KeyboardInput:
 class SensoryObject(InputDevice):
     NAME = 'USB MIDI Device'
 
-    def __init__(self, pars):
-        super(SensoryObject, self).__init__(self.NAME)
+    def __init__(self, midiport, pars):
+        super(SensoryObject, self).__init__(self.midiport)
         self.pars = pars
 
     def update(self, pars):

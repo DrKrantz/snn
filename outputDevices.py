@@ -65,7 +65,7 @@ class DeviceStruct(dict):
         # self['noteRange'] = noteRange
         # self['neuron2NoteConversion'] = neuron2NoteConversion
 
-
+'''
 class DeviceFactory(object):
     NEURON_NOTES = 'SimpleSynth virtual input'
     OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
@@ -98,6 +98,7 @@ class DeviceFactory(object):
                                       maxNumSignals = 1,
                                       updateInterval = 10,
                                       neuron2NoteConversion=1),
+
             self.ATHMOS: DeviceStruct(name = self.ATHMOS,
                                   maxNumSignals = 4,
                                   updateInterval = 5,
@@ -112,7 +113,7 @@ class DeviceFactory(object):
                 conversion=self.__name2DeviceStruct[name]['neuron2NoteConversion'],
                 )
         )
-
+'''
 
 class OutputDevice(pm.Output):
     def __init__(self, deviceStruct, neuron2NoteConverter):
@@ -195,15 +196,98 @@ class OutputDevice(pm.Output):
         self.__onNotes = set()
 
 
-class SimpleSynth(OutputDevice):
-    NAME = 'SimpleSynth'
+class NeuronNotes(OutputDevice):
+    NAME = 'NeuronNotes'
     def __init__(self, midiport='SimpleSynth virtual input'):
         self.__noteRange = range(1,127)
         self.__conversion = 7
         self.__midiport = midiport
 
-        converter = Neuron2NoteConverter(conversion=self.__conversion, noteRange=self.__noteRange)
-        super(SimpleSynth, self).__init__(DeviceStruct(midiport=self.__midiport), converter)
+        converter = Neuron2NoteConverter(
+            conversion=self.__conversion,
+            noteRange=self.__noteRange
+        )
+        super(NeuronNotes, self).__init__(
+            DeviceStruct(midiport=self.__midiport),
+            converter
+        )
+
+class Synth(OutputDevice):
+    NAME = 'Synth'
+    def __init__(self, midiport=''):
+        self.__noteRange = range(1,127)
+        self.__conversion = 7
+        self.__midiport = midiport
+
+        deviceStruct = DeviceStruct(
+            midiport=self.__midiport,
+            maxNumSignals=4,
+            updateInterval=5,
+            velocity=80
+        )
+        converter = Neuron2NoteConverter(
+            conversion=self.__conversion,
+            noteRange=self.__noteRange
+        )
+        super(SimpleSynth, self).__init__(deviceStruct, converter)
+
+class Piano(OutputDevice):
+    NAME = 'Piano'
+    def __init__(self, midiport=''):
+        self.__noteRange = range(1,96)
+        self.__conversion = 7
+        self.__midiport = midiport
+
+        deviceStruct = DeviceStruct(
+            midiport=self.__midiport,
+            maxNumSignals = 2,
+            updateInterval = 60,
+            velocity = 80
+        )
+        converter = Neuron2NoteConverter(
+            conversion=self.__conversion,
+            noteRange=self.__noteRange
+        )
+        super(SimpleSynth, self).__init__(deviceStruct, converter)
+
+class Athmos(OutputDevice):
+    NAME = 'Athmos'
+    def __init__(self, midiport=''):
+        self.__noteRange = range(1,127)
+        self.__conversion = 7
+        self.__midiport = midiport
+
+        deviceStruct = DeviceStruct(
+            midiport=self.__midiport,
+            maxNumSignals = 4,
+            updateInterval = 5,
+            velocity = 80
+        )
+        converter = Neuron2NoteConverter(
+            conversion=self.__conversion,
+            noteRange=self.__noteRange
+        )
+        super(SimpleSynth, self).__init__(deviceStruct, converter)
+
+
+class Visuals(OutputDevice):
+    NAME = 'Visuals'
+    def __init__(self, midiport=''):
+        self.__noteRange = range(1,127)
+        self.__conversion = 1
+        self.__midiport = midiport
+
+        deviceStruct = DeviceStruct(
+            midiport=self.__midiport,
+            maxNumSignals = 1,
+            updateInterval = 10
+        )
+        converter = Neuron2NoteConverter(
+            conversion=self.__conversion,
+            noteRange=self.__noteRange
+        )
+        super(SimpleSynth, self).__init__(deviceStruct, converter)
+
 
 
 

@@ -17,7 +17,6 @@ class SettingsReader:
         self.filename = filename
         if self.filename == '':
             selector = fileSelector.FileSelector(self.setFilename)
-            # while selector:
             selector.mainloop()
 
         self.readSettings(self.filename)
@@ -38,12 +37,13 @@ class SettingsReader:
 
             category = 'inputs'
             for row in csvreader:
-                if row[0] == 'INPUTS':
-                    category = 'inputs'
-                elif row[0] == 'OUTPUTS':
-                    category = 'outputs'
-                else:
-                    self.devices[category][row[0]] = row[1]
+                if row[0][0] != '#':
+                    if row[0] == 'INPUTS':
+                        category = 'inputs'
+                    elif row[0] == 'OUTPUTS':
+                        category = 'outputs'
+                    else:
+                        self.devices[category][row[0]] = row[1]
 
 
 if __name__=='__main__':
