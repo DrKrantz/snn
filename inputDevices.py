@@ -203,7 +203,7 @@ class BCF(InputDevice):
                         self.pars['ext_step']
 
 class KeyboardInput:
-    def __init__(self):
+    def __init__(self, *args):
         self.triggered = array([], int)
 
     def update(self, pars):

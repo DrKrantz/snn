@@ -12,7 +12,7 @@ import time
 
 
 class SettingsReader:
-    def __init__(self, filename=''):
+    def __init__(self, filename='~/settings.csv'):
         self.devices = {'inputs': {}, 'outputs': {}}
         self.filename = filename
         if self.filename == '':

@@ -13,7 +13,7 @@ NEEDS:
 from numpy import *
 from numpy import ones,zeros,nonzero,sum,shape
 import time
-import pickle
+import os
 import pygame
 import pygame.locals
 import sys
@@ -134,44 +134,44 @@ class SensoryNetwork(object):
         # raw_input('ok?')
 
 class DeviceManager:
-    def __init__(self):
-        settingsReaderClass = settingsReader.SettingsReader()
-        self.devices = settingsReaderClass.getDevices()
+    def __init__(self, devices, pars):
+        self.devices = devices
+        self.pars = pars
         self.inputs = {}
         # print self.devices
-        self.__createInputDevices()
+        self.__createInputDevices(pars)
 
-    def __createInputDevices(self):
+    def __createInputDevices(self, pars):
         inputs = {}
         for devicename, midiport in self.devices['inputs'].iteritems():
-            self.inputs[devicename] = getattr(inputDevices, devicename)
-        # for devices in self.devices['inputs']:
-        #     print devices
+            self.inputs[devicename] = getattr(inputDevices, devicename)(pars)
 
-
+    def getInputDevices(self):
+        return self.inputs.values()
 
 class MainApp:
-    def __init__(self):
+    def __init__(self, deviceManager, pars):
         self.__fullscreen = False
         pygame.init()
-        self.keyboardInput = inputDevices.KeyboardInput()
-        pars=parameters()
+        pars=pars
         bcf = inputDevices.BCF(pars)
-        sensoryObject = inputDevices.SensoryObject(pars)
+        # sensoryObject = inputDevices.SensoryObject(pars)
         inputHandler = InputHandler(
-            inputDevices=[bcf, self.keyboardInput, sensoryObject], #,InputHandler.OBJECT, , sensoryObject,
+            inputDevices=deviceManager.getInputDevices(), #,, sensoryObjectInputHandler.OBJECT, , sensoryObject,
             pars=pars
         )
-        outputDevices = {}
-        outputDeviceNames = [DeviceFactory.NEURON_NOTES, DeviceFactory.SYNTH,
-                             DeviceFactory.VISUALS,
-                             DeviceFactory.ATHMOS
-                             ]
-        ''''''
-
-        [outputDevices.__setitem__(
-            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
-        ]
+        simpleSynth = DeviceFactory().create(DeviceFactory.NEURON_NOTES)
+        print 'created'
+        outputDevices = {DeviceFactory.NEURON_NOTES: simpleSynth}
+        # outputDeviceNames = [DeviceFactory.NEURON_NOTES]
+        # ''', DeviceFactory.SYNTH,
+        #                      DeviceFactory.VISUALS,
+        #                      DeviceFactory.ATHMOS
+        # '''
+        #
+        # [outputDevices.__setitem__(
+        #     devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
+        # ]
         outputHandler = OutputHandler(outputDevices)
 
         print "wiring...."
@@ -234,5 +234,12 @@ class MainApp:
 
 
 if __name__ == '__main__':
-    app = MainApp()
+    pars = parameters()
+    settingsReaderClass = settingsReader.SettingsReader(
+        os.getenv("HOME") + "/" + "settings.csv")
+    devices = settingsReaderClass.getDevices()
+    settingsReaderClass = None
+    dm = DeviceManager(devices, pars)
+
+    app = MainApp(dm, pars)
     app.run()

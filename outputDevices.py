@@ -67,7 +67,7 @@ class DeviceStruct(dict):
 
 
 class DeviceFactory(object):
-    NEURON_NOTES = 'SimpleSynth'
+    NEURON_NOTES = 'SimpleSynth virtual input'
     OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
     SYNTH = 'uMIDI/O22 Port 2'
     PIANO = 'MIDISPORT 2x2 Anniv Port 1'
