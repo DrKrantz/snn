@@ -15,16 +15,14 @@ from display import Display
 from outputDevices import *
 global pars
 
-pars = parameters()
-
 
 class OutputHandler(object):
-
-    def __init__(self, outputs, neuron2NoteConversion=4):
+    def __init__(self, outputs, pars, neuron2NoteConversion=4):
+        self.pars = pars
         super(OutputHandler, self).__init__()
         self.display = Display(pars['N_col'], pars['N_row'],\
                 ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
-                 'cam_ext', 'cam_external_max'], 'lines')
+                 'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
         pm.init()
         self.__output = outputs
 
@@ -35,7 +33,6 @@ class OutputHandler(object):
         self.__now = time.time()
         self.__activeNotes = set()
         self.__neuron2NoteConversion = neuron2NoteConversion
-        
 
     def __setupInputs(self, inputList):
         self.__input = {}
@@ -46,7 +43,7 @@ class OutputHandler(object):
     def update(self,fired):
         # print 'es feuern', fired
 
-        neuron_ids = intersect1d(fired, pars['note_ids'])
+        neuron_ids = intersect1d(fired, self.pars['note_ids'])
         self.__checkKeyChange(neuron_ids)
 
         n_fired = neuron_ids.__len__()
@@ -62,13 +59,11 @@ class OutputHandler(object):
             ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
              'tau_e', 'tau_i', 'cam_external_max'])
         pygame.display.update()
-        
-        
+
     def turnOff(self):
         for outputName in self.__output.iterkeys():
             if outputName == NeuronNotes.NAME:
                 self.__output[outputName].turnAllOff()
-
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids)>20:

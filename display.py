@@ -11,9 +11,10 @@ from Dunkel_pars import parameters
 from Dunkel_functions import *
 
 class Display:
-    def __init__(self, N_col, N_row, parnames=[], disp_type='dot'):  # disp_type='dot'
+    def __init__(self, N_col, N_row, parnames=[],
+                 disp_type='dot', screenSize = (1680,1050)):  # disp_type='dot'
         pygame.init()
-        pars = parameters()
+        # pars = parameters()
         # parnames: list of names for the parameters
         self.parnames = parnames
         n_pars = len(parnames)
@@ -21,7 +22,7 @@ class Display:
         self.N_col = N_col
         self.N_row = N_row
 
-        self.spikeScreenSize = (1680,1050)  # (1920,1050) #(960,525)#
+        self.spikeScreenSize = screenSize  # (1920,1050) #(960,525)#
         self.text_color = (100, 100, 100, 0)
         self.textfill_color = (255, 255, 255, 255)
         self.spikefill_color = (0, 0, 0, 0)

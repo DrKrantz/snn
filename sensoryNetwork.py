@@ -32,14 +32,12 @@ class SensoryNetwork(object):
         self.inputHandler = inputHandler
         self.pars = pars
         self.outputHandler = outputHandler
-	self.outputHandler.update(array([1]))
 
         # value = raw_input('setup ok? [y]/n \n')
         # if value == 'n':
         #     return
 
         self.__A = connectivityMatrix
-
         
         N = self.pars['N']
         #vectors with parameters of adaptation and synapses
@@ -164,7 +162,7 @@ class MainApp:
             inputDevices=deviceManager.getInputDevices(),
             pars=pars
         )
-        outputHandler = OutputHandler(deviceManager.outputs)
+        outputHandler = OutputHandler(deviceManager.outputs, pars)
 
         print "wiring...."
         connectivityMatrix = ConnectivityMatrix().get()
@@ -226,8 +224,18 @@ class MainApp:
 
 if __name__ == '__main__':
     pars = parameters()
-    settingsReaderClass = settingsReader.SettingsReader(
-        os.getenv("HOME") + "/" + "settings.csv")
+    settingsFile = 'settings.csv'
+    for i, value in enumerate(sys.argv):
+        if value == '-f':
+            settingsFile = sys.argv[i+1]
+        if value == '-w':
+            pars['screen_size'][0] = int(sys.argv[i+1])
+        if value == '-h':
+            pars['screen_size'][1] = int(sys.argv[i+1])
+
+    print 'Using settings from', settingsFile
+
+    settingsReaderClass = settingsReader.SettingsReader(settingsFile)
     devices = settingsReaderClass.getDevices()
 
     dm = DeviceManager(devices, pars)

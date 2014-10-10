@@ -8,8 +8,6 @@ __date__ = 140620
 
 import csv
 import fileSelector
-import time
-
 
 class SettingsReader:
     def __init__(self, filename='~/settings.csv'):
@@ -18,7 +16,6 @@ class SettingsReader:
         if self.filename == '':
             selector = fileSelector.FileSelector(self.setFilename)
             selector.mainloop()
-
         self.readSettings(self.filename)
 
     def getDevices(self):

@@ -10,7 +10,6 @@ from numpy import ones, zeros, nonzero, sum, shape
 from scipy import rand, vstack, hstack, arange
 import random
 
-
 from Dunkel_pars import parameters
 from Dunkel_functions import *
 
