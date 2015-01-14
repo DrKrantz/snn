@@ -13,17 +13,18 @@ NEEDS:
 from numpy import *
 from numpy import ones,zeros,nonzero,sum,shape
 import time
-import pickle
+import os
 import pygame
 import pygame.locals
 import sys
 
 from Dunkel_pars import parameters
 from outputHandler import OutputHandler
-from outputDevices import DeviceFactory
 from inputHandler import InputHandler
+import outputDevices
 import inputDevices
 from connectivityMatrix import ConnectivityMatrix
+import settingsReader
 
 class SensoryNetwork(object):
     def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix):
@@ -31,14 +32,12 @@ class SensoryNetwork(object):
         self.inputHandler = inputHandler
         self.pars = pars
         self.outputHandler = outputHandler
-	self.outputHandler.update(array([1]))
 
         # value = raw_input('setup ok? [y]/n \n')
         # if value == 'n':
         #     return
 
         self.__A = connectivityMatrix
-
         
         N = self.pars['N']
         #vectors with parameters of adaptation and synapses
@@ -66,8 +65,6 @@ class SensoryNetwork(object):
         #     pickle.dump(self.pars, output)
         #     print 'parameters saved'
         #     output.close()
-
-        time.sleep(self.pars['pause'])
 
         ##### GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
@@ -132,29 +129,40 @@ class SensoryNetwork(object):
         # print 'g_i', self.__gi
         # raw_input('ok?')
 
+class DeviceManager:
+    def __init__(self, devices, pars):
+        self.deviceSettings = devices
+        self.pars = pars
+        self.inputs = {}
+        self.outputs = {}
+        # print self.devices
+        self.__createInputDevices(pars)
+        self.__createOutputDevices()
+
+    def __createInputDevices(self, pars):
+        inputs = {}
+        for devicename, midiport in self.deviceSettings['inputs'].iteritems():
+            self.inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
+
+    def __createOutputDevices(self):
+        for devicename, midiport in self.deviceSettings['outputs'].iteritems():
+            self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
+
+    def getInputDevices(self):
+        return self.inputs.values()
+
 class MainApp:
-    def __init__(self):
+    def __init__(self, deviceManager, pars):
         self.__fullscreen = False
         pygame.init()
-        self.keyboardInput = inputDevices.KeyboardInput()
-        pars=parameters()
-        bcf = inputDevices.BCF(pars)
-        sensoryObject = inputDevices.SensoryObject(pars)
+        self.pars=pars
+        self.keyboardInput = deviceManager.inputs['KeyboardInput']
+
         inputHandler = InputHandler(
-            inputDevices=[bcf, self.keyboardInput, sensoryObject], #,InputHandler.OBJECT, , sensoryObject,
+            inputDevices=deviceManager.getInputDevices(),
             pars=pars
         )
-        outputDevices = {}
-        outputDeviceNames = [DeviceFactory.NEURON_NOTES, DeviceFactory.SYNTH,
-                             DeviceFactory.VISUALS,
-                             DeviceFactory.ATHMOS
-                             ]
-        ''''''
-
-        [outputDevices.__setitem__(
-            devname, DeviceFactory().create(devname)) for devname in outputDeviceNames
-        ]
-        outputHandler = OutputHandler(outputDevices)
+        outputHandler = OutputHandler(deviceManager.outputs, pars)
 
         print "wiring...."
         connectivityMatrix = ConnectivityMatrix().get()
@@ -204,17 +212,32 @@ class MainApp:
                     self.keyboardInput.triggerSpike(180)
 
     def run(self):
-        updInt = .05
-        now = time.time()
+        lastUpdated = time.time()
         while True:
             self.input(pygame.event.get())
-            # if time.time()-now<updInt:
-            #     pass
-            # else:
-            self.network.update()
-            now = time.time()
+            if time.time()-lastUpdated<self.pars['pause']:
+                pass
+            else:
+                self.network.update()
+                lastUpdated = time.time()
 
 
 if __name__ == '__main__':
-    app = MainApp()
+    pars = parameters()
+    settingsFile = 'settings.csv'
+    for i, value in enumerate(sys.argv):
+        if value == '-f':
+            settingsFile = sys.argv[i+1]
+        if value == '-w':
+            pars['screen_size'][0] = int(sys.argv[i+1])
+        if value == '-h':
+            pars['screen_size'][1] = int(sys.argv[i+1])
+
+    print 'Using settings from', settingsFile
+
+    settingsReaderClass = settingsReader.SettingsReader(settingsFile)
+    devices = settingsReaderClass.getDevices()
+
+    dm = DeviceManager(devices, pars)
+    app = MainApp(dm, pars)
     app.run()

@@ -86,6 +86,9 @@ def parameters():
     pars['v_show_ids'] = hstack((pars['Exc_ids'][0:5], pars['Inh_ids'][0:5]))
                                         # size of the dots for each neuron
 
+    ''' Spike display parameters '''
+    pars['screen_size'] = [1680,1050]
+
     ''' parameters of WEBCAM stimuluation generation '''
     pars['cam_flux'] = 10  # if subsequent webcam pixels (in time) deviate further
                             # than this value, the difference will be treated as  signal
