@@ -139,7 +139,7 @@ class OutputDevice(pm.Output):
         n_device = pm.get_count()
         foundId = -1
         for id in range(n_device):
-            if int(pm.get_device_info(id)[1] == midiport) & \
+            if int(pm.get_device_info(id)[1] == midiport.encode()) & \
                     int(pm.get_device_info(id)[3] == 1):
                 foundId = id
         return foundId

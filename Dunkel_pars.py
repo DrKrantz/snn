@@ -17,8 +17,8 @@ def parameters():
     pars['N_col'] = 20  # pars['N_col'] = int(ceil(sqrt(pars['N'])/10)*10)
     pars['N_row'] = pars['N_col']  # pars['N_row'] = pars['N']/pars['N_col']
     pars['ex/in'] = 4
-    pars['N'] = pars['N_col'] * pars['N_row']
-    pars['Ni'] = pars['N'] / pars['ex/in']  # size of excit. population
+    pars['N'] = int(pars['N_col'] * pars['N_row'])
+    pars['Ni'] = int(pars['N'] / pars['ex/in'])  # size of excit. population
     pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
     pars['Ts'] = 1000  # total simulation time in secs
     pars['h'] = 1e-3  # resolution of simulation in s

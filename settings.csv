@@ -2,4 +2,4 @@ INPUTS
 BCF, Virtual BCF2000
 KeyboardInput,
 OUTPUTS
-SYNTH, SimpleSynth
+NeuronNotes, SimpleSynth virtual input

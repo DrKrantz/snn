@@ -146,7 +146,6 @@ class DeviceManager:
 
     def __createOutputDevices(self):
         for devicename, midiport in self.deviceSettings['outputs'].items():
-            print(devicename, midiport)
             self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
 
     def getInputDevices(self):

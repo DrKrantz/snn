@@ -67,6 +67,7 @@ class OutputHandler(object):
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids)>20:
+            print(self.__output)
             self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion==7 else 7)
             self.__output[NeuronNotes.NAME].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
