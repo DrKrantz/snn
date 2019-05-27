@@ -108,10 +108,10 @@ class displayTest:
                 'lines')
 
     def start(self):
-        raw_input('feddich wenn Sie es sind...')
+        input('feddich wenn Sie es sind...')
         for k in range(1000):
             if k%100==0:
-                print 'jetze'
+                print('jetze')
                 self.__display.update_fired(array([20,40,70])+2*k)
 #                self.__display.update_fired(array([]))
                 pygame.display.flip()

@@ -13,7 +13,7 @@ import numpy as np
 from Dunkel_functions import chordConversion, linear2grid, chromaticConversion
 
 class Neuron2NoteConverter(object):
-    def __init__(self, conversion=1, noteRange=range(1, 127)):
+    def __init__(self, conversion=1, noteRange=list(range(1, 127))):
         self.__conversion = conversion
         self.__noteRange = noteRange
 
@@ -55,7 +55,7 @@ class Neuron2NoteConverter(object):
 
 class DeviceStruct(dict):
     def __init__(self, midiport='SimpleSynth virtual input', maxNumSignals=None,
-                 updateInterval=1, instrument=1, velocity=64, noteRange=range(1,127),
+                 updateInterval=1, instrument=1, velocity=64, noteRange=list(range(1,127)),
                  neuron2NoteConversion=1):
         self['midiport'] = midiport
         self['maxNumSignals'] = maxNumSignals
@@ -65,7 +65,7 @@ class DeviceStruct(dict):
         # self['noteRange'] = noteRange
         # self['neuron2NoteConversion'] = neuron2NoteConversion
 
-'''
+
 class DeviceFactory(object):
     NEURON_NOTES = 'SimpleSynth virtual input'
     OBJECT = 'MIDISPORT 2x2 Anniv Port BB'
@@ -113,13 +113,13 @@ class DeviceFactory(object):
                 conversion=self.__name2DeviceStruct[name]['neuron2NoteConversion'],
                 )
         )
-'''
+
 
 class OutputDevice(pm.Output):
     def __init__(self, deviceStruct, neuron2NoteConverter):
         id = self.__getDeviceId(deviceStruct['midiport'])
         if id == -1:
-            print "SETUP Warning: output: " + deviceStruct['midiport'] + " not available!!!"
+            print("SETUP Warning: output: " + deviceStruct['midiport'] + " not available!!!")
         else:
             super(OutputDevice,self).__init__(id)
             self.__neuron2NoteConverter = neuron2NoteConverter;
@@ -133,7 +133,7 @@ class OutputDevice(pm.Output):
                 self.__activeNotes = []
                 self.__activeTimes = []
                 self.__now = time.time()
-            print "SETUP output: " + deviceStruct['midiport'] + " connected"
+            print("SETUP output: " + deviceStruct['midiport'] + " connected")
 
     def __getDeviceId(self, midiport):
         n_device = pm.get_count()
@@ -191,15 +191,15 @@ class OutputDevice(pm.Output):
 
     def turnAllOff(self):
         for note in self.__onNotes:
-	    if note != 1:
-                self.note_off(note, 100)
+            if note != 1:
+                    self.note_off(note, 100)
         self.__onNotes = set()
 
 
 class NeuronNotes(OutputDevice):
     NAME = 'NeuronNotes'
     def __init__(self, midiport='SimpleSynth virtual input'):
-        self.__noteRange = range(1,127)
+        self.__noteRange = list(range(1,127))
         self.__conversion = 7
         self.__midiport = midiport
 
@@ -215,7 +215,7 @@ class NeuronNotes(OutputDevice):
 class Synth(OutputDevice):
     NAME = 'Synth'
     def __init__(self, midiport=''):
-        self.__noteRange = range(1,127)
+        self.__noteRange = list(range(1,127))
         self.__conversion = 7
         self.__midiport = midiport
 
@@ -229,12 +229,12 @@ class Synth(OutputDevice):
             conversion=self.__conversion,
             noteRange=self.__noteRange
         )
-        super(SimpleSynth, self).__init__(deviceStruct, converter)
+        super(Synth, self).__init__(deviceStruct, converter)
 
 class Piano(OutputDevice):
     NAME = 'Piano'
     def __init__(self, midiport=''):
-        self.__noteRange = range(1,96)
+        self.__noteRange = list(range(1,96))
         self.__conversion = 7
         self.__midiport = midiport
 
@@ -248,12 +248,12 @@ class Piano(OutputDevice):
             conversion=self.__conversion,
             noteRange=self.__noteRange
         )
-        super(SimpleSynth, self).__init__(deviceStruct, converter)
+        super(Synth, self).__init__(deviceStruct, converter)
 
 class Athmos(OutputDevice):
     NAME = 'Athmos'
     def __init__(self, midiport=''):
-        self.__noteRange = range(1,127)
+        self.__noteRange = list(range(1,127))
         self.__conversion = 7
         self.__midiport = midiport
 
@@ -267,13 +267,13 @@ class Athmos(OutputDevice):
             conversion=self.__conversion,
             noteRange=self.__noteRange
         )
-        super(SimpleSynth, self).__init__(deviceStruct, converter)
+        super(Synth, self).__init__(deviceStruct, converter)
 
 
 class Visuals(OutputDevice):
     NAME = 'Visuals'
     def __init__(self, midiport=''):
-        self.__noteRange = range(1,127)
+        self.__noteRange = list(range(1,127))
         self.__conversion = 1
         self.__midiport = midiport
 
@@ -286,7 +286,7 @@ class Visuals(OutputDevice):
             conversion=self.__conversion,
             noteRange=self.__noteRange
         )
-        super(SimpleSynth, self).__init__(deviceStruct, converter)
+        super(Synth, self).__init__(deviceStruct, converter)
 
 
 

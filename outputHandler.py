@@ -49,7 +49,7 @@ class OutputHandler(object):
         n_fired = neuron_ids.__len__()
         if n_fired > 0:
             for neuron_id in neuron_ids:
-                for name, output in self.__output.iteritems():
+                for name, output in self.__output.items():
                     output.note_on(neuron_id)
                 
 #        self.__membraneViewer.move()        
@@ -61,7 +61,7 @@ class OutputHandler(object):
         pygame.display.update()
 
     def turnOff(self):
-        for outputName in self.__output.iterkeys():
+        for outputName in self.__output.keys():
             if outputName == NeuronNotes.NAME:
                 self.__output[outputName].turnAllOff()
 
@@ -74,4 +74,4 @@ class OutputHandler(object):
             # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
             #             name, output in self.__output.iteritems()]
 
-            print '----------------------------------------key change'
+            print('----------------------------------------key change')

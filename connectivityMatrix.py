@@ -23,7 +23,7 @@ class ConnectivityMatrix(object):
             ii = (rand(pars['Ni'], pars['Ni']) < pars['p_ii'])
             ie = (rand(pars['Ni'], pars['Ne']) < pars['p_ie'])
             self.A = vstack((hstack((ee, ei)), hstack((ie, ii))))
-            self.A[range(pars['Ne'] + pars['Ni']), range(pars['Ne'] + pars['Ni'])] = 0  # remove selfloops
+            self.A[list(range(pars['Ne'] + pars['Ni'])), list(range(pars['Ne'] + pars['Ni']))] = 0  # remove selfloops
 
         elif type == 'none':
             self.A = zeros((pars['N'], pars['N']))  # no connectivity
@@ -47,7 +47,7 @@ class ConnectivityMatrix(object):
                 idx = neighbor_ids[0:min([pars['ncon'], len(neighbor_ids)])]
                 self.A[idx, n1] = 1
         else:
-            print "type " + type + " not yet implemented"
+            print("type " + type + " not yet implemented")
 
     def get(self):
         return self.A

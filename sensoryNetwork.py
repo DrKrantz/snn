@@ -141,15 +141,16 @@ class DeviceManager:
 
     def __createInputDevices(self, pars):
         inputs = {}
-        for devicename, midiport in self.deviceSettings['inputs'].iteritems():
+        for devicename, midiport in self.deviceSettings['inputs'].items():
             self.inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
 
     def __createOutputDevices(self):
-        for devicename, midiport in self.deviceSettings['outputs'].iteritems():
+        for devicename, midiport in self.deviceSettings['outputs'].items():
+            print(devicename, midiport)
             self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
 
     def getInputDevices(self):
-        return self.inputs.values()
+        return list(self.inputs.values())
 
 class MainApp:
     def __init__(self, deviceManager, pars):
@@ -164,9 +165,9 @@ class MainApp:
         )
         outputHandler = OutputHandler(deviceManager.outputs, pars)
 
-        print "wiring...."
+        print("wiring....")
         connectivityMatrix = ConnectivityMatrix().get()
-        print 'wiring completed'
+        print('wiring completed')
 
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivityMatrix)
         if self.network is not None:
@@ -233,7 +234,7 @@ if __name__ == '__main__':
         if value == '-h':
             pars['screen_size'][1] = int(sys.argv[i+1])
 
-    print 'Using settings from', settingsFile
+    print('Using settings from', settingsFile)
 
     settingsReaderClass = settingsReader.SettingsReader(settingsFile)
     devices = settingsReaderClass.getDevices()

@@ -2,5 +2,4 @@ INPUTS
 BCF, Virtual BCF2000
 KeyboardInput,
 OUTPUTS
-SYNTH, uMIDI/O22 Port 2
-ATHMOS, MIDISPORT 2x2 Anniv Port A
+SYNTH, SimpleSynth

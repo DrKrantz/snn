@@ -22,11 +22,11 @@ def parameters():
     pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
     pars['Ts'] = 1000  # total simulation time in secs
     pars['h'] = 1e-3  # resolution of simulation in s
-    ids = random.permutation(arange((pars['N'])))  # randomize arangement
-    pars['Exc_ids'] = sort(ids[arange(pars['Ne'])])  # hence the INDICES
+    ids = random.permutation(arange(pars['N']))  # randomize arangement
+    pars['Exc_ids'] = sort(ids[arange(pars['Ne'], dtype=int)])  # hence the INDICES
                                                 # of the neurons run from
                                                 # 0 to N-1!!!!!!!
-    pars['Inh_ids'] = sort(ids[pars['Ne']+arange(pars['Ni'])])
+    pars['Inh_ids'] = sort(ids[arange(pars['Ne'], pars['Ni'], dtype=int)])
     
     # parameters of the neuron model
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
@@ -118,13 +118,13 @@ def parameters():
     # parameters of conciousness 
     pars['N_concious'] = 10  # the numbers of synchronous neurons to generate 'concious' events
     
-    pars['midi_spikepitch'] = range(64, 107)
-    pars['midi_spikeneuron'] = range(64, 107)
+    pars['midi_spikepitch'] = list(range(64, 107))
+    pars['midi_spikeneuron'] = list(range(64, 107))
     
     keys = 'virtual'
     if keys == 'home':  # my home-configuration
         pars['midistat_keys'] = 146  # the MIDI status that identifies keys
-        pars['key_ids_ext'] = range(36, 85)  # the 0-octave keyboard notes
+        pars['key_ids_ext'] = list(range(36, 85))  # the 0-octave keyboard notes
         pars['key_ids_pars'] = array((),int)
         pars['key_action_pars'] = array((),int)
         pars['midistat_slide'] = 178  # the MIDI status that identifies sliders
@@ -145,7 +145,7 @@ def parameters():
         pars['key_ids_pars'] = array((), int)
         pars['key_action_pars'] = array((), int)
         pars['midistat_slide'] = 176  # the MIDI status that identifies sliders
-        pars['slide_ids_pars'] = range(81, 86) # these IDs control parameters
+        pars['slide_ids_pars'] = list(range(81, 86)) # these IDs control parameters
         pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
         pars['slide_ids_ext'] = [86, 87, 88]  # MIDI controllers for external input
         pars['slide_action_ext'] = [0, 1, 2]  # the actions corresponding to the slide_ids
@@ -155,7 +155,7 @@ def parameters():
 
     elif keys=='boris':  # joens sein usb-keyboars
         pars['midistat_keys'] = 144 # the MIDI status that identifies keys
-        pars['key_ids_ext'] = range(36, 85) # the 0-octave keyboard notes
+        pars['key_ids_ext'] = list(range(36, 85)) # the 0-octave keyboard notes
         pars['key_ids_pars'] = array((), int)
         pars['key_action_pars'] = array((), int)
         pars['midistat_slide'] = 176 # the MIDI status that identifies sliders
@@ -170,9 +170,9 @@ def parameters():
         pars['slide_ids_ext'] = [71, 74, 52]  # MIDI controllers for external input
     elif keys=='D-50':
         pars['midistat_keys'] = 200
-        pars['key_ids_ext'] = range(40, 80)
-        pars['key_ids_pars'] = range(10, 16) # the keys for continous parameters
-        pars['key_action_pars'] = range(14)
+        pars['key_ids_ext'] = list(range(40, 80))
+        pars['key_ids_pars'] = list(range(10, 16)) # the keys for continous parameters
+        pars['key_action_pars'] = list(range(14))
             # 0: increase all external input
             # 1: decrease all external input 
             # 2: increase excit input
@@ -191,7 +191,7 @@ def parameters():
     elif keys=='andys':
         pars['midistat_keys'] = 159
         pars['key_ids_ext'] = [36,38,40,41,43,45]
-        pars['key_action_ext'] = range(6)
+        pars['key_action_ext'] = list(range(6))
             # 0: decrease all external input
             # 1: increase all external input 
             # 2: decrease input to excit pop.
@@ -199,7 +199,7 @@ def parameters():
             # 4: decrease input to inhib pop.
             # 5: increase input to inhib pop.
         pars['key_ids_pars'] = [48,50,52,53,55,57,59,60] # keys for continous parameters
-        pars['key_action_pars'] = range(8)
+        pars['key_action_pars'] = list(range(8))
             # 0: decreae s_e
             # 1: increase s_e
             # 2: decreae s_i
