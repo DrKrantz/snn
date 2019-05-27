@@ -6,9 +6,8 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
-import numpy as np
-from Dunkel_pars import parameters
 from Dunkel_functions import *
+
 
 class Display:
     def __init__(self, N_col, N_row, parnames=[],
@@ -38,7 +37,7 @@ class Display:
         self.text_width = 150
         self.dot_width = N_col*self.pointXDist + 2*self.border
         w = self.dot_width + self.border + self.text_width
-        h = max([(self.N_row + 2) * self.pointYDist, (n_pars + 1) *  self.font_size])
+        h = max([(self.N_row + 2) * self.pointYDist, (n_pars + 1) * self.font_size])
         self.disp_size = (w, h)
 
         self.screen = pygame.display.set_mode((0, 0), 0, 32)
@@ -46,8 +45,6 @@ class Display:
         self.par_surface.fill(self.textfill_color)
         pygame.font.init()
         self.font = pygame.font.Font(None, self.font_size)
-        text_rect = []
-        top = 0
 
         self.spikeScreen = pygame.display.set_mode(self.spikeScreenSize, 0, 32)
         self.spikeSurface = pygame.Surface(self.spikeScreenSize, flags=SRCALPHA, depth=32)
@@ -58,7 +55,7 @@ class Display:
 
         self.update_pars(parnames)
 
-    def update_pars(self,update_names):
+    def update_pars(self, update_names):
         for ii in range(len(update_names)):
             idx = self.parnames.index(update_names[ii])
             text_rect = pygame.Rect((0, idx * self.font_size),
@@ -68,7 +65,7 @@ class Display:
             self.par_surface.blit(ren, text_rect)
         self.screen.blit(self.par_surface, (self.dot_width + self.border, 0))
 
-    def update_fired(self,fired):
+    def update_fired(self, fired):
         self.spikeScreen.fill(self.spikefill_color)
         if self.disp_type == 'dot':
             for id in fired:
@@ -76,18 +73,16 @@ class Display:
                         linear2grid(id, self.N_col) * (self.pointXDist, self.pointYDist)
                 pygame.draw.circle(self.screen, (0, 0, 255), coord, self.point_size, 0)
         elif self.disp_type == 'lines':
-            coord = []
-            for id in fired:
-                coord.append(linear2grid(id, self.N_col)*(self.pointXDist, self.pointYDist))
+            coord = [linear2grid(n_id, self.N_col) * (self.pointXDist, self.pointYDist) for n_id in fired]
             coord = array(coord, dtype=int) + self.border
-            # print(coord)
-            if len(coord)>1:
+
+            if len(coord) > 1:
                 pygame.draw.lines(self.spikeScreen,
                                   self.spike_color,
                                   1,
                                   coord,
                                   self.line_width)
-            elif len(coord)==1:
+            elif len(coord) == 1:
                 pygame.draw.circle(self.spikeScreen,
                                    self.spike_color,
                                    coord[0],
@@ -95,10 +90,11 @@ class Display:
                                    0)
         elif self.disp_type == 'square':
             coord = (50, 50)  # linear2grid(id,self.N_col)*(self.pointXDist,self.pointYDist)+self.border
-            #TODO
+            #  TODO
             pygame.draw.rect(self.spikeScreen, self.spike_color, coord, 1)
 
-class displayTest:
+
+class DisplayTest:
     def __init__(self):
         pygame.init()
         pm.init()
@@ -110,15 +106,15 @@ class displayTest:
     def start(self):
         input('feddich wenn Sie es sind...')
         for k in range(1000):
-            if k%100==0:
+            if k % 100 == 0:
                 print('jetze')
-                self.__display.update_fired(array([20,40,70])+2*k)
-#                self.__display.update_fired(array([]))
+                self.__display.update_fired(array([20, 40, 70]) + 2 * k)
+                #  self.__display.update_fired(array([]))
                 pygame.display.flip()
                 time.sleep(0.1)
-    #
+
 
 if __name__ == '__main__':
     # uwe = Membrane_Display(4)
-    uwe = displayTest()
+    uwe = DisplayTest()
     uwe.start()

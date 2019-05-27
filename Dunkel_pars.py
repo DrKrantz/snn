@@ -26,7 +26,7 @@ def parameters():
     pars['Exc_ids'] = sort(ids[arange(pars['Ne'], dtype=int)])  # hence the INDICES
                                                 # of the neurons run from
                                                 # 0 to N-1!!!!!!!
-    pars['Inh_ids'] = sort(ids[arange(pars['Ne'], pars['Ni'], dtype=int)])
+    pars['Inh_ids'] = sort(ids[arange(pars['Ne'], pars['N'], dtype=int)])
     
     # parameters of the neuron model
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
@@ -53,13 +53,13 @@ def parameters():
     pars['s_i'] = 67e-10  # increment of inhibitory synaptic conductance S per spike
     pars['s_i_def'] = pars['s_i_range'][0]
     
-    pars['tau_e_range'] = (5e-5,5e-2)
-    pars['tau_e_step'] = diff(pars['tau_e_range'])[0]/127
+    pars['tau_e_range'] = (5e-5, 5e-2)
+    pars['tau_e_step'] = diff(pars['tau_e_range'])[0] / 127
     pars['tau_e'] = 5e-3  # sec
     pars['tau_e_def'] = pars['tau_e_range'][0]
 
-    pars['tau_i_range'] = (5e-5,5e-2)
-    pars['tau_i_step'] = diff(pars['tau_i_range'])[0]/127
+    pars['tau_i_range'] = (5e-5, 5e-2)
+    pars['tau_i_step'] = diff(pars['tau_i_range'])[0] / 127
     pars['tau_i'] = 10e-3  # sec
     pars['tau_i_def'] = pars['tau_i_range'][0]
 
