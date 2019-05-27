@@ -12,7 +12,7 @@ from Dunkel_functions import *
 
 class Display:
     def __init__(self, N_col, N_row, parnames=[],
-                 disp_type='dot', screenSize = (1680,1050)):  # disp_type='dot'
+                 disp_type='dot', screenSize=(1680, 1050)):  # disp_type='dot'
         pygame.init()
         # pars = parameters()
         # parnames: list of names for the parameters
@@ -28,7 +28,6 @@ class Display:
         self.spikefill_color = (0, 0, 0, 0)
         self.spike_color = (255, 255, 255, 255)
 
-        self.point_size = 6
         self.point_size = 3  # the point size in case of 'dot'-display
         self.line_width = 3
         self.pointXDist = self.spikeScreenSize[0] / self.N_col  # x-distance btwn points
@@ -79,9 +78,9 @@ class Display:
         elif self.disp_type == 'lines':
             coord = []
             for id in fired:
-                coord.append(linear2grid(id,self.N_col)*(self.pointXDist,self.pointYDist))
-            coord = array(coord) + self.border
-            #print coord
+                coord.append(linear2grid(id, self.N_col)*(self.pointXDist, self.pointYDist))
+            coord = array(coord, dtype=int) + self.border
+            # print(coord)
             if len(coord)>1:
                 pygame.draw.lines(self.spikeScreen,
                                   self.spike_color,
@@ -92,7 +91,8 @@ class Display:
                 pygame.draw.circle(self.spikeScreen,
                                    self.spike_color,
                                    coord[0],
-                                   self.point_size, 0)
+                                   self.point_size,
+                                   0)
         elif self.disp_type == 'square':
             coord = (50, 50)  # linear2grid(id,self.N_col)*(self.pointXDist,self.pointYDist)+self.border
             #TODO
