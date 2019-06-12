@@ -157,7 +157,7 @@ def map_keys(eingang):
 	while 1:
 		if eingang.poll():
 			data = eingang.read(2)
-			print data
+			print(data)
 
 def construct_output(type='SimpleSynth virtual input',instrument=1):
 # this constructs an output 
@@ -171,9 +171,9 @@ def construct_output(type='SimpleSynth virtual input',instrument=1):
 			out_id = id
 			ausgang = pm.Output(out_id,0)
 			ausgang.set_instrument(instrument)
-			print "output: "+type
+			print("output: "+type)
 			return ausgang
-	print "output: "+type+" not available"
+	print("output: "+type+" not available")
 #	if out_id == -1:
 #		print "desired output: "+type+ " not available"
 	
@@ -186,7 +186,7 @@ def construct_input(type='MK-449C USB MIDI Keyboard'):
 	for id in range(n_device):
 		if int(pm.get_device_info(id)[1]==type) & int(pm.get_device_info(id)[2]==1):
 			in_id = id
-			print "input: "+type
+			print("input: "+type)
 #	if in_id == -1:
 #		print "desired input: "+type+ " not available"
 
@@ -228,7 +228,7 @@ class MIDI:
 		try:	
 			self.eingang = construct_input(type_in)
 		except:
-			print "desired input: "+type_in+ " not available"
+			print("desired input: "+type_in+ " not available")
 			
 class Spike_Display:
 	#global pars

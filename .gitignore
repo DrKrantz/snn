@@ -52,3 +52,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# pyenv
+.python-version
+
+#OSX files
+.DS_store
+
+

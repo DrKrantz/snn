@@ -14,20 +14,20 @@ class InputDevice(pm.Input):
     def __init__(self, name, n_read=100):
         pm.init()
         self.nread = n_read
-        id = self.__getDeviceId(name)
+        deviceId = self.__getDeviceId(name)
 
-        if id == -1:
-            print "SETUP WARNING!!! input: " + name + " not available!!!"
-            return None
+        if deviceId == -1:
+            print("SETUP WARNING!!! input: " + name + " not available!!!")
+            return
         else:
-            super(InputDevice,self).__init__(id)
-            print "SETUP input: " + name + " connected with id", id
+            super(InputDevice,self).__init__(deviceId)
+            print("SETUP input: " + name + " connected with id", deviceId)
 
     def __getDeviceId(self, name):
-        for id in range(pm.get_count()):
-            if int(pm.get_device_info(id)[1] == name) & \
-                    int(pm.get_device_info(id)[2] == 1):
-                return id
+        for deviceId in range(pm.get_count()):
+            if (pm.get_device_info(deviceId)[1] == name.encode()) & \
+                    (pm.get_device_info(deviceId)[2] == 1):
+                return deviceId
         return -1
 
     def getData(self):
@@ -41,7 +41,7 @@ class InputDevice(pm.Input):
         while True:
             try:
                 if self.poll():
-                    print self.read(10)
+                    print(self.read(10))
             except KeyboardInterrupt:
                 return
 
@@ -55,7 +55,7 @@ class InputDevice(pm.Input):
 
 
 class BCF(InputDevice):
-    NAME = 'Virtual BCF2000'
+    NAME = b'Virtual BCF2000'
 
     def __init__(self, midiport, pars):
         super(BCF, self).__init__(midiport)
@@ -65,12 +65,6 @@ class BCF(InputDevice):
         self.pars = pars
         MIDI_data = self.getData()
         if MIDI_data is not None:
-#         if device.poll():
-#             data = device.read(self.pars['n_read'])
-# #            print data
-#             data.reverse()
-#             MIDI_data = array([dd[0] for dd in data])
-        # extract data from keys
             key_data = MIDI_data[MIDI_data[:, 0] == self.pars['midistat_keys'], :]
             if key_data.__len__() > 0 and self.pars['midistat_keys'] is not None:
                 key_data_on = key_data[key_data[:, 2] > 0, :]  # take only "note on"
@@ -228,10 +222,11 @@ class SensoryObject(InputDevice):
         fired = []
         if MIDI_data is not None:
             [fired.append(dd[1]) for dd in MIDI_data]
-            print 'object:', fired
-        return {'pars': self.pars, 'fired':array(fired, int)}
+            print('object:', fired)
+        return {'pars': self.pars, 'fired': array(fired, int)}
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     import Dunkel_pars
-    input = SensoryObject(Dunkel_pars.parameters())
-    input.map_keys()
+    inputDevice = SensoryObject(Dunkel_pars.parameters(), '')
+    inputDevice.map_keys()

@@ -6,29 +6,26 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
-from numpy import ones, zeros, nonzero, sum, shape
-from scipy import rand, vstack, hstack, arange
 import random
 
-from Dunkel_pars import parameters
 from Dunkel_functions import *
 
 
 class ConnectivityMatrix(object):
-    def __init__(self, type='random', pars=parameters()):
+    def __init__(self, connect_type='random', pars=parameters()):
 
-        if type == 'random':
+        if connect_type == 'random':
             ee = (rand(pars['Ne'], pars['Ne']) < pars['p_ee'])
             ei = (rand(pars['Ne'], pars['Ni']) < pars['p_ei'])
             ii = (rand(pars['Ni'], pars['Ni']) < pars['p_ii'])
             ie = (rand(pars['Ni'], pars['Ne']) < pars['p_ie'])
             self.A = vstack((hstack((ee, ei)), hstack((ie, ii))))
-            self.A[range(pars['Ne'] + pars['Ni']), range(pars['Ne'] + pars['Ni'])] = 0  # remove selfloops
+            self.A[list(range(pars['Ne'] + pars['Ni'])), list(range(pars['Ne'] + pars['Ni']))] = 0  # remove selfloops
 
-        elif type == 'none':
+        elif connect_type == 'none':
             self.A = zeros((pars['N'], pars['N']))  # no connectivity
 
-        elif type == 'uni_torus':  # torus with uniform connectivity profile
+        elif connect_type == 'uni_torus':  # torus with uniform connectivity profile
             self.A = zeros((pars['N'], pars['N']))
 
             # construct matrix of pairwise distance
@@ -47,7 +44,7 @@ class ConnectivityMatrix(object):
                 idx = neighbor_ids[0:min([pars['ncon'], len(neighbor_ids)])]
                 self.A[idx, n1] = 1
         else:
-            print "type " + type + " not yet implemented"
+            print("type " + connect_type + " not yet implemented")
 
     def get(self):
         return self.A
