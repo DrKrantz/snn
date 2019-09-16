@@ -6,12 +6,12 @@ from display import Display
 from outputDevices import *
 global pars
 
+ADDRESS_SOUND = "/sound"
+IP = "127.0.0.1"
+PORT = 1337
+
 
 class OutputHandler(object):
-    ADDRESS_SOUND = "/sound"
-    IP = "127.0.0.1"
-    PORT = 1337
-
     def __init__(self, outputs, pars, neuron2NoteConversion=4):
         super(OutputHandler, self).__init__()
         self.__output = outputs
@@ -22,7 +22,7 @@ class OutputHandler(object):
                                ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
                                 'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
 
-        self.__client = SimpleUDPClient(self.IP, self.PORT)
+        self.__client = SimpleUDPClient(IP, PORT)
         pm.init()
 
         if Visuals.NAME in self.__output:  # TODO: why is this here?
@@ -38,7 +38,7 @@ class OutputHandler(object):
 
         if len(neuron_ids) > 0:
             ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
-            self.__client.send_message(self.ADDRESS_SOUND, ids)
+            self.__client.send_message(ADDRESS_SOUND, ids)
                 
         # display spikes and update display
         self.display.update_fired(fired)
