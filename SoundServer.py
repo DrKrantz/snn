@@ -23,7 +23,7 @@ class SoundServer:
 
 
 if __name__ == '__main__':
-    converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
+    converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, neuron_to_note.SCALE_MAJOR+1)
     simple_synth = SoundDevices.SoundDevice(converter)
     server = SoundServer()
     server.register_device(simple_synth)

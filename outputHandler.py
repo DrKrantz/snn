@@ -34,7 +34,7 @@ class OutputHandler(object):
     def update(self, fired):
         neuron_ids = intersect1d(fired, self.pars['note_ids'])
 
-        self.__checkKeyChange(neuron_ids)
+        # self.__checkKeyChange(neuron_ids)
 
         if len(neuron_ids) > 0:
             ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
