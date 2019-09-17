@@ -5,7 +5,8 @@ pm.init()
 
 
 class SoundDevice(pm.Output):
-    def __init__(self, velocity=80, note_range=range(1, 96), midi_port='SimpleSynth virtual input'):
+    def __init__(self, converter, velocity=80, midi_port='SimpleSynth virtual input'):
+        self.converter = converter
         self.__velocity = velocity
 
         device_id = self.__get_device_id(midi_port)
@@ -26,6 +27,7 @@ class SoundDevice(pm.Output):
         return found_id
 
     def update(self, address, *args):
-        print("SoundDevice: notes played", args)
-        for note in args:
+        print("SoundDevice: neurons received", args)
+        notes = self.converter.convert(args)
+        for note in notes:
             super(SoundDevice, self).note_on(note, self.__velocity)
