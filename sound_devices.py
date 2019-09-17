@@ -18,12 +18,11 @@ class SoundDevice(pm.Output):
 
     @staticmethod
     def __get_device_id(midi_port):
-        n_device = pm.get_count()
         found_id = -1
-        for devid in range(n_device):
-            if int(pm.get_device_info(devid)[1] == midi_port.encode()) & \
-                    int(pm.get_device_info(devid)[3] == 1):
-                found_id = devid
+        for did in range(pm.get_count()):
+            if int(pm.get_device_info(did)[1] == midi_port.encode()) & \
+                    int(pm.get_device_info(did)[3] == 1):
+                found_id = did
         return found_id
 
     def update(self, address, *args):
