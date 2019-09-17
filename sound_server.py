@@ -16,6 +16,7 @@ class SoundServer:
 
     def register_device(self, device):
         self.dispatcher.map(outputHandler.ADDRESS_SOUND_SPIKES, device.update)
+        self.dispatcher.map(outputHandler.ADDRESS_SOUND_OFF, device.turn_all_off)
 
     def start(self):
         self.server = BlockingOSCUDPServer((outputHandler.IP, outputHandler.PORT), self.dispatcher)

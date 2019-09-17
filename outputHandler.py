@@ -6,7 +6,8 @@ from display import Display
 from outputDevices import *
 global pars
 
-ADDRESS_SOUND = "/sound"
+ADDRESS_SOUND_SPIKES = "/sound/spikes/"
+ADDRESS_SOUND_OFF = "/sound/all_off/"
 IP = "127.0.0.1"
 PORT = 1337
 
@@ -34,11 +35,9 @@ class OutputHandler(object):
     def update(self, fired):
         neuron_ids = intersect1d(fired, self.pars['note_ids'])
 
-        # self.__checkKeyChange(neuron_ids)
-
         if len(neuron_ids) > 0:
             ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
-            self.__client.send_message(ADDRESS_SOUND, ids)
+            self.__client.send_message(ADDRESS_SOUND_SPIKES, ids)
                 
         # display spikes and update display
         self.display.update_fired(fired)
@@ -48,18 +47,9 @@ class OutputHandler(object):
         pygame.display.update()
 
     def turnOff(self):
+        self.__client.send_message(ADDRESS_SOUND_OFF, 0)
+
         for outputName in self.__output.keys():
             if outputName == NeuronNotes.NAME:
                 self.__output[outputName].turnAllOff()
 
-    def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids) > 20:
-            print(self.__output)
-            self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion == 7 else 7)
-            self.__output[NeuronNotes.NAME].setNeuron2NoteConversion(
-                self.__neuron2NoteConversion
-            )
-            # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
-            #             name, output in self.__output.iteritems()]
-
-            print('----------------------------------------key change')
