@@ -2,14 +2,15 @@ import pygame.font
 from numpy import intersect1d
 from pythonosc.udp_client import SimpleUDPClient
 
-from display import Display
 from outputDevices import *
 global pars
 
 ADDRESS_SOUND_SPIKES = "/sound/spikes/"
 ADDRESS_SOUND_OFF = "/sound/all_off/"
+ADDRESS_VISUAL_SPIKES = "/visual/spikes/"
 IP = "127.0.0.1"
 PORT = 1337
+VISUAL_PORT = 1338
 
 
 class OutputHandler(object):
@@ -19,11 +20,8 @@ class OutputHandler(object):
         self.pars = pars
         self.__neuron2NoteConversion = neuron2NoteConversion
 
-        self.display = Display(pars['N_col'], pars['N_row'],
-                               ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
-                                'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
-
         self.__client = SimpleUDPClient(IP, PORT)
+        self.__visual_client = SimpleUDPClient(IP, VISUAL_PORT)
         pm.init()
 
         if Visuals.NAME in self.__output:  # TODO: why is this here?
@@ -38,13 +36,7 @@ class OutputHandler(object):
         if len(neuron_ids) > 0:
             ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
             self.__client.send_message(ADDRESS_SOUND_SPIKES, ids)
-                
-        # display spikes and update display
-        self.display.update_fired(fired)
-        self.display.update_pars(
-            ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
-             'tau_e', 'tau_i', 'cam_external_max'])
-        pygame.display.update()
+            self.__visual_client.send_message(ADDRESS_VISUAL_SPIKES, ids)
 
     def turnOff(self):
         self.__client.send_message(ADDRESS_SOUND_OFF, 0)
@@ -52,4 +44,15 @@ class OutputHandler(object):
         for outputName in self.__output.keys():
             if outputName == NeuronNotes.NAME:
                 self.__output[outputName].turnAllOff()
+
+
+if __name__ == '__main__':
+    from Dunkel_functions import parameters
+    output_handler = OutputHandler([], parameters())
+    input('feddich wenn Sie es sind...')
+    basic = np.array([1,2, 7, 55])
+    for k in range(10):
+        output_handler.update(basic + k * 10)
+        pygame.display.update()
+        time.sleep(0.1)
 
