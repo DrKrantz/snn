@@ -26,7 +26,8 @@ class SoundServer:
 if __name__ == '__main__':
     server = SoundServer()
 
-    converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, neuron_to_note.SCALE_MAJOR+1)
+    converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, 
+                                                 neuron_to_note.SCALE_MAJOR + 1)
     simple_synth = sound_devices.SoundDevice(converter)
     server.register_device(simple_synth)
 

@@ -3,13 +3,12 @@ import pygame
 from Dunkel_functions import linear2grid
 from Dunkel_pars import parameters
 import outputHandler
-import sys
 import asyncio
 
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 
-refresh_rate = 10.  # Hz
+refresh_rate = 100.  # Hz
 
 
 class Display:
@@ -19,12 +18,11 @@ class Display:
 
         self.n_col = n_col
         self.n_row = n_row
-        self.spike_screen_size = screen_size
 
-        self.spike_screen = pygame.display.set_mode(self.spike_screen_size, 0, 32)
+        self.spike_screen = pygame.display.set_mode(screen_size, 0, 32)
 
-        self.pointXDist = self.spike_screen_size[0] / self.n_col  # x-distance btwn points
-        self.pointYDist = self.spike_screen_size[1] / self.n_row  # y-distance btwn points
+        self.pointXDist = screen_size[0] / self.n_col  # x-distance btwn points
+        self.pointYDist = screen_size[1] / self.n_row  # y-distance btwn points
         self.point_size = 3  # the point size in case of 'dot'-display
         self.border = 5
         self.spike_color = (255, 255, 255, 255)
@@ -69,9 +67,6 @@ class DisplayServer:
 
     async def loop(self):
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
 
             self.display.update(self.fired)
             self.fired = []
@@ -81,7 +76,8 @@ class DisplayServer:
         dispatcher = Dispatcher()
         dispatcher.map(outputHandler.ADDRESS_VISUAL_SPIKES, self.handle_spikes)
 
-        self.server = AsyncIOOSCUDPServer((outputHandler.IP, outputHandler.VISUAL_PORT), dispatcher, asyncio.get_event_loop())
+        self.server = AsyncIOOSCUDPServer((outputHandler.IP, outputHandler.VISUAL_PORT), dispatcher,
+                                          asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
         await self.loop()  # Enter main loop of program
 
@@ -90,8 +86,7 @@ class DisplayServer:
 
 if __name__ == '__main__':
     pars = parameters()
-    display_class = Display(pars['N_col'], pars['N_row'])
+    display_class = Display(pars['N_col'], pars['N_row'], screen_size=(200, 200))
     display_server = DisplayServer(display_class)
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(display_server.init_main())
-
