@@ -130,18 +130,19 @@ class MainApp:
         self.__fullscreen = False
         pygame.init()
         self.pars = pars
-        self.keyboardInput = deviceManager.inputs['KeyboardInput']
 
-        #  TODO: create a proper class to handle keyboard input,
-        #   this one uses a pygame screen
-        self.screen = pygame.display.set_mode((100, 30), 0, 32)
-        self.screen.fill((100, 100, 0))
+        if 'KeyboardInput' in deviceManager.inputs:
+            self.keyboardInput = deviceManager.inputs['KeyboardInput']
+            #  TODO: create a proper class to handle keyboard input,
+            #   this one uses a pygame screen
+            self.screen = pygame.display.set_mode((100, 30), 0, 32)
+            self.screen.fill((100, 100, 0))
 
         inputHandler = InputHandler(
             inputDevices=deviceManager.getInputDevices(),
             pars=pars
         )
-        outputHandler = OutputHandler(deviceManager.outputs, pars)
+        outputHandler = OutputHandler(pars)
 
         print("wiring....")
         connectivityMatrix = ConnectivityMatrix().get()

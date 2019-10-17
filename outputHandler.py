@@ -13,17 +13,13 @@ VISUAL_PORT = 1338
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars):
+    def __init__(self, pars):
         super(OutputHandler, self).__init__()
-        self.__output = outputs
         self.pars = pars
 
         self.__client = SimpleUDPClient(IP, PORT)
         self.__visual_client = SimpleUDPClient(IP, VISUAL_PORT)
         pm.init()
-
-        if Visuals.NAME in self.__output:  # TODO: why is this here?
-            self.__output[Visuals.NAME].note_on(1)
 
         self.__now = time.time()
         self.__activeNotes = set()
@@ -39,16 +35,12 @@ class OutputHandler(object):
     def turn_off(self):
         self.__client.send_message(ADDRESS_SOUND_OFF, 0)
 
-        for outputName in self.__output.keys():
-            if outputName == NeuronNotes.NAME:
-                self.__output[outputName].turnAllOff()
-
 
 if __name__ == '__main__':
     from Dunkel_functions import parameters
-    output_handler = OutputHandler([], parameters())
+    output_handler = OutputHandler(parameters())
     input('feddich wenn Sie es sind...')
-    basic = np.array([1,2, 7, 55])
+    basic = np.array([1, 2, 7, 55])
     for k in range(10):
         output_handler.update(basic + k * 10)
         pygame.display.update()
