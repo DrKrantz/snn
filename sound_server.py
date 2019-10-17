@@ -11,20 +11,22 @@ class SoundServer:
     server = None
     dispatcher = None
 
-    def __init__(self):
+    def __init__(self, config):
         self.dispatcher = Dispatcher()
+        self.address = (config['ip'], config['port'])
 
     def register_device(self, device):
-        self.dispatcher.map(outputHandler.ADDRESS_SOUND_SPIKES, device.update)
-        self.dispatcher.map(outputHandler.ADDRESS_SOUND_OFF, device.turn_all_off)
+        self.dispatcher.map(outputHandler.ADDRESS_SPIKES, device.update)
+        self.dispatcher.map(outputHandler.ADDRESS_OFF, device.turn_all_off)
 
     def start(self):
-        self.server = BlockingOSCUDPServer((outputHandler.IP, outputHandler.PORT), self.dispatcher)
+        self.server = BlockingOSCUDPServer(self.address, self.dispatcher)
         self.server.serve_forever()
 
 
 if __name__ == '__main__':
-    server = SoundServer()
+    import config_parser
+    server = SoundServer(config_parser.config['sound']['neuron_notes'])  # TODO: allow other sound targets
 
     converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, 
                                                  neuron_to_note.SCALE_MAJOR + 1)

@@ -126,7 +126,7 @@ class DeviceManager:
 
 
 class MainApp:
-    def __init__(self, deviceManager, pars):
+    def __init__(self, deviceManager, pars, config):
         self.__fullscreen = False
         pygame.init()
         self.pars = pars
@@ -142,7 +142,7 @@ class MainApp:
             inputDevices=deviceManager.getInputDevices(),
             pars=pars
         )
-        outputHandler = OutputHandler(pars)
+        outputHandler = OutputHandler(pars, config)
 
         print("wiring....")
         connectivityMatrix = ConnectivityMatrix().get()
@@ -204,6 +204,7 @@ class MainApp:
 
 
 if __name__ == '__main__':
+    import config_parser
     pars = parameters()
     settingsFile = 'settings.csv'
     for i, value in enumerate(sys.argv):
@@ -220,5 +221,5 @@ if __name__ == '__main__':
     devices = settingsReaderClass.getDevices()
 
     dm = DeviceManager(devices, pars)
-    app = MainApp(dm, pars)
+    app = MainApp(dm, pars, config_parser.config)
     app.run()

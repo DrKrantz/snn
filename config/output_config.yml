@@ -1,0 +1,12 @@
+displays:
+  spike_display:
+    ip: 127.0.0.1
+    port: 1338
+    address: /spikedisplay/spikes/
+
+---
+sound:
+  neuron_notes:
+    ip: 127.0.0.1
+    port: 1337
+    address: /neuron_notes/spikes/

@@ -4,22 +4,19 @@ from pythonosc.udp_client import SimpleUDPClient
 
 from outputDevices import *
 
-ADDRESS_SOUND_SPIKES = "/sound/spikes/"
-ADDRESS_SOUND_OFF = "/sound/all_off/"
-ADDRESS_VISUAL_SPIKES = "/visual/spikes/"
-IP = "127.0.0.1"
-PORT = 1337
-VISUAL_PORT = 1338
+ADDRESS_SPIKES = "/spikes/"
+ADDRESS_OFF = "/off/"
 
 
 class OutputHandler(object):
-    def __init__(self, pars):
+    __clients = []
+
+    def __init__(self, pars, output_config):
         super(OutputHandler, self).__init__()
         self.pars = pars
-
-        self.__client = SimpleUDPClient(IP, PORT)
-        self.__visual_client = SimpleUDPClient(IP, VISUAL_PORT)
-        pm.init()
+        for docs in output_config.values():
+            print(docs)
+            [self.__clients.append(SimpleUDPClient(specs['ip'], specs['port'])) for _, specs in docs.items()]
 
         self.__now = time.time()
         self.__activeNotes = set()
@@ -29,19 +26,20 @@ class OutputHandler(object):
 
         if len(neuron_ids) > 0:
             ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
-            self.__client.send_message(ADDRESS_SOUND_SPIKES, ids)
-            self.__visual_client.send_message(ADDRESS_VISUAL_SPIKES, ids)
+            [client.send_message(ADDRESS_SPIKES, ids) for client in self.__clients]
 
     def turn_off(self):
-        self.__client.send_message(ADDRESS_SOUND_OFF, 0)
+        [client.send_message(ADDRESS_OFF, 0) for client in self.__clients]
 
 
 if __name__ == '__main__':
     from Dunkel_functions import parameters
-    output_handler = OutputHandler(parameters())
+    import config_parser
+    pm.init()
+    output_handler = OutputHandler(parameters(), config_parser.config)
     input('feddich wenn Sie es sind...')
     basic = np.array([1, 2, 7, 55])
     for k in range(10):
         output_handler.update(basic + k * 10)
-        pygame.display.update()
         time.sleep(0.1)
+    output_handler.turn_off()
