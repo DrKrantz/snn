@@ -58,7 +58,7 @@ class SensoryNetwork(object):
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
         external = self.pars['midi_external']
-        self.outputHandler.turnOff()
+        self.outputHandler.turn_off()
 
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
         # update deadtimes

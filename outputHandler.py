@@ -3,7 +3,6 @@ from numpy import intersect1d
 from pythonosc.udp_client import SimpleUDPClient
 
 from outputDevices import *
-global pars
 
 ADDRESS_SOUND_SPIKES = "/sound/spikes/"
 ADDRESS_SOUND_OFF = "/sound/all_off/"
@@ -14,11 +13,10 @@ VISUAL_PORT = 1338
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars, neuron2NoteConversion=4):
+    def __init__(self, outputs, pars):
         super(OutputHandler, self).__init__()
         self.__output = outputs
         self.pars = pars
-        self.__neuron2NoteConversion = neuron2NoteConversion
 
         self.__client = SimpleUDPClient(IP, PORT)
         self.__visual_client = SimpleUDPClient(IP, VISUAL_PORT)
@@ -38,7 +36,7 @@ class OutputHandler(object):
             self.__client.send_message(ADDRESS_SOUND_SPIKES, ids)
             self.__visual_client.send_message(ADDRESS_VISUAL_SPIKES, ids)
 
-    def turnOff(self):
+    def turn_off(self):
         self.__client.send_message(ADDRESS_SOUND_OFF, 0)
 
         for outputName in self.__output.keys():
@@ -55,4 +53,3 @@ if __name__ == '__main__':
         output_handler.update(basic + k * 10)
         pygame.display.update()
         time.sleep(0.1)
-
