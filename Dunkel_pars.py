@@ -102,7 +102,7 @@ def parameters():
     pars['cam_ext'] = pars['cam_ext_start']
 
     ''' parameters of MIDI stimulation generation '''
-    pars['pause'] = 0.025
+    pars['pause'] = 0
     pars['n_read'] = 100 # buffersize to be read from the input in each simulation step
     pars['velocity'] = 64 
     pars['note_add'] = 36

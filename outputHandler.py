@@ -1,64 +1,47 @@
 import pygame.font
 from numpy import intersect1d
+from pythonosc.udp_client import SimpleUDPClient
 
-from display import Display
 from outputDevices import *
-global pars
+
+ADDRESS_SOUND_SPIKES = "/sound/spikes/"
+ADDRESS_SOUND_OFF = "/sound/all_off/"
+ADDRESS_VISUAL_SPIKES = "/visual/spikes/"
+IP = "127.0.0.1"
+PORT = 1337
+VISUAL_PORT = 1338
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars, neuron2NoteConversion=4):
-        self.pars = pars
+    def __init__(self, pars):
         super(OutputHandler, self).__init__()
-        self.display = Display(pars['N_col'], pars['N_row'],
-                               ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
-                                'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
-        pm.init()
-        self.__output = outputs
-        self.__input = {}
+        self.pars = pars
 
-        if Visuals.NAME in self.__output:
-            self.__output[Visuals.NAME].note_on(1)
+        self.__client = SimpleUDPClient(IP, PORT)
+        self.__visual_client = SimpleUDPClient(IP, VISUAL_PORT)
+        pm.init()
 
         self.__now = time.time()
         self.__activeNotes = set()
-        self.__neuron2NoteConversion = neuron2NoteConversion
-
-    def __setupInputs(self, inputList):
-        for name in inputList:
-            self.__input[name] = \
-                self.__getDevice(self.__name2Identifier[name], type='input')
 
     def update(self, fired):
         neuron_ids = intersect1d(fired, self.pars['note_ids'])
-        self.__checkKeyChange(neuron_ids)
 
-        n_fired = neuron_ids.__len__()
-        if n_fired > 0:
-            for neuron_id in neuron_ids:
-                for name, output in self.__output.items():
-                    output.note_on(neuron_id)
-                
-        # display spikes and update display
-        self.display.update_fired(fired)
-        self.display.update_pars(
-            ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
-             'tau_e', 'tau_i', 'cam_external_max'])
+        if len(neuron_ids) > 0:
+            ids = [int(i) for i in neuron_ids]  # TODO: I'm sure there's a smarter way to fix this
+            self.__client.send_message(ADDRESS_SOUND_SPIKES, ids)
+            self.__visual_client.send_message(ADDRESS_VISUAL_SPIKES, ids)
+
+    def turn_off(self):
+        self.__client.send_message(ADDRESS_SOUND_OFF, 0)
+
+
+if __name__ == '__main__':
+    from Dunkel_functions import parameters
+    output_handler = OutputHandler(parameters())
+    input('feddich wenn Sie es sind...')
+    basic = np.array([1, 2, 7, 55])
+    for k in range(10):
+        output_handler.update(basic + k * 10)
         pygame.display.update()
-
-    def turnOff(self):
-        for outputName in self.__output.keys():
-            if outputName == NeuronNotes.NAME:
-                self.__output[outputName].turnAllOff()
-
-    def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids) > 20:
-            print(self.__output)
-            self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion == 7 else 7)
-            self.__output[NeuronNotes.NAME].setNeuron2NoteConversion(
-                self.__neuron2NoteConversion
-            )
-            # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
-            #             name, output in self.__output.iteritems()]
-
-            print('----------------------------------------key change')
+        time.sleep(0.1)
