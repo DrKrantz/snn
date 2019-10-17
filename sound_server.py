@@ -33,4 +33,6 @@ if __name__ == '__main__':
     simple_synth = sound_devices.SoundDevice(converter)
     server.register_device(simple_synth)
 
+    iac = sound_devices.SoundDevice(converter, midi_port='IAC Driver Bus 1')
+    server.register_device(iac)
     server.start()

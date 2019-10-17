@@ -2,7 +2,7 @@ import yaml
 
 
 def load_config():
-    filename = './config/output_config.yml'
+    filename = './config/osc_config.yml'
     with open(filename, 'r') as ymlfile:
         data = yaml.load_all(ymlfile, Loader=yaml.FullLoader)
         cfg = {}
