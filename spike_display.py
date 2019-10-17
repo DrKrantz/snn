@@ -11,7 +11,7 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 refresh_rate = 100.  # Hz
 
 
-class Display:
+class SpikeDisplay:
 
     def __init__(self, n_col, n_row, screen_size=(1680, 1050)):
         pygame.init()
@@ -58,9 +58,10 @@ class Display:
 class DisplayServer:
     server = None
 
-    def __init__(self, display):
+    def __init__(self, display, config):
         self.fired = []
         self.display = display
+        self.config = config
 
     def handle_spikes(self, _, *fired):
         self.fired += fired
@@ -74,9 +75,9 @@ class DisplayServer:
 
     async def init_main(self):
         dispatcher = Dispatcher()
-        dispatcher.map(outputHandler.ADDRESS_VISUAL_SPIKES, self.handle_spikes)
+        dispatcher.map(outputHandler.ADDRESS_SPIKES, self.handle_spikes)
 
-        self.server = AsyncIOOSCUDPServer((outputHandler.IP, outputHandler.VISUAL_PORT), dispatcher,
+        self.server = AsyncIOOSCUDPServer((self.config['ip'], self.config['port']), dispatcher,
                                           asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
         await self.loop()  # Enter main loop of program
@@ -86,7 +87,10 @@ class DisplayServer:
 
 if __name__ == '__main__':
     pars = parameters()
-    display_class = Display(pars['N_col'], pars['N_row'], screen_size=(200, 200))
-    display_server = DisplayServer(display_class)
+    display_class = SpikeDisplay(pars['N_col'], pars['N_row'], screen_size=(200, 200))
+    import config_parser
+    if 'spike_display' not in config_parser.config['displays']:
+        raise ValueError('spike_display not configured in config-file')
+    display_server = DisplayServer(display_class, config_parser.config['displays']['spike_display'])
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(display_server.init_main())
