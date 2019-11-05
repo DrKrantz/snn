@@ -40,7 +40,6 @@ class SoundDevice(pm.Output):
     def update(self, _, *args):
         print("SoundDevice: neurons received", args)
         notes = self.converter.convert(args)
-        [self.__on_notes.add(int(note)) for note in notes]
         self.__update_active_notes()
         [self.note_on(note, self.__velocity) for note in notes]
 
