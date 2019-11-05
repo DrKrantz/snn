@@ -171,25 +171,25 @@ class MainApp:
                             self.network.outputHandler.display.spikeScreenSize
                         )
                 elif event.dict['key'] == pygame.locals.K_1:
-                    self.keyboardInput.triggerSpike(1)
+                    self.keyboardInput.trigger_spike(1)
                 elif event.dict['key'] == pygame.locals.K_2:
-                    self.keyboardInput.triggerSpike(100)
+                    self.keyboardInput.trigger_spike(100)
                 elif event.dict['key'] == pygame.locals.K_3:
-                    self.keyboardInput.triggerSpike(150)
+                    self.keyboardInput.trigger_spike(150)
                 elif event.dict['key'] == pygame.locals.K_4:
-                    self.keyboardInput.triggerSpike(200)
+                    self.keyboardInput.trigger_spike(200)
                 elif event.dict['key'] == pygame.locals.K_5:
-                    self.keyboardInput.triggerSpike(300)
+                    self.keyboardInput.trigger_spike(300)
                 elif event.dict['key'] == pygame.locals.K_6:
-                    self.keyboardInput.triggerSpike(140)
+                    self.keyboardInput.trigger_spike(140)
                 elif event.dict['key'] == pygame.locals.K_7:
-                    self.keyboardInput.triggerSpike(150)
+                    self.keyboardInput.trigger_spike(150)
                 elif event.dict['key'] == pygame.locals.K_8:
-                    self.keyboardInput.triggerSpike(60)
+                    self.keyboardInput.trigger_spike(60)
                 elif event.dict['key'] == pygame.locals.K_9:
-                    self.keyboardInput.triggerSpike(270)
+                    self.keyboardInput.trigger_spike(270)
                 elif event.dict['key'] == pygame.locals.K_0:
-                    self.keyboardInput.triggerSpike(180)
+                    self.keyboardInput.trigger_spike(180)
 
     def run(self):
         lastUpdated = time.time()
