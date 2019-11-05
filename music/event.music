@@ -5,12 +5,17 @@ errorAt=-1
 buffer=1
 events=50
 
-[from]
+[source]
   binary=./eventsource.py
   np=1
 
-[to]
+[translator]
+ binary=./eventadder.py
+ np=1
+
+[target]
   binary=./eventlogger.py
   np=1
 
-from.out -> to.in [10]
+source.out -> translator.in [10]
+translator.out ->  target.in [10]
