@@ -41,6 +41,7 @@ class SoundDevice(pm.Output):
         print("SoundDevice: neurons received", args)
         notes = self.converter.convert(args)
         [self.__on_notes.add(int(note)) for note in notes]
+        self.__update_active_notes()
         [self.note_on(note, self.__velocity) for note in notes]
 
     def turn_all_off(self, _,  *__):
@@ -54,25 +55,26 @@ class SoundDevice(pm.Output):
         maxNumSignals are on. Additionally, notes that started longer than updateInterval
         ago are removed from the active_notes list.
         """
-        self.__on_notes.add(note)
-        if self.__max_num_signals is None:
-            super(SoundDevice, self).note_on(note, args)
-        else:  # TODO: move this block to a separate function, called only once in update, not in every note_on
+        #  turn on note if possible
+        if len(self.__active_notes) < self.__max_num_signals:
+            super(SoundDevice, self).note_on(note, *args)
+            self.__on_notes.add(note)
+            if self.__max_num_signals is not np.infty:
+                self.__active_notes[note] = 0
+
+    def __update_active_notes(self):
+        # update active times of active notes and remove notes from list
+        if self.__max_num_signals is not np.infty:
             now = time.time()
-            # update active times of active notes and remove notes from list
             to_remove = []
             for on_note, on_duration in self.__active_notes.items():
-                self.__active_notes[on_note] += now-self.__now
+                self.__active_notes[on_note] += now - self.__now
                 if self.__active_notes[on_note] > self.__signal_duration:
                     to_remove.append(on_note)
+
             [self.__active_notes.pop(on_note) for on_note in to_remove]
 
             self.__now = now
-
-            #  turn on note if possible
-            if len(self.__active_notes) < self.__max_num_signals:
-                super(SoundDevice, self).note_on(note, self.__velocity)
-                self.__active_notes[note] = 0
 
 
 if __name__ == '__main__':
