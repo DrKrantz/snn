@@ -200,7 +200,7 @@ class OutputDevice(pm.Output):
 class NeuronNotes(OutputDevice):
     NAME = 'NeuronNotes'
 
-    def __init__(self, midiport='SimpleSynth virtual input'):
+    def __init__(self, midiport='MIDI Monitor (test)'):
         self.__noteRange = list(range(1, 127))
         self.__conversion = 7
         self.__midiport = midiport

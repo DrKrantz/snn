@@ -30,8 +30,8 @@ if __name__ == '__main__':
 
     converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, 
                                                  neuron_to_note.SCALE_MAJOR + 1)
-    simple_synth = sound_devices.SoundDevice(converter)
-    server.register_device(simple_synth)
+    # simple_synth = sound_devices.SoundDevice(converter)
+    # server.register_device(simple_synth)
 
     iac = sound_devices.SoundDevice(converter, midi_port='IAC Driver Bus 1')
     server.register_device(iac)
