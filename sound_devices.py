@@ -19,15 +19,15 @@ class SoundDevice(pm.Output):
                  converter,
                  velocity=80,
                  midi_port='IAC Driver Bus 1',
-                 max_num_signals=None,
+                 max_num_signals=np.infty,
                  update_interval=0.1):
         self.converter = converter
         self.__velocity = velocity
         self.__max_num_signals = max_num_signals
-        self.__update_interval = update_interval
+        # notes that have been turned on longer than signal_duration are removed from the list
+        self.__signal_duration = update_interval
         self.__on_notes = set()
-        self.__active_times = []
-        self.__active_notes = []
+        self.__active_notes = {}  # a dict of active notes {note1: on_duration1, note2: on_duration2, ...}
         self.__now = time.time()
 
         device_id = get_device_id(midi_port)
@@ -40,17 +40,14 @@ class SoundDevice(pm.Output):
     def update(self, _, *args):
         print("SoundDevice: neurons received", args)
         notes = self.converter.convert(args)
-        self.__on_notes = np.union1d(self.__on_notes, notes).astype('int')
+        [self.__on_notes.add(int(note)) for note in notes]
         [self.note_on(note, self.__velocity) for note in notes]
 
     def turn_all_off(self, _,  *__):
         [self.note_off(note, 100) for note in self.__on_notes]
-        self.__on_notes = np.array([])
-        self.__active_times = []
-        self.__active_notes = []
+        self.__on_notes = set()
 
-    def note_on(self, neuron_id, *args):
-        note = self.converter.convert(neuron_id)
+    def note_on(self, note, *args):
         """
         turn the midi-note on
         If __max_num_signals has been set, the note is only turned on if less than
@@ -60,28 +57,27 @@ class SoundDevice(pm.Output):
         self.__on_notes.add(note)
         if self.__max_num_signals is None:
             super(SoundDevice, self).note_on(note, args)
-        else:
+        else:  # TODO: move this block to a separate function, called only once in update, not in every note_on
             now = time.time()
             # update active times of active notes and remove notes from list
-            if len(self.__active_times) > 0:
-                done = False
-                idx = 0
-                while not done:
-                    if idx < len(self.__active_times):
-                        self.__active_times[idx] += now-self.__now
-                        if self.__active_times[idx] > self.__update_interval:
-                            self.__active_times.pop(idx)
-                            self.__active_notes.pop(idx)
-                        else:
-                            idx += 1
-                    else:
-                        done = True
+            to_remove = []
+            for on_note, on_duration in self.__active_notes.items():
+                self.__active_notes[on_note] += now-self.__now
+                if self.__active_notes[on_note] > self.__signal_duration:
+                    to_remove.append(on_note)
+            [self.__active_notes.pop(on_note) for on_note in to_remove]
+
             self.__now = now
-            if len(self.__active_times) < self.__max_num_signals:
+
+            #  turn on note if possible
+            if len(self.__active_notes) < self.__max_num_signals:
                 super(SoundDevice, self).note_on(note, self.__velocity)
-                if self.__active_notes.__contains__(note):
-                    idx = self.__active_notes.index(note)
-                    self.__active_notes.remove(note)
-                    self.__active_times.pop(idx)
-                self.__active_notes.append(note)
-                self.__active_times.append(0)
+                self.__active_notes[note] = 0
+
+
+if __name__ == '__main__':
+    import neuron_to_note
+
+    note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
+    device = SoundDevice(note_converter, max_num_signals=2)
+    device.update('uwe', 1, 2, 3, 4)
