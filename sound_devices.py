@@ -2,10 +2,11 @@ import pygame.midi as pm
 import numpy as np
 import time
 import pygame
-import pyaudio
+from pythonosc import udp_client
+
+import instrument
 
 pm.init()
-p = pyaudio.PyAudio()
 
 
 def get_device_id(midi_port):
@@ -91,6 +92,14 @@ class AnalogDevice(object):
         self.__player.play()
 
 
+class OscPlayer(udp_client.SimpleUDPClient):
+    def __init__(self):
+        super(OscPlayer, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
+
+    def play(self, volume):
+        self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, volume)
+
+
 class SoundPlayer:
     RATE = 44100
     CHANNELS = 2
@@ -134,61 +143,7 @@ class SoundPlayer:
         return self.__channel.get_busy()
 
 
-class SoundHandler:
-    FORMAT = pyaudio.paInt16
-    RATE = 44100
-    CHANNELS = 2
-    CHUNK = 1024
 
-    def __init__(self, tone_duration=2000, frequency=440):
-
-        self.__create_sound(tone_duration, frequency)
-        self.__create_stream()
-
-    def __create_stream(self):
-        self.__stream = p.open(format=self.FORMAT,
-                               channels=self.CHANNELS,
-                               rate=self.RATE,
-                               input=True,
-                               output=True,
-                               frames_per_buffer=self.CHUNK)
-
-    def __create_sound(self, tone_duration, frequency):
-        numSamples = int(self.RATE * tone_duration / 1000.)
-        volumeScale = (.85) * 32767
-        twopi = 2 * np.pi
-        sine = np.sin(np.arange(numSamples) * twopi * frequency / self.RATE) * volumeScale
-        signal = np.array((sine, sine)).transpose().flatten()
-
-        # damp_duration = 100
-        # end_silence = 100
-        # # add an- u- abschwellen
-        # if damp_duration < tone_duration / 2.:
-        #     num_damp_samp = 2 * int(self.RATE * damp_duration)  # the 2 is the stereo
-        # else:
-        #     print
-        #     'WARNING! dampDuration>toneDuration/2!!! Using toneDuration/2'
-        #     num_damp_samp = 2 * int(self.RATE * tone_duration / 2.)  # the 2 is the stereo
-        # dampVec = np.linspace(0, 1, num_damp_samp)
-        # signal[0:num_damp_samp] *= dampVec
-        # signal[len(signal) - num_damp_samp::] *= dampVec[::-1]
-        # signal = np.append(signal, np.zeros(2 * int(self.RATE * end_silence)))
-
-        self.__signal = signal
-
-    def play(self):
-        scaling = (np.sin(np.arange(100) * 2 * np.pi / 50) + 1)/2.
-        vol_idx = 1
-        idx = 0
-        data = self.__signal[idx:idx + 2 * self.CHUNK]
-
-        while len(data):
-            vol = scaling[vol_idx]
-            print(vol)
-            self.__stream.write((vol*data).astype(np.int16).tostring())
-            idx += 2 * self.CHUNK
-            data = self.__signal[idx:idx + 2 * self.CHUNK]
-            vol_idx +=1
 
 
 if __name__ == '__main__':
