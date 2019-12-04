@@ -1,9 +1,11 @@
 import pygame.midi as pm
 import numpy as np
 import time
-
+import pygame
+import pyaudio
 
 pm.init()
+p = pyaudio.PyAudio()
 
 
 def get_device_id(midi_port):
@@ -14,7 +16,7 @@ def get_device_id(midi_port):
         return -1
 
 
-class SoundDevice(pm.Output):
+class MidiDevice(pm.Output):
     def __init__(self,
                  converter,
                  velocity=80,
@@ -34,7 +36,7 @@ class SoundDevice(pm.Output):
         if device_id == -1:
             print("SETUP Warning: output: " + midi_port + " not available!!!")
         else:
-            super(SoundDevice, self).__init__(device_id)
+            super(MidiDevice, self).__init__(device_id)
             print("SETUP output: " + midi_port + " connected")
 
     def update(self, _, *args):
@@ -56,7 +58,7 @@ class SoundDevice(pm.Output):
         """
         #  turn on note if possible
         if len(self.__active_notes) < self.__max_num_signals:
-            super(SoundDevice, self).note_on(note, *args)
+            super(MidiDevice, self).note_on(note, *args)
             self.__on_notes.add(note)
             if self.__max_num_signals is not np.infty:
                 self.__active_notes[note] = 0
@@ -76,9 +78,123 @@ class SoundDevice(pm.Output):
             self.__now = now
 
 
+class AnalogDevice(object):
+    def __init__(self,
+               converter,
+               velocity=80):
+        self.converter = converter
+        self.__velocity = velocity
+        self.__player = SoundPlayer()
+
+    def update(self, *args):
+        notes = self.converter.convert(args)
+        self.__player.play()
+
+
+class SoundPlayer:
+    RATE = 44100
+    CHANNELS = 2
+
+    def __init__(self):
+        pygame.init()
+        self.__sound = pygame.mixer.Sound(np.array([]))
+        self.__create_sound()
+        self.__channel = self.__sound.play()
+
+    def __create_sound(self):
+        num_samples = int(self.RATE * 1 / 1000.)
+        bits = 16
+        twopi = 2 * np.pi
+
+        pygame.mixer.pre_init(44100, -bits, self.CHANNELS)
+        pygame.init()
+
+        max_sample = 2 ** (bits - 1) - 1
+        sine = max_sample * np.sin(np.arange(num_samples) * twopi * 220 / self.RATE)
+
+        num_damp_samp = int(self.RATE * 0.1)
+
+        damp_vec = np.linspace(0, 1, num_damp_samp)
+        sine[0:num_damp_samp] *= damp_vec
+        sine[len(sine) - num_damp_samp::] *= damp_vec[::-1]
+
+        #  add ending silence
+        sine = np.concatenate([sine, np.zeros(int(self.RATE * 0.1))])
+
+        #  generate signal for channels
+        signal = np.array((sine, sine))  # default to LR
+
+        signal = np.ascontiguousarray(signal.T.astype(np.int16))
+        self.__sound = pygame.sndarray.make_sound(signal)
+
+    def play(self):
+        self.__channel = self.__sound.play()
+
+    def get_busy(self):
+        return self.__channel.get_busy()
+
+
+class SoundHandler:
+    FORMAT = pyaudio.paInt16
+    RATE = 44100
+    CHANNELS = 2
+    CHUNK = 1024
+
+    def __init__(self, tone_duration=2000, frequency=440):
+
+        self.__create_sound(tone_duration, frequency)
+        self.__create_stream()
+
+    def __create_stream(self):
+        self.__stream = p.open(format=self.FORMAT,
+                               channels=self.CHANNELS,
+                               rate=self.RATE,
+                               input=True,
+                               output=True,
+                               frames_per_buffer=self.CHUNK)
+
+    def __create_sound(self, tone_duration, frequency):
+        numSamples = int(self.RATE * tone_duration / 1000.)
+        volumeScale = (.85) * 32767
+        twopi = 2 * np.pi
+        sine = np.sin(np.arange(numSamples) * twopi * frequency / self.RATE) * volumeScale
+        signal = np.array((sine, sine)).transpose().flatten()
+
+        # damp_duration = 100
+        # end_silence = 100
+        # # add an- u- abschwellen
+        # if damp_duration < tone_duration / 2.:
+        #     num_damp_samp = 2 * int(self.RATE * damp_duration)  # the 2 is the stereo
+        # else:
+        #     print
+        #     'WARNING! dampDuration>toneDuration/2!!! Using toneDuration/2'
+        #     num_damp_samp = 2 * int(self.RATE * tone_duration / 2.)  # the 2 is the stereo
+        # dampVec = np.linspace(0, 1, num_damp_samp)
+        # signal[0:num_damp_samp] *= dampVec
+        # signal[len(signal) - num_damp_samp::] *= dampVec[::-1]
+        # signal = np.append(signal, np.zeros(2 * int(self.RATE * end_silence)))
+
+        self.__signal = signal
+
+    def play(self):
+        scaling = (np.sin(np.arange(100) * 2 * np.pi / 50) + 1)/2.
+        vol_idx = 1
+        idx = 0
+        data = self.__signal[idx:idx + 2 * self.CHUNK]
+
+        while len(data):
+            vol = scaling[vol_idx]
+            print(vol)
+            self.__stream.write((vol*data).astype(np.int16).tostring())
+            idx += 2 * self.CHUNK
+            data = self.__signal[idx:idx + 2 * self.CHUNK]
+            vol_idx +=1
+
+
 if __name__ == '__main__':
     import neuron_to_note
 
     note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
-    device = SoundDevice(note_converter, max_num_signals=2)
-    device.update('uwe', 1, 2, 3, 4)
+    # device = MidiDevice(note_converter, max_num_signals=2)
+    device = SoundHandler()
+    device.play()
