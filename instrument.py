@@ -1,11 +1,14 @@
 import pyaudio
 import numpy as np
+import pickle
 import asyncio
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+from neuron_to_note import note_to_freq
 
 
 INSTRUMENT_TARGET_ADDRESS = "/instrument_input"
+INSTRUMENT_INIT_ADDRESS = "/instrument_init"
 INSTRUMENT_PORT = 5020
 ip = "127.0.0.1"
 
@@ -20,15 +23,23 @@ class OscInstrument:
 
     server = None
     tone_duration = 2000
+    __frequencies = []
+    __notes = []
+    __volumes = []
+    __n_freqs = 0
     __signal = None  # a (num-frequencies, num-samples)-matrix, where the kth row is the sine wave for the kth neuron
 
-    def __init__(self, frequencies):
-        self.__n_freqs = len(frequencies)
-        self.__frequencies = np.mat(frequencies)
-        self.__volume = np.ones_like(frequencies)
-
-        self.__create_sound()
+    def __init__(self, notes=None):
+        if notes:
+            self.init_sound(notes)
         self.__create_stream()
+
+    def init_sound(self, notes):
+        self.__notes = notes
+        self.__n_freqs = len(notes)
+        self.__frequencies = np.mat(note_to_freq(notes))
+        self.__volumes = np.ones_like(self.__frequencies)
+        self.__create_sound()
 
     def __create_stream(self):
         self.__stream = p.open(format=self.FORMAT,
@@ -64,10 +75,11 @@ class OscInstrument:
         self.__signal = signal
 
     def message_handler(self, address, content):
-        print('address: {} map: {}'.format(address, content))
-        # osc_map = pickle.loads(content)
-
-        self._update_volumes(content)
+        if address == INSTRUMENT_INIT_ADDRESS:
+            notes = pickle.loads(content)
+            self.init_sound(notes)
+        elif address == INSTRUMENT_TARGET_ADDRESS:
+            self._update_volume(content)
 
     def play(self):
         scaling = (np.sin(np.arange(100) * 2 * np.pi / 50) + 1)/2.
@@ -83,28 +95,30 @@ class OscInstrument:
             data = self.__signal[idx:idx + 2 * self.CHUNK]
             vol_idx += 1
 
-    def _update_volumes(self, volume):
-        self.__volume = volume
+    def _update_volume(self, note):
+        idx = self.__notes.index(note)
+        self.__volumes[:, idx] = np.remainder(self.__volumes[:, idx] + 1, 2)
 
     async def loop(self):
         idx = 0
         while True:
-            end_idx = idx + 2 * self.CHUNK
-            if end_idx < self.__signal.shape[1]:
-                curr_signal = self.__signal[:, idx:end_idx]
-                idx = end_idx
-            else:
-                curr_signal = self.__signal[:, idx::]
-                idx = 0
-            # multiply with volumes and average signal
-            data = np.array(self.__volume.T * curr_signal).flatten()/self.__n_freqs
-
-            self.__stream.write(data.astype(np.int16).tostring())
-            await asyncio.sleep(1000/self.RATE)
+            if len(self.__frequencies):
+                end_idx = idx + 2 * self.CHUNK
+                if end_idx < self.__signal.shape[1]:
+                    curr_signal = self.__signal[:, idx:end_idx]
+                    idx = end_idx
+                else:
+                    curr_signal = self.__signal[:, idx::]
+                    idx = 0
+                # multiply with volumes and average signal
+                data = np.array(self.__volumes * curr_signal).flatten()/self.__n_freqs
+                self.__stream.write(data.astype(np.int16).tostring())
+            await asyncio.sleep(1000/(2*self.RATE))
 
     async def init_main(self):
         dispatcher = Dispatcher()
         dispatcher.map(INSTRUMENT_TARGET_ADDRESS, self.message_handler)
+        dispatcher.map(INSTRUMENT_INIT_ADDRESS, self.message_handler)
 
         self.server = AsyncIOOSCUDPServer((ip, INSTRUMENT_PORT), dispatcher, asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
@@ -115,7 +129,7 @@ class OscInstrument:
 
 
 if __name__ == '__main__':
-    song_server = OscInstrument([220, 330, 440])
+    song_server = OscInstrument()
 
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(song_server.init_main())

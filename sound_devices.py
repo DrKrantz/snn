@@ -2,6 +2,7 @@ import pygame.midi as pm
 import numpy as np
 import time
 import pygame
+import pickle
 from pythonosc import udp_client
 
 import instrument
@@ -80,24 +81,27 @@ class MidiDevice(pm.Output):
 
 
 class AnalogDevice(object):
-    def __init__(self,
-               converter,
-               velocity=80):
+    def __init__(self, converter, velocity=80):
         self.converter = converter
         self.__velocity = velocity
-        self.__player = SoundPlayer()
+        self.__player = OscPlayer()
+        self.__player.init_instrument(converter.midi_notes)
 
     def update(self, *args):
         notes = self.converter.convert(args)
-        self.__player.play()
+        [self.__player.note_on(note) for note in notes]
 
 
 class OscPlayer(udp_client.SimpleUDPClient):
     def __init__(self):
         super(OscPlayer, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
 
-    def play(self, volume):
-        self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, volume)
+    def note_on(self, note):
+        self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, note)
+
+    def init_instrument(self, midi_notes):
+        notes_pickle = pickle.dumps(midi_notes)
+        self.send_message(instrument.INSTRUMENT_INIT_ADDRESS, notes_pickle)
 
 
 class SoundPlayer:
@@ -143,13 +147,11 @@ class SoundPlayer:
         return self.__channel.get_busy()
 
 
-
-
-
 if __name__ == '__main__':
     import neuron_to_note
 
     note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
     # device = MidiDevice(note_converter, max_num_signals=2)
-    device = SoundHandler()
-    device.play()
+    device = AnalogDevice(note_converter)
+    # device.run()
+    # device.play()

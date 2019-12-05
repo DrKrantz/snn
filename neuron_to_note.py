@@ -12,16 +12,15 @@ def multiply_scale(scale, n_octaves=12):
 
 
 class Neuron2NoteConverter:
-
-    def __init__(self, note_range, scale):
-        self._note_range = note_range
-        self._scale = self._extend_scale(scale)
+    def __init__(self, all_neuron_ids, scale):
+        self._all_neuron_ids = all_neuron_ids
+        self.midi_notes = self._extend_scale(scale)
 
     def convert(self, neuron_ids):
-        return self._scale[np.mod(np.array(neuron_ids), len(self._scale)).astype('int')]
+        return self.midi_notes[np.mod(np.array(neuron_ids), len(self.midi_notes)).astype('int')]
 
     def _extend_scale(self, scale):
-        return np.intersect1d(self._note_range, multiply_scale(scale))
+        return np.intersect1d(self._all_neuron_ids, multiply_scale(scale))
 
 
 class TogglingConverter(Neuron2NoteConverter):
@@ -38,6 +37,24 @@ class TogglingConverter(Neuron2NoteConverter):
             self._scale = self._scales[self._current_scale_id]
             print("TogglingConverter: scale switched")
         return self._scale[np.mod(np.array(neuron_ids), len(self._scale)).astype('int')]
+
+
+def note_to_freq(notes):
+    notes = np.array(notes)
+    a = 440  # frequency of A (common value is 440Hz)
+    return (a / 32) * (2 ** ((notes - 9) / 12))
+
+
+class Neuron2FrequencyConverter(Neuron2NoteConverter):
+    def __init__(self, all_neuron_ids, scale):
+        super(Neuron2FrequencyConverter, self).__init__(all_neuron_ids, scale)
+        self.all_notes = self.convert(self._all_neuron_ids)
+        self.frequencies = self.note_to_freq(self.all_notes)
+
+    @staticmethod
+    def note_to_freq(notes):
+        a = 440  # frequency of A (common value is 440Hz)
+        return (a / 32) * (2 ** ((notes - 9) / 12))
 
 
 if __name__ == '__main__':
