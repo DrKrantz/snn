@@ -19,10 +19,15 @@ class OscInstrument:
     CHUNK = 1024
 
     server = None
+    tone_duration = 2000
+    __signal = None  # a (num-frequencies, num-samples)-matrix, where the kth row is the sine wave for the kth neuron
 
-    def __init__(self, tone_duration=2000, frequency=440):
-        self.__volume = 1
-        self.__create_sound(tone_duration, frequency)
+    def __init__(self, frequencies):
+        self.__n_freqs = len(frequencies)
+        self.__frequencies = np.mat(frequencies)
+        self.__volume = np.ones_like(frequencies)
+
+        self.__create_sound()
         self.__create_stream()
 
     def __create_stream(self):
@@ -33,12 +38,14 @@ class OscInstrument:
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
-    def __create_sound(self, tone_duration, frequency):
-        num_samples = int(self.RATE * tone_duration / 1000.)
+    def __create_sound(self):
+        num_samples = int(self.RATE * self.tone_duration / 1000.)
         volume_scale = .85 * 32767
         twopi = 2 * np.pi
-        sine = np.sin(np.arange(num_samples) * twopi * frequency / self.RATE) * volume_scale
-        signal = np.array((sine, sine)).transpose().flatten()
+
+        #  every x-value needs to be duplicated for stereo sound
+        x_data = np.resize(np.arange(num_samples), (2, num_samples)).T.flatten()
+        signal = np.sin(self.__frequencies.T * x_data * twopi / self.RATE) * volume_scale
 
         # damp_duration = 100
         # end_silence = 100
@@ -80,21 +87,20 @@ class OscInstrument:
         self.__volume = volume
 
     async def loop(self):
-        refresh_rate = 50
         idx = 0
-
         while True:
             end_idx = idx + 2 * self.CHUNK
-            if end_idx < len(self.__signal):
-                data = self.__signal[idx:end_idx]
+            if end_idx < self.__signal.shape[1]:
+                curr_signal = self.__signal[:, idx:end_idx]
                 idx = end_idx
             else:
-                data = self.__signal[idx::]
+                curr_signal = self.__signal[:, idx::]
                 idx = 0
+            # multiply with volumes and average signal
+            data = np.array(self.__volume.T * curr_signal).flatten()/self.__n_freqs
 
-            self.__stream.write((self.__volume * data).astype(np.int16).tostring())
-
-            await asyncio.sleep(1./refresh_rate)
+            self.__stream.write(data.astype(np.int16).tostring())
+            await asyncio.sleep(1000/self.RATE)
 
     async def init_main(self):
         dispatcher = Dispatcher()
@@ -109,7 +115,7 @@ class OscInstrument:
 
 
 if __name__ == '__main__':
-    song_server = OscInstrument()
+    song_server = OscInstrument([220, 330, 440])
 
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(song_server.init_main())
