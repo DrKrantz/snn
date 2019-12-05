@@ -97,7 +97,7 @@ class OscInstrument:
 
     def _update_volume(self, note):
         idx = self.__notes.index(note)
-        self.__volumes[:, idx] = np.remainder(self.__volumes[:, idx] + 1, 2)
+        self.__volumes[:, idx] = 0.25 if self.__volumes[:, idx] == 0.75 else 0.75
 
     async def loop(self):
         idx = 0
