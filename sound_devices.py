@@ -150,8 +150,21 @@ class SoundPlayer:
 if __name__ == '__main__':
     import neuron_to_note
 
-    note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
+    # note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
     # device = MidiDevice(note_converter, max_num_signals=2)
-    device = AnalogDevice(note_converter)
+    # device = AnalogDevice(note_converter)
     # device.run()
     # device.play()
+
+    player = OscPlayer()
+    player.init_instrument([60,  80, 120])
+    player.note_on(80)
+    player.note_on(80)
+    time.sleep(2)
+    print(120)
+    player.note_on(120)
+    player.note_on(120)
+    time.sleep(2)
+    print(120)
+    player.note_on(120)
+    player.note_on(120)
