@@ -20,6 +20,7 @@ class OscInstrument:
     RATE = 44100
     CHANNELS = 2
     CHUNK = 1024
+    DECAY_FACTOR = 0.95
 
     server = None
     __frequencies = []
@@ -46,9 +47,12 @@ class OscInstrument:
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
+    def __volume_decay(self):
+        self.__volumes *= self.DECAY_FACTOR
+
     def _update_volume(self, note):
         idx = self.__notes.index(note)
-        self.__volumes[:, idx] = 0.25 if self.__volumes[:, idx] == 0.75 else 0.75
+        self.__volumes[:, idx] = 1
 
     def message_handler(self, address, content):
         if address == INSTRUMENT_INIT_ADDRESS:
@@ -64,14 +68,14 @@ class OscInstrument:
         x_data = np.resize(np.arange(2 * self.CHUNK), (2, 2 * self.CHUNK)).T.flatten()
         while True:
             if len(self.__frequencies):
-                # TODO: reset signal to start from 0 at some point to avoid too large numbers
-                x_data += 2 * self.CHUNK
-
                 # a (num-frequencies, num-samples)-matrix, where the kth row is the sine wave for the kth neuron
                 curr_signal = np.sin(self.__frequencies.T * x_data * twopi / self.RATE) * volume_scale
+                self.__volume_decay()
                 # multiply with volumes and average over frequencies
                 data = np.array(self.__volumes * curr_signal).flatten()/self.__n_freqs
                 self.__stream.write(data.astype(np.int16).tostring())
+                # TODO: reset signal to start from 0 at some point to avoid too large numbers
+                x_data += 2 * self.CHUNK
             await asyncio.sleep(1000/(2*self.RATE))
 
     async def init_main(self):

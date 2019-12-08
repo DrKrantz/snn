@@ -158,13 +158,14 @@ if __name__ == '__main__':
 
     player = OscPlayer()
     player.init_instrument([60,  80, 120])
-    player.note_on(80)
-    player.note_on(80)
     time.sleep(2)
+    print(80)
+    player.note_on(80)
+
+    time.sleep(3)
     print(120)
     player.note_on(120)
-    player.note_on(120)
+
     time.sleep(2)
-    print(120)
-    player.note_on(120)
-    player.note_on(120)
+    print(60)
+    player.note_on(60)
