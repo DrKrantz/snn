@@ -148,6 +148,7 @@ class SoundPlayer:
 
 
 if __name__ == '__main__':
+    import random
     import neuron_to_note
 
     # note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
@@ -156,16 +157,17 @@ if __name__ == '__main__':
     # device.run()
     # device.play()
 
+    from config import frequencies
+    freqs = frequencies.get_octaves(n_oct=1, start_oct=4)
+    notes = range(len(freqs))
+
     player = OscPlayer()
-    player.init_instrument([60,  80, 120])
+    player.init_instrument(freqs)
     time.sleep(2)
-    print(80)
-    player.note_on(80)
 
-    time.sleep(3)
-    print(120)
-    player.note_on(120)
-
-    time.sleep(2)
-    print(60)
-    player.note_on(60)
+    k = 5
+    while True:
+        played = random.sample(notes, k=1)
+        player.note_on(played)
+        # [player.note_on(note) for note in played]
+        time.sleep(0.03)
