@@ -68,7 +68,10 @@ class OscInstrument:
     __frequencies = []
     __notes = []
     __volumes = []
+    __indices_to_update = []
     __n_freqs = 0
+    __data_matrix = np.array([])
+    __max_volume = .85 * 32767
 
     def __init__(self, notes=None):
         self.__create_stream()
@@ -86,31 +89,49 @@ class OscInstrument:
     def __init_sound(self, notes, note_type=TYPE_FREQUENCIES):
         if note_type == TYPE_NOTE:
             self.__notes = notes
-            self.__frequencies = np.mat(note_to_freq(notes))
+            self.__frequencies = np.array(note_to_freq(notes))
         elif note_type == TYPE_FREQUENCIES:
-            self.__frequencies = np.mat(notes)
+            self.__frequencies = np.array(notes)
             self.__notes = range(len(notes))
         self.__n_freqs = len(notes)
-        self.__volumes = np.ones_like(self.__frequencies)
+        self.__volumes = np.ones_like(self.__frequencies)*self.__max_volume
+        self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
 
     def _volume_decay(self):
         self.__volumes *= self.DECAY_FACTOR
 
     def _compute_current_signal(self, x_data):
-        volume_scale = .85 * 32767
         # a (num-frequencies, num-samples)-matrix, where the kth row is the sine wave for the kth neuron
-        curr_signal = np.sin(self.__frequencies.T * x_data * 2 * np.pi / self.RATE) * volume_scale
-        # multiply with volumes and average over frequencies
-        data = np.array(self.__volumes * curr_signal).flatten() / self.__n_freqs
-        return data
+        base_signal = np.cos(np.mat(self.__frequencies).T * x_data * 2 * np.pi / self.RATE)
+        for freq_idx, wave_form in enumerate(np.array(base_signal)):
+
+            # detect the 'switch_idx' where the signal crosses zero
+            first_sign = np.sign(wave_form[0])
+            if first_sign == 0:
+                switch_idx = 0
+            else:
+                switch_idx = np.nonzero(np.sign(wave_form) != first_sign)[0][0]
+            wave_form[0:switch_idx] *= self.__volumes[freq_idx]
+
+            # set volume to maximum or decay
+            if freq_idx in self.__indices_to_update:
+                self.__volumes[freq_idx] = self.__max_volume
+            else:
+                self.__volumes[freq_idx] *= self.DECAY_FACTOR
+
+            # set volume of signal, wave_form has amplitude 1 by construction
+            wave_form[switch_idx::] *= self.__volumes[freq_idx]
+
+            self.__data_matrix[freq_idx, :] = wave_form
+
+        return np.mean(self.__data_matrix, 0)
 
     def _shift_x_data(self, x_values):
         # TODO: reset x_data to start from 0 at some point to avoid too large numbers
-        return x_values + 2 * self.CHUNK
+        return x_values + self.CHUNK
 
     def _update_volume(self, note):
-        idx = self.__notes.index(note)
-        self.__volumes[:, idx] = 1
+        self.__indices_to_update.append(self.__notes.index(note))
 
     def message_handler(self, address, content):
         if address == INSTRUMENT_INIT_ADDRESS:
@@ -121,22 +142,22 @@ class OscInstrument:
 
     async def loop(self):
         #  every x-value needs to be duplicated for stereo sound
-        x_data = np.resize(np.arange(2 * self.CHUNK), (2, 2 * self.CHUNK)).T.flatten()
+        x_data = np.resize(np.arange(self.CHUNK), (2, self.CHUNK)).T.flatten()
 
         all_data = np.array([])
-
         while True:
             if len(self.__frequencies):
-                self._volume_decay()
+                # self._volume_decay()
                 data = self._compute_current_signal(x_data)
+                self.__indices_to_update = []
                 self.__stream.write(data.astype(np.int16).tostring())
                 x_data = self._shift_x_data(x_data)
 
                 all_data = np.concatenate([all_data, data])
-                if len(all_data) >= 1000*self.CHUNK:
+                if len(all_data) >= 100*self.CHUNK:
                     with open('test.pkl', 'wb') as f:
                         pickle.dump(all_data, f)
-                    break
+                    # break
 
             await asyncio.sleep(1000/(4*self.RATE))
 
