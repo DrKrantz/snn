@@ -59,7 +59,7 @@ class SoundThread(threading.Thread):  # multiprocessing.Process
 
 class OscInstrument:
     FORMAT = pyaudio.paInt16
-    RATE = 44100
+    RATE = 44100  # Hz
     CHANNELS = 2
     CHUNK = 1024
     DECAY_FACTOR = 0.95
@@ -153,6 +153,7 @@ class OscInstrument:
 
     async def loop(self):
         all_data = np.array([])
+        now = time.time()
         while True:
             if len(self.__frequencies):
                 # self._volume_decay()
@@ -167,7 +168,11 @@ class OscInstrument:
                 #         pickle.dump(all_data, f)
                     # break
 
-            await asyncio.sleep(1000/(2*self.RATE))
+            # Adjust waiting to time to required update interval self.CHUNK/self.RATE
+            time_passed = time.time() - now
+            await asyncio.sleep(self.CHUNK/self.RATE - time_passed - 0.01)  # 0.01 is a extra buffer
+
+            now = time.time()
 
     async def init_main(self):
         dispatcher = Dispatcher()
