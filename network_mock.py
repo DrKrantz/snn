@@ -3,11 +3,13 @@ import time
 
 if __name__ == '__main__':
     from sound_devices import OscPlayer
+    from config import frequencies
+    freqs = frequencies.get_octaves(n_oct=2, start_oct=4)
 
-    rates = np.array([10, 3, 12])  # Hz
-    freqs = [140, 440, 620]
+    # freqs = [140, 210, 250, 330, 400, 440, 620, 700, 800, 880, 900]
+    N = len(freqs)
+    rates = 3 + np.random.random(N) * 15
     h = 1./1000  # resolution of time, in s
-    N = len(rates)
 
     player = OscPlayer()
     player.init_instrument(freqs)
@@ -19,7 +21,6 @@ if __name__ == '__main__':
         [player.note_on(int(note)) for note in fired]
 
         time_to_pause = h - (time.time() - now)
-        print(time_to_pause)
         if time_to_pause > 0:
             time.sleep(time_to_pause)
         now = time.time()

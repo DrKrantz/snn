@@ -23,7 +23,7 @@ TYPE_FREQUENCIES = 1
 class SoundThread(threading.Thread):  # multiprocessing.Process
     FORMAT = pyaudio.paInt16
     RATE = 44100
-    CHANNELS = 1
+    CHANNELS = 2
     CHUNK = 1024
     SMOOTHING_SAMPLES = 300
 
@@ -57,12 +57,26 @@ class SoundThread(threading.Thread):  # multiprocessing.Process
         self._status_playing = False
 
 
+def update_volume_additive(current_volume):
+    VOLUME_INCREASE = 1000
+    return min(current_volume + VOLUME_INCREASE, OscInstrument.MAX_VOLUME)
+
+
+def update_volume_to_max(current_volume):
+    return OscInstrument.MAX_VOLUME
+
+
+def decay_volume_exp(current_volume):
+    return current_volume*OscInstrument.DECAY_FACTOR
+
+
 class OscInstrument:
     FORMAT = pyaudio.paInt16
     RATE = 44100  # Hz
-    CHANNELS = 2
+    CHANNELS = 1
     CHUNK = 1024
     DECAY_FACTOR = 0.95
+    MAX_VOLUME = .85 * 32767
 
     server = None
     __frequencies = []
@@ -72,10 +86,11 @@ class OscInstrument:
     __n_freqs = 0
     __data_matrix = np.array([])
     __x_data = np.array([])
-    __max_volume = .85 * 32767
 
-    def __init__(self, notes=None):
+    def __init__(self, notes=None, volume_update_cb=None, volume_decay_cb=None):
         self.__create_stream()
+        self.volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
+        self.__volume_decay_cb = decay_volume_exp if volume_decay_cb is None else volume_decay_cb
         if notes:
             self.__init_sound(notes)
 
@@ -95,11 +110,11 @@ class OscInstrument:
             self.__frequencies = np.array(notes)
             self.__notes = range(len(notes))
         self.__n_freqs = len(notes)
-        self.__volumes = np.ones_like(self.__frequencies)*self.__max_volume
+        self.__volumes = np.ones_like(self.__frequencies)*self.MAX_VOLUME
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
         #  every x-value needs to be duplicated for stereo sound
-        duplicated_xrange = np.resize(np.arange(self.CHUNK), (2, self.CHUNK)).T.flatten()
-        self.__x_data = np.mat(self.__frequencies).T * duplicated_xrange * 2 * np.pi / self.RATE
+        multiplied_range = np.resize(np.arange(self.CHUNK), (self.CHANNELS, self.CHUNK)).T.flatten()
+        self.__x_data = np.mat(self.__frequencies).T * multiplied_range * 2 * np.pi / self.RATE
 
     def _volume_decay(self):
         self.__volumes *= self.DECAY_FACTOR
@@ -115,13 +130,14 @@ class OscInstrument:
                 switch_idx = 0
             else:
                 switch_idx = np.nonzero(np.sign(wave_form) != first_sign)[0][0]
+
             wave_form[0:switch_idx] *= self.__volumes[freq_idx]
 
             # set volume to maximum or decay
             if freq_idx in self.__indices_to_update:
-                self.__volumes[freq_idx] = self.__max_volume
+                self.__volumes[freq_idx] = self.volume_update_cb(self.__volumes[freq_idx])
             else:
-                self.__volumes[freq_idx] *= self.DECAY_FACTOR
+                self.__volumes[freq_idx] = self.__volume_decay_cb(self.__volumes[freq_idx])
 
             # set volume of signal, wave_form has amplitude 1 by construction
             wave_form[switch_idx::] *= self.__volumes[freq_idx]
@@ -153,26 +169,22 @@ class OscInstrument:
 
     async def loop(self):
         all_data = np.array([])
-        now = time.time()
         while True:
             if len(self.__frequencies):
-                # self._volume_decay()
-                data = self._compute_current_signal()
-                self.__indices_to_update = []
-                self.__stream.write(data.astype(np.int16).tostring())
-                self._shift_x_data()
+                if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
+                    data = self._compute_current_signal()
+                    self.__stream.write(data.astype(np.int16).tostring())
+
+                    self._shift_x_data()
+                    self.__indices_to_update = []
 
                 # all_data = np.concatenate([all_data, data])
-                # if len(all_data) >= 100*self.CHUNK:
+                # if len(all_data) >= 100 * self.CHUNK:
                 #     with open('test.pkl', 'wb') as f:
                 #         pickle.dump(all_data, f)
-                    # break
+                #     break
 
-            # Adjust waiting to time to required update interval self.CHUNK/self.RATE
-            time_passed = time.time() - now
-            await asyncio.sleep(self.CHUNK/self.RATE - time_passed - 0.01)  # 0.01 is a extra buffer
-
-            now = time.time()
+            await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
 
     async def init_main(self):
         dispatcher = Dispatcher()
@@ -188,7 +200,7 @@ class OscInstrument:
 
 
 if __name__ == '__main__':
-    song_server = OscInstrument()
+    song_server = OscInstrument(volume_update_cb=update_volume_additive)
 
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(song_server.init_main())

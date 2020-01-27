@@ -7,7 +7,7 @@ p = pyaudio.PyAudio()
 class WavePlayer:
     FORMAT = pyaudio.paInt16
     RATE = 44100
-    CHANNELS = 2
+    CHANNELS = 1
     CHUNK = 1024
     DECAY_FACTOR = 0.95
 
