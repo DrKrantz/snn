@@ -75,7 +75,7 @@ class OscInstrument:
     RATE = 44100  # Hz
     CHANNELS = 2
     CHUNK = 1024
-    DECAY_FACTOR = 0.95
+    DECAY_FACTOR = 0.98
     MAX_VOLUME = .85 * 32767
 
     server = None
@@ -86,6 +86,7 @@ class OscInstrument:
     __n_freqs = 0
     __data_matrix = np.array([])
     __x_data = np.array([])
+    __LR_mask = np.array([])
 
     def __init__(self, notes=None, volume_update_cb=None, volume_decay_cb=None):
         self.__create_stream()
@@ -112,6 +113,8 @@ class OscInstrument:
         self.__n_freqs = len(notes)
         self.__volumes = np.ones_like(self.__frequencies) * self.MAX_VOLUME/10
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
+        self.__LR_mask = []
+        [self.__LR_mask.append(np.tile([L, 1-L], self.CHUNK)) for L in np.random.random(self.__n_freqs)]
         #  every x-value needs to be duplicated for stereo sound
         multiplied_range = np.resize(np.arange(self.CHUNK), (self.CHANNELS, self.CHUNK)).T.flatten()
         self.__x_data = np.mat(self.__frequencies).T * multiplied_range * 2 * np.pi / self.RATE
@@ -140,7 +143,7 @@ class OscInstrument:
             # set volume of signal, wave_form has amplitude 1 by construction
             wave_form[switch_idx::] *= self.__volumes[freq_idx]
 
-            self.__data_matrix[freq_idx, :] = wave_form
+            self.__data_matrix[freq_idx, :] = wave_form * self.__LR_mask[freq_idx]
 
         return np.mean(self.__data_matrix, 0)
 
