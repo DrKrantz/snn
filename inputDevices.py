@@ -196,6 +196,7 @@ class BCF(InputDevice):
                     self.pars['midi_external'][self.pars['Inh_ids']] += \
                         self.pars['ext_step']
 
+
 class KeyboardInput:
     def __init__(self, *args):
         self.triggered = array([], int)
@@ -205,7 +206,7 @@ class KeyboardInput:
         self.triggered = array([], int)
         return {'pars': pars, 'fired': fired}
 
-    def triggerSpike(self, key):
+    def trigger_spike(self, key):
         self.triggered = union1d(self.triggered, array([key], int))
 
 
