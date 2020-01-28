@@ -73,7 +73,7 @@ def decay_volume_exp(current_volume):
 class OscInstrument:
     FORMAT = pyaudio.paInt16
     RATE = 44100  # Hz
-    CHANNELS = 1
+    CHANNELS = 2
     CHUNK = 1024
     DECAY_FACTOR = 0.95
     MAX_VOLUME = .85 * 32767
@@ -98,7 +98,7 @@ class OscInstrument:
         self.__stream = p.open(format=self.FORMAT,
                                channels=self.CHANNELS,
                                rate=self.RATE,
-                               input=True,
+                               input=False,
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
@@ -110,14 +110,12 @@ class OscInstrument:
             self.__frequencies = np.array(notes)
             self.__notes = range(len(notes))
         self.__n_freqs = len(notes)
-        self.__volumes = np.ones_like(self.__frequencies)*self.MAX_VOLUME
+        self.__volumes = np.ones_like(self.__frequencies) * self.MAX_VOLUME/10
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
         #  every x-value needs to be duplicated for stereo sound
         multiplied_range = np.resize(np.arange(self.CHUNK), (self.CHANNELS, self.CHUNK)).T.flatten()
         self.__x_data = np.mat(self.__frequencies).T * multiplied_range * 2 * np.pi / self.RATE
-
-    def _volume_decay(self):
-        self.__volumes *= self.DECAY_FACTOR
+        print('Instrument initialized with {} frequencies'.format(self.__n_freqs))
 
     def _compute_current_signal(self):
         # a (num-frequencies, num-samples)-matrix, where the kth row is the sine wave for the kth neuron
@@ -168,7 +166,7 @@ class OscInstrument:
             self._update_volume(content)
 
     async def loop(self):
-        all_data = np.array([])
+        # all_data = np.array([])
         while True:
             if len(self.__frequencies):
                 if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
@@ -193,7 +191,7 @@ class OscInstrument:
 
         self.server = AsyncIOOSCUDPServer((ip, INSTRUMENT_PORT), dispatcher, asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
-        print('server running: transport {} protocol {}'.format(transport, protocol))
+        print('Instrument server running, waiting for initialization')
         await self.loop()  # Enter main loop of program
 
         transport.close()  # Clean up serve endpoint
