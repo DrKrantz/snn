@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "ubuntu/bionic64"
+  config.vm.box = "ubuntu/xenial64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -49,6 +49,7 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
+
   config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
@@ -63,40 +64,97 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
-     apt-get update
 
-     # additional dependencies for NEST
-     apt-get install -y cmake cython libgsl-dev libltdl-dev libncurses-dev libreadline-dev python-all-dev \
-     python-numpy python-scipy python-matplotlib python-nose openmpi-bin libopenmpi-dev
+
+
+  # APT-INSTALLS as ROOT
+  config.vm.provision "shell", privileged: true, inline: <<-SHELL
+     apt-get update -y
+     apt-get upgrade -y
+
+    # stuff for pyenv, pip
+     apt-get install -y libffi-dev
+     apt-get install --no-install-recommends -y make build-essential libssl-dev zlib1g-dev \
+       libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm-dev libncurses5-dev xz-utils \
+       tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev git
 
      # additional dependencies for MUSIC
-     apt-get install -y autotools-dev automake
+     # apt-get install -y autotools-dev automake
 
-     # additional python dependencies
-     apt-get install -y python3-pip python-pip
-     pip3 install mpi4py numpy scipy python-osc
-     pip install mpi4py
+     # additional dependencies for NEST
+     apt-get install -y cython libltdl-dev python-all-dev openmpi-bin libncurses-dev libreadline-dev libopenmpi-dev  libgsl-dev
 
-     # download and install MUSIC
-     git clone https://github.com/INCF/MUSIC.git
-     cd MUSIC
-     ldconfig
-     ./autogen.sh
-     ./configure --prefix=/home/vagrant/music
-     make
-     make install
+   SHELL
+
+    # INSTALL PYENV AS VAGRANT
+   # config.vm.provision "shell", privileged: false, inline: <<-SHELL
+
+     # install pyenv, python 3.8-dev and pip (from https://github.com/pyenv/pyenv#basic-github-checkout)
+
+  #    git clone https://github.com/pyenv/pyenv.git /home/vagrant/.pyenv
+  #    chown -R vagrant:vagrant /home/vagrant/.pyenv
+
+
+      # Add variables and init pyenv
+  #    export PYENV_ROOT="$HOME/.pyenv"
+  #    export PATH="$HOME/.pyenv/bin:$PATH"
+  #    eval "$(pyenv init -)"
+
+       # on debian:
+  #    CFLAGS=-I/usr/include/openssl LDFLAGS=-L/usr/lib pyenv install -v 3.8.0
+
+  #    pyenv install 3.8-dev
+  #    pyenv global 3.8-dev
+
+      # write parameters to .bashrc
+  #    echo 'export PYENV_ROOT="$HOME/.pyenv"' >> /home/vagrant/.bashrc
+  #    echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> /home/vagrant/.bashrc
+  #    echo 'eval "$(pyenv init -)"' >> /home/vagrant/.bashrc
+
+  # SHELL
+
+   # INSTALL PIP AS ROOT
+    config.vm.provision "shell", privileged: true, inline: <<-SHELL
+    ldconfig
+
+    # install pip
+    apt-get install -y python-pip
+   SHELL
+
+
+   # INSTALL MUSIC & NEST AS VAGRANT
+
+   config.vm.provision "shell", privileged: false, inline: <<-SHELL
+
+   #  pyenv global 3.8.0
+   pip install mpi4py numpy scipy python-osc ipython cython nose matplotlib
+
+   # download and install MUSIC
+   #  git clone https://github.com/INCF/MUSIC.git
+   #  cd MUSIC
+
+   #  ./autogen.sh
+   #  ./configure --prefix=/home/vagrant/music
+   #  make
+   #  make install
+   #  cd ~
+
+   # export PYTHONPATH=/home/vagrant/music/lib/python3.8/site-packages
+
+
+   # Update cmake via https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 
      # INSTALL NEST
-     wget https://github.com/nest/nest-simulator/archive/v2.18.0.tar.gz
-     tar -xzvf v2.18.0.tar.gz
+
+     # wget https://github.com/nest/nest-simulator/archive/v2.20.0.tar.gz
+     git clone https://github.com/nest/nest-simulator.git
+     # tar -xzvf v2.20.0.tar.gz
      mkdir nest-bld
      cd nest-bld
-     cmake -Dwith-python=3 -Dwith-mpi=ON -Dwith-music=/home/vagrant/music \
-       -DCMAKE_INSTALL_PREFIX:PATH=/home/vagrant/nest /home/vagrant/nest-simulator-2.18.0/
-
-    make
-    make install
+     cmake -Dwith-python=3 -Dwith-mpi=ON \
+      -DCMAKE_INSTALL_PREFIX:PATH=/home/vagrant/nest /home/vagrant/nest-simulator/
+     # make
+     # make install
 
   SHELL
 end
