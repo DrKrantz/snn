@@ -123,7 +123,7 @@ p_rate = 1000.0 * nu_ex * CE
 # already processed simulation time as well as its percentage of the total
 # simulation time.
 
-nest.SetKernelStatus({"resolution": dt, "print_time": True,
+nest.SetKernelStatus({"resolution": dt, "print_time": False,
                       "overwrite_files": True})
 
 print("Building network")
@@ -159,15 +159,9 @@ ispikes = nest.Create("spike_detector")
 # each spike is saved to file by stating the gid of the spiking neuron and
 # the spike time in one line.
 
-nest.SetStatus(espikes, [{"label": "brunel-py-ex",
-                          "withtime": True,
-                          "withgid": True,
-                          "to_file": True}])
+nest.SetStatus(espikes, [{"label": "brunel-py-ex", "record_to": "screen"}])
 
-nest.SetStatus(ispikes, [{"label": "brunel-py-in",
-                          "withtime": True,
-                          "withgid": True,
-                          "to_file": True}])
+nest.SetStatus(ispikes, [{"label": "brunel-py-in"}])
 
 print("Connecting devices")
 
@@ -235,13 +229,13 @@ nest.Connect(nodes_in, nodes_ex + nodes_in, conn_params_in, "inhibitory")
 #  ADD MUSIC
 #
 
-N_music = 20  # the number of neurons to send spikes to music
-music_out = nest.Create('music_event_out_proxy', 1,
-                        params={'port_name':'p_out'})
-
-for i, n in enumerate(nodes_ex[:N_music]):
-    nest.Connect([n], music_out, "one_to_one", {'music_channel': i})
-
+# N_music = 20  # the number of neurons to send spikes to music
+# music_out = nest.Create('music_event_out_proxy', 1,
+#                         params={'port_name':'p_out'})
+#
+# for i, n in enumerate(nodes_ex[:N_music]):
+#     nest.Connect([n], music_out, "one_to_one", {'music_channel': i})
+#
 
 
 
