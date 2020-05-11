@@ -3,11 +3,10 @@ from pythonosc.osc_server import BlockingOSCUDPServer
 import numpy as np
 
 import outputHandler
-import sound_devices
-import neuron_to_note
+from output import sound_devices, neuron_to_note
 
 
-class SoundServer:
+class OutputServer:
     server = None
     dispatcher = None
 
@@ -26,9 +25,9 @@ class SoundServer:
 
 if __name__ == '__main__':
     import config_parser
-    server = SoundServer(config_parser.config['sound']['neuron_notes'])  # TODO: allow other sound targets
+    server = OutputServer(config_parser.config['sound']['neuron_notes'])  # TODO: allow other sound targets
 
-    converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR, 
+    converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR,
                                                  neuron_to_note.SCALE_MAJOR + 1)
     # simple_synth = sound_devices.SoundDevice(converter)
     # server.register_device(simple_synth)

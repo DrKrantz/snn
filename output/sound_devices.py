@@ -84,7 +84,7 @@ class AnalogDevice(object):
     def __init__(self, converter, velocity=80):
         self.converter = converter
         self.__velocity = velocity
-        self.__player = OscPlayer()
+        self.__player = OscDevice()
         self.__player.init_instrument(converter.midi_notes)
 
     def update(self, *args):
@@ -92,9 +92,9 @@ class AnalogDevice(object):
         [self.__player.note_on(note) for note in notes]
 
 
-class OscPlayer(udp_client.SimpleUDPClient):
+class OscDevice(udp_client.SimpleUDPClient):
     def __init__(self):
-        super(OscPlayer, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
+        super(OscDevice, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
 
     def note_on(self, note):
         self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, note)
@@ -148,9 +148,6 @@ class SoundPlayer:
 
 
 if __name__ == '__main__':
-    import random
-    import neuron_to_note
-
     # note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
     # device = MidiDevice(note_converter, max_num_signals=2)
     # device = AnalogDevice(note_converter)
@@ -161,13 +158,13 @@ if __name__ == '__main__':
     freqs = frequencies.get_octaves(n_oct=1, start_oct=4)
     notes = range(len(freqs))
 
-    player = OscPlayer()
+    player = OscDevice()
     player.init_instrument(freqs)
-    time.sleep(2)
-
-    k = 5
-    while True:
-        played = random.sample(notes, k=1)
-        player.note_on(played)
-        # [player.note_on(note) for note in played]
-        time.sleep(0.03)
+    # time.sleep(2)
+    #
+    # k = 5
+    # while True:
+    #     played = random.sample(notes, k=1)
+    #     player.note_on(played)
+    #     # [player.note_on(note) for note in played]
+    #     time.sleep(0.03)

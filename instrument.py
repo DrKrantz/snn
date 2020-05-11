@@ -6,7 +6,7 @@ import threading
 import time
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-from neuron_to_note import note_to_freq
+from output.neuron_to_note import note_to_freq
 
 
 INSTRUMENT_TARGET_ADDRESS = "/instrument_input"

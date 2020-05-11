@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 if __name__ == '__main__':
-    from sound_devices import OscPlayer
+    from output.sound_devices import OscDevice
     from config import frequencies
     freqs = frequencies.get_octaves(n_oct=2, start_oct=4)
 
@@ -11,7 +11,7 @@ if __name__ == '__main__':
     rates = 3 + np.random.random(N) * 15
     h = 1./1000  # resolution of time, in s
 
-    player = OscPlayer()
+    player = OscDevice()
     player.init_instrument(freqs)
     time.sleep(1)
 
