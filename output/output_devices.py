@@ -1,13 +1,10 @@
 import pygame.midi as pm
 import numpy as np
 import time
-import pygame
 import pickle
 from pythonosc import udp_client
 
-import instrument
-
-pm.init()
+from . import instrument
 
 
 def get_device_id(midi_port):
@@ -25,6 +22,7 @@ class MidiDevice(pm.Output):
                  midi_port='IAC Driver Bus 1',
                  max_num_signals=np.infty,
                  update_interval=0.1):
+
         self.converter = converter
         self.__velocity = velocity
         self.__max_num_signals = max_num_signals
@@ -33,6 +31,8 @@ class MidiDevice(pm.Output):
         self.__on_notes = set()
         self.__active_notes = {}  # a dict of active notes {note1: on_duration1, note2: on_duration2, ...}
         self.__now = time.time()
+
+        pm.init()
 
         device_id = get_device_id(midi_port)
         if device_id == -1:
@@ -80,94 +80,20 @@ class MidiDevice(pm.Output):
             self.__now = now
 
 
-class AnalogDevice(object):
-    def __init__(self, converter, velocity=80):
+class OscDevice(udp_client.SimpleUDPClient):
+    def __init__(self, converter):
         self.converter = converter
-        self.__velocity = velocity
-        self.__player = OscPlayer()
-        self.__player.init_instrument(converter.midi_notes)
+        super(OscDevice, self).__init__(instrument.IP, instrument.PORT)
 
-    def update(self, *args):
+    def update(self, _, *args):
         notes = self.converter.convert(args)
-        [self.__player.note_on(note) for note in notes]
 
+        # print('forwarding {}'.format( notes ))
+        self.send_message(instrument.UPDATE_ADDRESS, notes)
 
-class OscPlayer(udp_client.SimpleUDPClient):
-    def __init__(self):
-        super(OscPlayer, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
-
-    def note_on(self, note):
-        self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, note)
+    def turn_all_off(self):
+        pass  # TODO: force note off via osc
 
     def init_instrument(self, midi_notes):
         notes_pickle = pickle.dumps(midi_notes)
-        self.send_message(instrument.INSTRUMENT_INIT_ADDRESS, notes_pickle)
-
-
-class SoundPlayer:
-    RATE = 44100
-    CHANNELS = 2
-
-    def __init__(self):
-        pygame.init()
-        self.__sound = pygame.mixer.Sound(np.array([]))
-        self.__create_sound()
-        self.__channel = self.__sound.play()
-
-    def __create_sound(self):
-        num_samples = int(self.RATE * 1 / 1000.)
-        bits = 16
-        twopi = 2 * np.pi
-
-        pygame.mixer.pre_init(44100, -bits, self.CHANNELS)
-        pygame.init()
-
-        max_sample = 2 ** (bits - 1) - 1
-        sine = max_sample * np.sin(np.arange(num_samples) * twopi * 220 / self.RATE)
-
-        num_damp_samp = int(self.RATE * 0.1)
-
-        damp_vec = np.linspace(0, 1, num_damp_samp)
-        sine[0:num_damp_samp] *= damp_vec
-        sine[len(sine) - num_damp_samp::] *= damp_vec[::-1]
-
-        #  add ending silence
-        sine = np.concatenate([sine, np.zeros(int(self.RATE * 0.1))])
-
-        #  generate signal for channels
-        signal = np.array((sine, sine))  # default to LR
-
-        signal = np.ascontiguousarray(signal.T.astype(np.int16))
-        self.__sound = pygame.sndarray.make_sound(signal)
-
-    def play(self):
-        self.__channel = self.__sound.play()
-
-    def get_busy(self):
-        return self.__channel.get_busy()
-
-
-if __name__ == '__main__':
-    import random
-    import neuron_to_note
-
-    # note_converter = neuron_to_note.Neuron2NoteConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR)
-    # device = MidiDevice(note_converter, max_num_signals=2)
-    # device = AnalogDevice(note_converter)
-    # device.run()
-    # device.play()
-
-    from config import frequencies
-    freqs = frequencies.get_octaves(n_oct=1, start_oct=4)
-    notes = range(len(freqs))
-
-    player = OscPlayer()
-    player.init_instrument(freqs)
-    time.sleep(2)
-
-    k = 5
-    while True:
-        played = random.sample(notes, k=1)
-        player.note_on(played)
-        # [player.note_on(note) for note in played]
-        time.sleep(0.03)
+        self.send_message(instrument.INIT_ADDRESS, notes_pickle)

@@ -23,6 +23,14 @@ class Neuron2NoteConverter:
         return np.intersect1d(self._all_neuron_ids, multiply_scale(scale))
 
 
+class LinearConverter:
+    def __init__(self, offset=0):
+        self.__offset = offset
+
+    def convert(self, neuron_ids):
+        return [neuron_id + self.__offset for neuron_id in neuron_ids]
+
+
 class TogglingConverter(Neuron2NoteConverter):
     TOGGLE_COUNT = 20
     _current_scale_id = 0

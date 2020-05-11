@@ -6,13 +6,13 @@ import threading
 import time
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-from neuron_to_note import note_to_freq
+from output.neuron_to_note import note_to_freq
 
 
-INSTRUMENT_TARGET_ADDRESS = "/instrument_input"
-INSTRUMENT_INIT_ADDRESS = "/instrument_init"
-INSTRUMENT_PORT = 5020
-ip = "127.0.0.1"
+UPDATE_ADDRESS = "/instrument_input"
+INIT_ADDRESS = "/instrument_init"
+PORT = 5020
+IP = "127.0.0.1"
 
 p = pyaudio.PyAudio()
 
@@ -103,7 +103,7 @@ class OscInstrument:
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
-    def __init_sound(self, notes, note_type=TYPE_FREQUENCIES):
+    def __init_sound(self, notes, note_type=TYPE_NOTE):
         if note_type == TYPE_NOTE:
             self.__notes = notes
             self.__frequencies = np.array(note_to_freq(notes))
@@ -111,7 +111,7 @@ class OscInstrument:
             self.__frequencies = np.array(notes)
             self.__notes = range(len(notes))
         self.__n_freqs = len(notes)
-        self.__volumes = np.ones_like(self.__frequencies) * self.MAX_VOLUME/10
+        self.__volumes = np.ones_like(self.__notes) * self.MAX_VOLUME/10
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
         self.__LR_mask = []
         [self.__LR_mask.append(np.tile([L, 1-L], self.CHUNK)) for L in np.random.random(self.__n_freqs)]
@@ -158,15 +158,16 @@ class OscInstrument:
             x_data[freq_idx, :] = x-factor*2*np.pi
         self.__x_data = x_data
 
-    def _update_volume(self, note):
-        self.__indices_to_update.append(self.__notes.index(note))
+    def _update_volume(self, notes):
+        [self.__indices_to_update.append(self.__notes.index(note)) for note in notes]
 
-    def message_handler(self, address, content):
-        if address == INSTRUMENT_INIT_ADDRESS:
-            notes = pickle.loads(content)
-            self.__init_sound(notes)
-        elif address == INSTRUMENT_TARGET_ADDRESS:
-            self._update_volume(content)
+    def update_spiked(self, _, *content):
+        # print('receiving {}'.format(content))
+        self._update_volume(content)
+
+    def init_notes(self, _, content):
+        notes = pickle.loads(content)
+        self.__init_sound(notes)
 
     async def loop(self):
         # all_data = np.array([])
@@ -189,10 +190,10 @@ class OscInstrument:
 
     async def init_main(self):
         dispatcher = Dispatcher()
-        dispatcher.map(INSTRUMENT_TARGET_ADDRESS, self.message_handler)
-        dispatcher.map(INSTRUMENT_INIT_ADDRESS, self.message_handler)
+        dispatcher.map(UPDATE_ADDRESS, self.update_spiked)
+        dispatcher.map(INIT_ADDRESS, self.init_notes)
 
-        self.server = AsyncIOOSCUDPServer((ip, INSTRUMENT_PORT), dispatcher, asyncio.get_event_loop())
+        self.server = AsyncIOOSCUDPServer((IP, PORT), dispatcher, asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
         print('Instrument server running, waiting for initialization')
         await self.loop()  # Enter main loop of program

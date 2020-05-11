@@ -7,6 +7,13 @@ displays:
 ---
 sound:
   neuron_notes:
-    ip: 127.0.0.1
-    port: 1337
+    ip: 192.168.33.1
+    port: 8080
     address: /neuron_notes/spikes/
+
+---
+sources:
+  simulator:
+    ip: 192.168.33.1
+    port: 8080
+    address: /spikes

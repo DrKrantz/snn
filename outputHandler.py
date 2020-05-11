@@ -4,9 +4,6 @@ from pythonosc.udp_client import SimpleUDPClient
 
 from outputDevices import *
 
-ADDRESS_SPIKES = "/spikes/"
-ADDRESS_OFF = "/off/"
-
 
 class OutputHandler(object):
     __clients = []
