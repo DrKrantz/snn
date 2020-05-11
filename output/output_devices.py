@@ -5,7 +5,7 @@ import pygame
 import pickle
 from pythonosc import udp_client
 
-import instrument
+from . import instrument
 
 pm.init()
 
@@ -93,15 +93,22 @@ class AnalogDevice(object):
 
 
 class OscDevice(udp_client.SimpleUDPClient):
-    def __init__(self):
-        super(OscDevice, self).__init__(instrument.ip, instrument.INSTRUMENT_PORT)
+    def __init__(self, converter):
+        self.converter = converter
+        super(OscDevice, self).__init__(instrument.IP, instrument.PORT)
 
-    def note_on(self, note):
-        self.send_message(instrument.INSTRUMENT_TARGET_ADDRESS, note)
+    def update(self, _, *args):
+        notes = self.converter.convert(args)
+
+        # print('forwarding {}'.format( notes ))
+        self.send_message(instrument.UPDATE_ADDRESS, notes)
+
+    def turn_all_off(self):
+        pass
 
     def init_instrument(self, midi_notes):
         notes_pickle = pickle.dumps(midi_notes)
-        self.send_message(instrument.INSTRUMENT_INIT_ADDRESS, notes_pickle)
+        self.send_message(instrument.INIT_ADDRESS, notes_pickle)
 
 
 class SoundPlayer:

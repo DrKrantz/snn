@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 if __name__ == '__main__':
-    from output.sound_devices import OscDevice
+    from output.output_devices import OscDevice
     from config import frequencies
     freqs = frequencies.get_octaves(n_oct=2, start_oct=4)
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     now = time.time()
     while True:
         fired = np.nonzero(np.random.random(N) <= rates*h)[0]
-        [player.note_on(int(note)) for note in fired]
+        [player.update('uwe', int(note)) for note in fired]
 
         time_to_pause = h - (time.time() - now)
         if time_to_pause > 0:
