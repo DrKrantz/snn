@@ -45,8 +45,24 @@ References
 
 import nest
 import time
+from pythonosc.osc_server import BlockingOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
+
+
+ADDRESS_SIMULATE = '/simulate'
+IP = "192.168.33.10"
+PORT = 8080
 
 nest.ResetKernel()
+
+
+class NetworkServer(BlockingOSCUDPServer):
+    def __init__(self, network):
+        self.network = network
+
+        dispatcher = Dispatcher()
+        dispatcher.map(ADDRESS_SIMULATE, network.simulate)
+        super(NetworkServer, self).__init__((IP, PORT), dispatcher)
 
 
 class Network:
@@ -228,6 +244,16 @@ class Network:
         nest.Connect(self.nodes_in, self.nodes_ex + self.nodes_in, conn_params_in, "inhibitory")
 
         ###############################################################################
+        # Write recorded neuron-ids
+        import json
+        filename = 'recorded_neurons.json'
+        path = '../config'
+        fullpath = os.path.join(path, filename)
+        with open(fullpath, 'w') as h:
+            h.write()
+            self.nodes_ex[:self.N_rec].tolist()
+
+        ###############################################################################
         #  ADD MUSIC
         #
 
@@ -244,7 +270,7 @@ class Network:
         # Storage of the time point after the buildup of the network in a variable.
         self.endbuild = time.time()
 
-    def simulate(self):
+    def simulate(self, *args):
         ###############################################################################
         # Simulation of the network.
 
@@ -311,5 +337,9 @@ class Network:
 if __name__ == '__main__':
     network = Network()
     network.setup()
-    network.simulate()
-    network.read()
+
+    server = NetworkServer(network)
+    print('Starting server')
+    server.serve_forever()
+    # network.simulate()
+    # network.read()
