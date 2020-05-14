@@ -30,9 +30,11 @@ class OSCForwarder:
 
 if __name__ == '__main__':
     import config_parser
-    ip = config_parser.config['sources']['simulator']['ip']
-    port = config_parser.config['sources']['simulator']['port']
+    ip = config_parser.config['output']['server']['ip']
+    port = config_parser.config['output']['server']['port']
     osc_client = SimpleUDPClient(ip, port)
 
-    forwarder = OSCForwarder(osc_client, config_parser.config['sources']['simulator']['address'])
+    print(" ----------------------- Creating forwarder")
+    forwarder = OSCForwarder(osc_client, config_parser.config['output']['server']['route'])
+
     forwarder.run()

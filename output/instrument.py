@@ -6,7 +6,6 @@ import threading
 import time
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-from output.neuron_to_note import note_to_freq
 
 
 UPDATE_ADDRESS = "/instrument_input"
@@ -15,9 +14,6 @@ PORT = 5020
 IP = "127.0.0.1"
 
 p = pyaudio.PyAudio()
-
-TYPE_NOTE = 0
-TYPE_FREQUENCIES = 1
 
 
 class SoundThread(threading.Thread):  # multiprocessing.Process
@@ -88,12 +84,10 @@ class OscInstrument:
     __x_data = np.array([])
     __LR_mask = np.array([])
 
-    def __init__(self, notes=None, volume_update_cb=None, volume_decay_cb=None):
+    def __init__(self, volume_update_cb=None, volume_decay_cb=None):
         self.__create_stream()
         self.volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
         self.__volume_decay_cb = decay_volume_exp if volume_decay_cb is None else volume_decay_cb
-        if notes:
-            self.__init_sound(notes)
 
     def __create_stream(self):
         self.__stream = p.open(format=self.FORMAT,
@@ -103,13 +97,9 @@ class OscInstrument:
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
-    def __init_sound(self, notes, note_type=TYPE_NOTE):
-        if note_type == TYPE_NOTE:
-            self.__notes = notes
-            self.__frequencies = np.array(note_to_freq(notes))
-        elif note_type == TYPE_FREQUENCIES:
-            self.__frequencies = np.array(notes)
-            self.__notes = range(len(notes))
+    def __init_sound(self, notes, frequencies):
+        self.__notes = notes
+        self.__frequencies = frequencies
         self.__n_freqs = len(notes)
         self.__volumes = np.ones_like(self.__notes) * self.MAX_VOLUME/10
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
@@ -159,15 +149,19 @@ class OscInstrument:
         self.__x_data = x_data
 
     def _update_volume(self, notes):
-        [self.__indices_to_update.append(self.__notes.index(note)) for note in notes]
+        for note in notes:
+            if note in self.__notes:
+                self.__indices_to_update.append(self.__notes.index(note))
+            else:
+                print('Note {} not in initialized notes. Ignoring'.format(note))
 
     def update_spiked(self, _, *content):
         # print('receiving {}'.format(content))
         self._update_volume(content)
 
     def init_notes(self, _, content):
-        notes = pickle.loads(content)
-        self.__init_sound(notes)
+        message = pickle.loads(content)
+        self.__init_sound(message['ids'], message['frequencies'])
 
     async def loop(self):
         # all_data = np.array([])

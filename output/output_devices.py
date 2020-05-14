@@ -4,6 +4,7 @@ import time
 import pickle
 from pythonosc import udp_client
 
+from . import neuron_to_note
 from . import instrument
 
 
@@ -94,6 +95,10 @@ class OscDevice(udp_client.SimpleUDPClient):
     def turn_all_off(self):
         pass  # TODO: force note off via osc
 
-    def init_instrument(self, midi_notes):
-        notes_pickle = pickle.dumps(midi_notes)
-        self.send_message(instrument.INIT_ADDRESS, notes_pickle)
+    def init_instrument(self, _, content):
+        neuron_ids = pickle.loads(content)
+        frequencies = neuron_to_note.get_frequencies_for_range(440, 1200, len(neuron_ids))
+        message = {'ids': neuron_ids,
+                   'frequencies': frequencies}
+
+        self.send_message(instrument.INIT_ADDRESS, pickle.dumps(message))

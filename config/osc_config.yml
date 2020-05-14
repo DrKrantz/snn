@@ -5,11 +5,11 @@ displays:
     address: /spikedisplay/spikes/
 
 ---
-sound:
-  neuron_notes:
+output:
+  server:
     ip: 192.168.33.1
     port: 8080
-    address: /neuron_notes/spikes/
+    route: /spikes
 
 ---
 sources:
