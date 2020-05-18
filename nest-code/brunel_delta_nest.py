@@ -105,7 +105,7 @@ class Network:
         self.NE = 4 * self.order  # number of excitatory neurons
         self.NI = 1 * self.order  # number of inhibitory neurons
         self.N_neurons = self.NE + self.NI  # number of neurons in total
-        self.N_rec = 50  # record from 50 neurons
+        self.N_rec = 2  # record from 50 neurons
 
         ###############################################################################
         # Definition of connectivity parameter

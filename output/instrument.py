@@ -84,10 +84,11 @@ class OscInstrument:
     __x_data = np.array([])
     __LR_mask = np.array([])
 
-    def __init__(self, volume_update_cb=None, volume_decay_cb=None):
+    def __init__(self, volume_update_cb=None, volume_decay_cb=None, target_file=None):
         self.__create_stream()
         self.volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
         self.__volume_decay_cb = decay_volume_exp if volume_decay_cb is None else volume_decay_cb
+        self.__target_file = target_file
 
     def __create_stream(self):
         self.__stream = p.open(format=self.FORMAT,
@@ -164,7 +165,7 @@ class OscInstrument:
         self.__init_sound(message['ids'], message['frequencies'])
 
     async def loop(self):
-        # all_data = np.array([])
+        all_data = []
         while True:
             if len(self.__frequencies):
                 if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
@@ -174,11 +175,12 @@ class OscInstrument:
                     self._shift_x_data()
                     self.__indices_to_update = []
 
-                # all_data = np.concatenate([all_data, data])
-                # if len(all_data) >= 100 * self.CHUNK:
-                #     with open('test.pkl', 'wb') as f:
-                #         pickle.dump(all_data, f)
-                #     break
+                    if self.__target_file is not None:
+                        all_data.extend(data)
+                        if len(all_data) >= 100 * self.CHUNK:
+                            with open(self.__target_file, 'wb') as f:
+                                pickle.dump(all_data, f)
+                            self.__target_file = None
 
             await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
 

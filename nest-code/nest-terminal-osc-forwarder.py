@@ -3,6 +3,8 @@
 from subprocess import Popen, PIPE
 from pythonosc.udp_client import SimpleUDPClient
 
+#  to check on open ports, run `sudo netstat -lpn |grep :8080`
+
 
 class OSCForwarder:
     def __init__(self, client, address, simlator_script='nest-code/brunel_delta_nest.py'):
