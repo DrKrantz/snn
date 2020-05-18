@@ -65,6 +65,21 @@ class Neuron2FrequencyConverter(Neuron2NoteConverter):
         return (a / 32) * (2 ** ((notes - 9) / 12))
 
 
+def get_frequencies_for_group(name):
+    if name == 'excitatory':
+        start = 440
+        end = 2 * start
+        return np.linspace(start, end, 50)
+    elif name == 'inhibitory':
+        start = 880
+        end = 2 * start
+        return np.linspace(start, end, 50)
+
+
+def get_frequencies_for_range(start, stop, n):
+    return np.linspace(start, stop, n)
+
+
 if __name__ == '__main__':
     converter = Neuron2NoteConverter(np.arange(1, 96), SCALE_MAJOR)
     print(converter.convert([1, 2, 3]))

@@ -1,7 +1,6 @@
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 
-
 ADDRESS_SPIKES = "/spikes"
 ADDRESS_OFF = "/off/"
 
@@ -15,8 +14,11 @@ class OutputServer:
         self.address = (config['ip'], config['port'])
 
     def register_device(self, device):
-        self.dispatcher.map(ADDRESS_SPIKES, device.update)
-        self.dispatcher.map(ADDRESS_OFF, device.turn_all_off)
+        self.register_callback(ADDRESS_SPIKES, device.update)
+        self.register_callback(ADDRESS_OFF, device.turn_all_off)
+
+    def register_callback(self, address, cb):
+        self.dispatcher.map(address, cb)
 
     def start(self):
         self.server = BlockingOSCUDPServer(self.address, self.dispatcher)
