@@ -76,7 +76,7 @@ class OscInstrument:
 
     server = None
     __frequencies = []
-    __notes = []
+    __neuron_ids = []
     __volumes = []
     __indices_to_update = []
     __n_freqs = 0
@@ -86,7 +86,7 @@ class OscInstrument:
 
     def __init__(self, volume_update_cb=None, volume_decay_cb=None, target_file=None):
         self.__create_stream()
-        self.volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
+        self.__volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
         self.__volume_decay_cb = decay_volume_exp if volume_decay_cb is None else volume_decay_cb
         self.__target_file = target_file
         self.all_data = []
@@ -99,11 +99,11 @@ class OscInstrument:
                                output=True,
                                frames_per_buffer=self.CHUNK)
 
-    def __init_sound(self, notes, frequencies):
-        self.__notes = notes
+    def __init_sound(self, ids, frequencies):
+        self.__neuron_ids = ids
         self.__frequencies = frequencies
-        self.__n_freqs = len(notes)
-        self.__volumes = np.ones_like(self.__notes) * self.MAX_VOLUME/10
+        self.__n_freqs = len(ids)
+        self.__volumes = np.ones_like(self.__neuron_ids) * self.MAX_VOLUME / 10
         self.__data_matrix = np.ones((self.__n_freqs, self.CHANNELS * self.CHUNK))
         self.__LR_mask = []
         [self.__LR_mask.append(np.tile([L, 1-L], self.CHUNK)) for L in np.random.random(self.__n_freqs)]
@@ -128,7 +128,7 @@ class OscInstrument:
 
             # set volume to maximum or decay
             if freq_idx in self.__indices_to_update:
-                self.__volumes[freq_idx] = self.volume_update_cb(self.__volumes[freq_idx])
+                self.__volumes[freq_idx] = self.__volume_update_cb(self.__volumes[freq_idx])
             else:
                 self.__volumes[freq_idx] = self.__volume_decay_cb(self.__volumes[freq_idx])
 
@@ -150,29 +150,20 @@ class OscInstrument:
             x_data[freq_idx, :] = x-factor*2*np.pi
         self.__x_data = x_data
 
-    def _update_volume(self, notes):
-        for note in notes:
-            if note in self.__notes:
-                self.__indices_to_update.append(self.__notes.index(note))
+    def __store_fired_ids(self, ids):
+        for id in ids:
+            if id in self.__neuron_ids:
+                self.__indices_to_update.append(self.__neuron_ids.index(id))
             else:
-                print('Note {} not in initialized notes. Ignoring'.format(note))
+                print('Note {} not in initialized notes. Ignoring'.format(id))
 
-    def update_spiked(self, _, *content):
-        # print('receiving {}'.format(content))
-        self._update_volume(content)
-
-    def init_notes(self, _, content):
-        message = pickle.loads(content)
-        self.__init_sound(message['ids'], message['frequencies'])
-
-    async def loop(self):
-        while True:
-            if len(self.__frequencies):
-                if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
-                    data = self.iterate()
-                    self.__store_and_write(data)
-
-            await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
+    def __store_and_write(self, data):
+        self.all_data.extend(data)
+        if len(self.all_data) >= 100 * self.CHUNK:
+            with open(self.__target_file, 'wb') as f:
+                pickle.dump(self.all_data, f)
+            self.__target_file = None
+            self.all_data = []
 
     def iterate(self, to_stream=True):
         data = self._compute_current_signal()
@@ -183,14 +174,23 @@ class OscInstrument:
         self.__indices_to_update = []
         return data
 
-    def __store_and_write(self, data):
-        if self.__target_file is not None:
-            self.all_data.extend(data)
-            if len(self.all_data) >= 100 * self.CHUNK:
-                with open(self.__target_file, 'wb') as f:
-                    pickle.dump(self.all_data, f)
-                self.__target_file = None
-                self.all_data = []
+    def update_spiked(self, _, *content):
+        # print('receiving {}'.format(content))
+        self.__store_fired_ids(content)
+
+    def init_notes(self, _, content):
+        message = pickle.loads(content)
+        self.__init_sound(message['ids'], message['frequencies'])
+
+    async def loop(self):
+        while True:
+            if len(self.__frequencies):
+                if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
+                    data = self.iterate()
+                    if self.__target_file is not None:
+                        self.__store_and_write(data)
+
+            await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
 
     async def init_main(self):
         dispatcher = Dispatcher()
