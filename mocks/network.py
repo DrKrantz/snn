@@ -39,5 +39,5 @@ class NetworkMock:
             self.__dur = now - self.__start_time
 
             if ids:
-                print('Network-Mock sending: {} at t={}'.format(ids, self.__dur))
-                self.__client.send(ids)
+                # print('Network-Mock sending: {} at t={}'.format(ids, self.__dur))
+                self.__client.send_to_base_address(ids)

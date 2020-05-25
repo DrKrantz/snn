@@ -151,11 +151,11 @@ class OscInstrument:
         self.__x_data = x_data
 
     def __store_fired_ids(self, ids):
-        for id in ids:
-            if id in self.__neuron_ids:
-                self.__indices_to_update.append(self.__neuron_ids.index(id))
+        for n_id in ids:
+            if n_id in self.__neuron_ids:
+                self.__indices_to_update.append(self.__neuron_ids.index(n_id))
             else:
-                print('Note {} not in initialized notes. Ignoring'.format(id))
+                print('Note {} not in initialized notes. Ignoring'.format(n_id))
 
     def __store_and_write(self, data):
         self.all_data.extend(data)

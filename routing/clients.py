@@ -6,5 +6,5 @@ class SingleAddressClient(SimpleUDPClient):
         self.__address = address
         super(SingleAddressClient, self).__init__(ip, port)
 
-    def send(self, value):
+    def send_to_base_address(self, value):
         super(SingleAddressClient, self).send_message(self.__address, value)

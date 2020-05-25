@@ -18,7 +18,7 @@ class OSCForwarder:
             if out == b'\n':
                 if self.buffer.find(b'\t') > 0:
                     neuron, spiketime = self.buffer.split(b'\t')
-                    self.__client.send(int(neuron))
+                    self.__client.send_to_base_address(int(neuron))
                     # print('Receiving: neuron {} at time {}'.format(
                     #     int(neuron), float(spiketime)))
                 else:
@@ -36,7 +36,6 @@ if __name__ == '__main__':
     port = config_parser.config['output']['server']['port']
     address = config_parser.config['output']['server']['route']
     osc_client = SingleAddressClient(ip, port, address)
-
 
     print(" ----------------------- Creating forwarder")
     forwarder = OSCForwarder(osc_client)
