@@ -54,8 +54,8 @@ class SoundThread(threading.Thread):  # multiprocessing.Process
 
 
 def update_volume_additive(current_volume):
-    VOLUME_INCREASE = 1000
-    return min(current_volume + VOLUME_INCREASE, OscInstrument.MAX_VOLUME)
+    volume_increase = 1000
+    return min(current_volume + volume_increase, OscInstrument.MAX_VOLUME)
 
 
 def update_volume_to_max(current_volume):
@@ -89,6 +89,7 @@ class OscInstrument:
         self.volume_update_cb = update_volume_to_max if volume_update_cb is None else volume_update_cb
         self.__volume_decay_cb = decay_volume_exp if volume_decay_cb is None else volume_decay_cb
         self.__target_file = target_file
+        self.all_data = []
 
     def __create_stream(self):
         self.__stream = p.open(format=self.FORMAT,
@@ -134,7 +135,7 @@ class OscInstrument:
             # set volume of signal, wave_form has amplitude 1 by construction
             wave_form[switch_idx::] *= self.__volumes[freq_idx]
 
-            self.__data_matrix[freq_idx, :] = wave_form * self.__LR_mask[freq_idx]
+            self.__data_matrix[freq_idx, :] = wave_form  # * self.__LR_mask[freq_idx]
 
         return np.mean(self.__data_matrix, 0)
 
@@ -165,24 +166,31 @@ class OscInstrument:
         self.__init_sound(message['ids'], message['frequencies'])
 
     async def loop(self):
-        all_data = []
         while True:
             if len(self.__frequencies):
                 if self.__stream.get_write_available() > 0:  # Only compute chunk if stream can consume
-                    data = self._compute_current_signal()
-                    self.__stream.write(data.astype(np.int16).tostring())
-
-                    self._shift_x_data()
-                    self.__indices_to_update = []
-
-                    if self.__target_file is not None:
-                        all_data.extend(data)
-                        if len(all_data) >= 100 * self.CHUNK:
-                            with open(self.__target_file, 'wb') as f:
-                                pickle.dump(all_data, f)
-                            self.__target_file = None
+                    data = self.iterate()
+                    self.__store_and_write(data)
 
             await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
+
+    def iterate(self, to_stream=True):
+        data = self._compute_current_signal()
+        if to_stream:
+            self.__stream.write(data.astype(np.int16).tostring())
+
+        self._shift_x_data()
+        self.__indices_to_update = []
+        return data
+
+    def __store_and_write(self, data):
+        if self.__target_file is not None:
+            self.all_data.extend(data)
+            if len(self.all_data) >= 100 * self.CHUNK:
+                with open(self.__target_file, 'wb') as f:
+                    pickle.dump(self.all_data, f)
+                self.__target_file = None
+                self.all_data = []
 
     async def init_main(self):
         dispatcher = Dispatcher()
