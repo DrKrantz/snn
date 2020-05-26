@@ -110,6 +110,7 @@ class OscInstrument:
         #  every x-value needs to be duplicated for stereo sound
         multiplied_range = np.resize(np.arange(self.CHUNK), (self.CHANNELS, self.CHUNK)).T.flatten()
         self.__x_data = np.mat(self.__frequencies).T * multiplied_range * 2 * np.pi / self.RATE
+        # self.__x_data += 2 * np.pi * np.resize(np.random.rand(self.__n_freqs), (self.CHANNELS * self.CHUNK, self.__n_freqs)).T / self.RATE  # phase shift
         print('Instrument initialized with {} frequencies'.format(self.__n_freqs))
 
     def _compute_current_signal(self):
