@@ -26,7 +26,9 @@ class NetworkServer(BlockingOSCUDPServer):
 
 if __name__ == '__main__':
     import config_parser
-    from simulator.nest_code import brunel_delta_nest as network_module
+    import importlib
+
+    network_module = importlib.import_module('simulator.nest_code.{}'.format(config_parser.get('simulation_script')))
 
     network_instance = network_module.Network()
     network_instance.setup()

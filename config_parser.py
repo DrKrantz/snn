@@ -16,3 +16,7 @@ config = load_config()
 
 def get_address(name):
     return config['ip'][name], config['port'][name]
+
+
+def get(name):
+    return config[name]

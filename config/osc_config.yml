@@ -10,24 +10,4 @@ port:
   output_server: 8080
   instrument: 5020
 
-
-
-#displays:
-#  spike_display:
-#    ip:
-#    port: 1338
-#    address: /spikedisplay/spikes/
-#
-#---
-#output:
-#  server:
-#    ip:
-#    port:
-#    route: /spikes
-#
-#---
-#sources:
-#  simulator:
-#    ip:
-#    port:
-#    address: /spikes
+simulation_script: brunel_delta_nest
