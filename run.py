@@ -33,12 +33,16 @@ if args.app == 'output':
 elif args.app == 'instrument':
     from output import instrument
     import asyncio
-    import config_parser
+    import os
 
-    instrument_server = instrument.OscInstrument(volume_update_cb=instrument.update_volume_additive)
+    target_file = os.path.join(os.path.dirname(__file__), 'data/sound.pkl')
+    instrument_server = instrument.OscInstrument(
+        volume_update_cb=instrument.update_volume_additive,
+        target_file=target_file
+    )
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address('instrument')))
+    result = loop.run_until_complete(instrument_server.init_main())
 
 elif args.app == 'start':
     from pythonosc.udp_client import SimpleUDPClient
