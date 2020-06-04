@@ -30,12 +30,10 @@ class OSCForwarder:
 
 if __name__ == '__main__':
     import config_parser
+    from config import routing
     from osc_helpers.clients import DefaultClient
 
-    ip = config_parser.config['output']['server']['ip']
-    port = config_parser.config['output']['server']['port']
-    address = config_parser.config['output']['server']['route']
-    osc_client = DefaultClient(ip, port, address)
+    osc_client = DefaultClient(config_parser.get_address('output_server'), routing.FIRING_NEURONS)
 
     print(" ----------------------- Creating forwarder")
     forwarder = OSCForwarder(osc_client)

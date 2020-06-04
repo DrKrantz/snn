@@ -4,6 +4,8 @@ import time
 import pickle
 from pythonosc import udp_client
 
+from config import routing
+
 from . import neuron_to_note
 from . import instrument
 
@@ -82,15 +84,15 @@ class MidiDevice(pm.Output):
 
 
 class OscDevice(udp_client.SimpleUDPClient):
-    def __init__(self, converter):
+    def __init__(self, converter, instrument_address):
         self.converter = converter
-        super(OscDevice, self).__init__(instrument.IP, instrument.PORT)
+        super(OscDevice, self).__init__(instrument_address[0], instrument_address[1])
 
     def update(self, _, *args):
         notes = self.converter.convert(args)
 
         # print('forwarding {}'.format( notes ))
-        self.send_message(instrument.UPDATE_ADDRESS, notes)
+        self.send_message(routing.FIRING_NEURONS, notes)
 
     def turn_all_off(self):
         pass  # TODO: force note off via osc
@@ -101,4 +103,4 @@ class OscDevice(udp_client.SimpleUDPClient):
         message = {'ids': neuron_ids,
                    'frequencies': frequencies}
 
-        self.send_message(instrument.INIT_ADDRESS, pickle.dumps(message))
+        self.send_message(routing.INIT_INSTRUMENT, pickle.dumps(message))

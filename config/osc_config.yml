@@ -1,14 +1,14 @@
 # IPS
 ip:
-  simulator: 192.168.33.1
-  output_server: 192.168.33.1
+  simulator: 192.168.33.10
+  output_server: 192.168.1.98
   instrument: 127.0.0.1
 
 # PORTS
 port:
   simulator: 8080
   output_server: 8080
-  instrument: 1338
+  instrument: 5020
 
 
 

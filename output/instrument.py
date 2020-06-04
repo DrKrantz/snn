@@ -8,12 +8,6 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from config import routing
 
-
-UPDATE_ADDRESS = "/instrument_input"
-INIT_ADDRESS = "/instrument_init"
-PORT = 5020
-IP = "127.0.0.1"
-
 p = pyaudio.PyAudio()
 
 
