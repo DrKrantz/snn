@@ -8,12 +8,12 @@ from subprocess import Popen, PIPE
 class OSCForwarder:
     def __init__(self, client, simlator_script='nest-code/brunel_delta_nest.py'):
         self.__client = client
-        self.__recorder = Popen(['python3', simlator_script], stdout=PIPE)
+        self.recorder = Popen(['python3', simlator_script], stdout=PIPE)
         self.buffer = b''
 
     def run(self):
         while True:
-            out = self.__recorder.stdout.read(1)
+            out = self.recorder.stdout.read(1)
 
             if out == b'\n':
                 if self.buffer.find(b'\t') > 0:
@@ -37,4 +37,7 @@ if __name__ == '__main__':
 
     print(" ----------------------- Creating forwarder")
     forwarder = OSCForwarder(osc_client)
-    forwarder.run()
+    try:
+        forwarder.run()
+    except (KeyboardInterrupt, SystemExit):
+        forwarder.recorder.terminate()  # make sure to kill recorder in order to free osc-port
