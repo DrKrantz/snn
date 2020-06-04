@@ -1,10 +1,37 @@
 import pickle
+from subprocess import Popen, PIPE
 
 from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
 
 from config import routing
+
+
+class OSCForwarder:
+    """ start this script and forward the data written to STDOUT via osc.
+     to check on open ports, run `sudo netstat -lpn |grep :8080`
+    """
+    def __init__(self, client):
+        self.__client = client
+        self.recorder = Popen(['python3', __file__], stdout=PIPE)
+        self.buffer = b''
+
+    def run(self):
+        while True:
+            out = self.recorder.stdout.read(1)
+
+            if out == b'\n':
+                if self.buffer.find(b'\t') > 0:
+                    neuron, spiketime = self.buffer.split(b'\t')
+                    self.__client.send_to_default(int(neuron))
+                    # print('Receiving: neuron {} at time {}'.format(
+                    #     int(neuron), float(spiketime)))
+                else:
+                    print(self.buffer.decode('utf-8'))
+                self.buffer = b''
+            else:
+                self.buffer += out
 
 
 class NetworkServer(BlockingOSCUDPServer):

@@ -59,5 +59,21 @@ elif args.app == 'start':
     print('Sending start signal to simulator')
     client.send_message(routing.START_SIMULATION, 1)
 
+elif args.app ==  'simulator':
+    import config_parser
+    from config import routing
+    from osc_helpers.clients import DefaultClient
+    from simulator import network_server
+
+    osc_client = DefaultClient(config_parser.get_address('output_server'), routing.FIRING_NEURONS)
+
+    print(" ----------------------- Creating forwarder")
+    forwarder = network_server.OSCForwarder(osc_client)
+    try:
+        forwarder.run()
+    except (KeyboardInterrupt, SystemExit):
+        print('\n  --- Quitting simulation --- \n')
+        forwarder.recorder.terminate()  # make sure to kill recorder in order to free osc-port
+
 else:
     print('Unknown app {}!'.format(args.app))
