@@ -6,9 +6,9 @@ from subprocess import Popen, PIPE
 
 
 class OSCForwarder:
-    def __init__(self, client, simlator_script='nest-code/brunel_delta_nest.py'):
+    def __init__(self, client, simulator_script='simulator/network_server.py'):
         self.__client = client
-        self.recorder = Popen(['python3', simlator_script], stdout=PIPE)
+        self.recorder = Popen(['python3', simulator_script], stdout=PIPE)
         self.buffer = b''
 
     def run(self):
@@ -40,4 +40,5 @@ if __name__ == '__main__':
     try:
         forwarder.run()
     except (KeyboardInterrupt, SystemExit):
+        print('Quitting simulation \n')
         forwarder.recorder.terminate()  # make sure to kill recorder in order to free osc-port
