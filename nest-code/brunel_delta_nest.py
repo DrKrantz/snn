@@ -260,7 +260,7 @@ class Network:
         #  ADD MUSIC
         #
 
-        # N_music = 20  # the number of neurons to send_to_base_address spikes to music
+        # N_music = 20  # the number of neurons to send_to_default spikes to music
         # music_out = nest.Create('music_event_out_proxy', 1,
         #                         params={'port_name':'p_out'})
         #

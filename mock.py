@@ -10,7 +10,7 @@ if args.app == 'network':
     import pickle
 
     from mocks import network
-    from routing.clients import SingleAddressClient
+    from osc_helpers.clients import DefaultClient
     from output import neuron_to_note
     import config_parser
     from config import routing
@@ -22,14 +22,15 @@ if args.app == 'network':
     sim_time = 10
     rates = np.random.random(N) * (max_rate - min_rate) + min_rate
 
-    init_client = SingleAddressClient(config_parser.get_address('instrument'), routing.INIT_INSTRUMENT)
+    #  initialize instrument
+    client = DefaultClient(config_parser.get_address('instrument'), routing.FIRING_NEURONS)
     frequencies = neuron_to_note.get_frequencies_for_range(440, 1200, N)
     message = {'ids': list(range(N)),
                'frequencies': frequencies}
-    init_client.send_to_base_address(pickle.dumps(message))
+    client.send_message(routing.INIT_INSTRUMENT, pickle.dumps(message))
 
-    osc_client = SingleAddressClient(config_parser.get_address('instrument'), routing.FIRING_NEURONS)
-    network = network.NetworkMock(osc_client, rates, res=res, sim_time=sim_time)
+    # create network-mock
+    network = network.NetworkMock(client, rates, res=res, sim_time=sim_time)
 
     input("Ready? Wating for go signal")
 

@@ -40,4 +40,4 @@ class NetworkMock:
 
             if ids:
                 # print('Network-Mock sending: {} at t={}'.format(ids, self.__dur))
-                self.__client.send_to_base_address(ids)
+                self.__client.send_to_default(ids)
