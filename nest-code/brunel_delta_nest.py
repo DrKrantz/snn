@@ -67,7 +67,7 @@ class NetworkServer(BlockingOSCUDPServer):
         super(NetworkServer, self).__init__(address, dispatcher)
 
     def _send_recorded_neurons(self, *args):
-        neurons = network.get_recorded_neuron_ids()
+        neurons = self.network.get_recorded_neuron_ids()
         msg = pickle.dumps(neurons)
         self.client.send_message(routing.RECORDED_NEURONS, msg)
 
