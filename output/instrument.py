@@ -6,6 +6,7 @@ import threading
 import time
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+from config import routing
 
 
 UPDATE_ADDRESS = "/instrument_input"
@@ -182,21 +183,15 @@ class OscInstrument:
 
             await asyncio.sleep(self.CHUNK/self.RATE - 0.01)  # 0.01 is a extra buffer - time_passed
 
-    async def init_main(self):
+    async def init_main(self, instrument_address):
         dispatcher = Dispatcher()
-        dispatcher.map(UPDATE_ADDRESS, self.update_spiked)
-        dispatcher.map(INIT_ADDRESS, self.init_notes)
+        dispatcher.map(routing.INIT_INSTRUMENT, self.init_notes)
+        dispatcher.map(routing.FIRING_NEURONS, self.update_spiked)
 
-        self.server = AsyncIOOSCUDPServer((IP, PORT), dispatcher, asyncio.get_event_loop())
+        self.server = AsyncIOOSCUDPServer(instrument_address, dispatcher, asyncio.get_event_loop())
         transport, protocol = await self.server.create_serve_endpoint()  # Create datagram endpoint and start serving
         print('Instrument server running, waiting for initialization')
         await self.loop()  # Enter main loop of program
 
         transport.close()  # Clean up serve endpoint
 
-
-if __name__ == '__main__':
-    song_server = OscInstrument(volume_update_cb=update_volume_additive)
-
-    loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(song_server.init_main())

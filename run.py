@@ -33,11 +33,12 @@ if args.app == 'output':
 elif args.app == 'instrument':
     from output import instrument
     import asyncio
+    import config_parser
 
     instrument_server = instrument.OscInstrument(volume_update_cb=instrument.update_volume_additive)
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(instrument_server.init_main())
+    result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address('instrument')))
 
 elif args.app == 'start':
     from pythonosc.udp_client import SimpleUDPClient

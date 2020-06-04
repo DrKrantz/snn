@@ -7,9 +7,12 @@ def load_config():
         data = yaml.load_all(ymlfile, Loader=yaml.FullLoader)
         cfg = {}
         for docs in data:
-            for key, value in docs.items():
-                cfg[key] = value
+            cfg = docs
     return cfg
 
 
 config = load_config()
+
+
+def get_address(name):
+    return config['ip'][name], config['port'][name]
