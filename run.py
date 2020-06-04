@@ -34,6 +34,7 @@ elif args.app == 'instrument':
     from output import instrument
     import asyncio
     import os
+    import config_parser
 
     target_file = os.path.join(os.path.dirname(__file__), 'data/sound.pkl')
     instrument_server = instrument.OscInstrument(
@@ -42,7 +43,7 @@ elif args.app == 'instrument':
     )
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(instrument_server.init_main())
+    result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address(args.app)))
 
 elif args.app == 'start':
     from pythonosc.udp_client import SimpleUDPClient
