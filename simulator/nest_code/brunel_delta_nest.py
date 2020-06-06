@@ -48,7 +48,6 @@ import json
 import nest
 
 
-
 class Network:
     def __init__(self):
         nest.ResetKernel()

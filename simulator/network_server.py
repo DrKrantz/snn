@@ -5,12 +5,17 @@ from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import routing
 
 
 class OSCForwarder:
     """ start this script and forward the data written to STDOUT via osc.
-     to check on open ports, run `sudo netstat -lpn |grep :8080`
+     to check on open ports, run
+       LINUX: `sudo netstat -lpn |grep :8080`
+       OSX `lsof -Pn -i4 | grep 8080`
     """
     def __init__(self, client):
         self.__client = client

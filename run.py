@@ -46,19 +46,6 @@ elif args.app == 'instrument':
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address(args.app)))
 
-elif args.app == 'start':
-    from pythonosc.udp_client import SimpleUDPClient
-    from config_parser import config
-    from config import routing
-
-    client = SimpleUDPClient(config['ip']['simulator'], config['port']['simulator'])
-
-    print('Triggering Instrument initialization')
-    client.send_message(routing.RECORDED_NEURONS, 1)
-
-    print('Sending start signal to simulator')
-    client.send_message(routing.START_SIMULATION, 1)
-
 elif args.app ==  'simulator':
     import config_parser
     from config import routing
@@ -74,6 +61,19 @@ elif args.app ==  'simulator':
     except (KeyboardInterrupt, SystemExit):
         print('\n  --- Quitting simulation --- \n')
         forwarder.recorder.terminate()  # make sure to kill recorder in order to free osc-port
+
+elif args.app == 'start':
+    from pythonosc.udp_client import SimpleUDPClient
+    from config_parser import config
+    from config import routing
+
+    client = SimpleUDPClient(config['ip']['simulator'], config['port']['simulator'])
+
+    print('Triggering Instrument initialization')
+    client.send_message(routing.RECORDED_NEURONS, 1)
+
+    print('Sending start signal to simulator')
+    client.send_message(routing.START_SIMULATION, 1)
 
 else:
     print('Unknown app {}!'.format(args.app))
