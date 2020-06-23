@@ -42,37 +42,10 @@ References
 
 ###############################################################################
 # Import all necessary modules for simulation, analysis and plotting.
-
-import nest
 import time
-import pickle
-from pythonosc.osc_server import BlockingOSCUDPServer
-from pythonosc.dispatcher import Dispatcher
-from pythonosc.udp_client import SimpleUDPClient
+import os
 import json
-
-
-ADDRESS_SIMULATE = '/simulate'
-ADDRESS_RECORDED_NEURONS = '/recorded_neurons'
-IP = "192.168.33.10"
-PORT = 8080
-
-
-class NetworkServer(BlockingOSCUDPServer):
-    def __init__(self, network, client):
-        self.network = network
-        self.client = client
-
-        dispatcher = Dispatcher()
-        dispatcher.map(ADDRESS_SIMULATE, network.simulate)
-
-        dispatcher.map(ADDRESS_RECORDED_NEURONS, self._send_recorded_neurons)
-        super(NetworkServer, self).__init__((IP, PORT), dispatcher)
-
-    def _send_recorded_neurons(self, *args):
-        neurons = network.get_recorded_neuron_ids()
-        msg = pickle.dumps(neurons)
-        self.client.send_message(ADDRESS_RECORDED_NEURONS, msg)
+import nest
 
 
 class Network:
@@ -255,12 +228,11 @@ class Network:
         conn_params_in = {'rule': 'fixed_indegree', 'indegree': self.CI}
         nest.Connect(self.nodes_in, self.nodes_ex + self.nodes_in, conn_params_in, "inhibitory")
 
-
         ###############################################################################
         #  ADD MUSIC
         #
 
-        # N_music = 20  # the number of neurons to send_to_base_address spikes to music
+        # N_music = 20  # the number of neurons to send_to_default spikes to music
         # music_out = nest.Create('music_event_out_proxy', 1,
         #                         params={'port_name':'p_out'})
         #
@@ -353,20 +325,3 @@ class Network:
 # nest.raster_plot.from_device(espikes, hist=True)
 
 
-if __name__ == '__main__':
-    import os
-    import sys
-    path = os.path.dirname(os.path.dirname(__file__))
-    sys.path.append(path)
-
-    import config_parser
-
-    network = Network()
-    network.setup()
-
-    osc_client = SimpleUDPClient(config_parser.config['output']['server']['ip'],
-                                 config_parser.config['output']['server']['port'])
-
-    server = NetworkServer(network, osc_client)
-
-    server.serve_forever()

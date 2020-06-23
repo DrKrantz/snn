@@ -1,19 +1,13 @@
-displays:
-  spike_display:
-    ip: 127.0.0.1
-    port: 1338
-    address: /spikedisplay/spikes/
+# IPS
+ip:
+  simulator: 172.17.0.2
+  output_server: 127.0.0.1
+  instrument: 127.0.0.1
 
----
-output:
-  server:
-    ip: 192.168.33.1
-    port: 8080
-    route: /spikes
+# PORTS
+port:
+  simulator: 8080
+  output_server: 8080
+  instrument: 5020
 
----
-sources:
-  simulator:
-    ip: 192.168.33.1
-    port: 8080
-    address: /spikes
+simulation_script: brunel_delta_nest
