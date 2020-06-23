@@ -1,7 +1,7 @@
 # IPS
 ip:
-  simulator: 192.168.33.10
-  output_server: 192.168.1.98
+  simulator: 172.17.0.2
+  output_server: 127.0.0.1
   instrument: 127.0.0.1
 
 # PORTS

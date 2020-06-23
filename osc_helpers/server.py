@@ -13,11 +13,10 @@ if __name__ == '__main__':
     import sys
     server_ip = '127.0.0.1'
     server_port = 8080
-    print(sys.argv)
     if len(sys.argv) > 1:
         server_ip = sys.argv[1]
-        server_port = sys.argv[2]
+        server_port = int(sys.argv[2])
 
     server = TestServer((server_ip, server_port))
-    print('starting')
+    print('Starting server at {}:{}'.format(server_ip, server_port))
     server.serve_forever()
