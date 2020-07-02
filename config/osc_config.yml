@@ -1,12 +1,12 @@
 # IPS
 ip:
-  simulator: 172.17.0.2
+  simulator: 127.0.0.1
   output_server: 127.0.0.1
   instrument: 127.0.0.1
 
 # PORTS
 port:
-  simulator: 8080
+  simulator: 5020
   output_server: 8080
   instrument: 5020
 
