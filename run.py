@@ -75,5 +75,20 @@ elif args.app == 'start':
     print('Sending start signal to simulator')
     client.send_message(routing.START_SIMULATION, 1)
 
+elif args.app == 'file_player':
+    from osc_helpers.clients import DefaultClient
+    import config_parser
+    from config import routing
+    from mocks.file_player import FilePlayer
+    from output.spike_socket import SpikeSocket
+
+    file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
+    initialization_client = DefaultClient(config_parser.get_address('output_server'), routing.RECORDED_NEURONS)
+    spike_socket = SpikeSocket(config_parser.get_address('output_server'))
+    player = FilePlayer(file, spike_socket)
+    player.init_instrument(initialization_client)
+    player.play()
+
+
 else:
     print('Unknown app {}!'.format(args.app))

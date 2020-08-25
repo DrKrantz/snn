@@ -98,6 +98,7 @@ class OscDevice(udp_client.SimpleUDPClient):
         pass  # TODO: force note off via osc
 
     def init_instrument(self, _, content):
+        print('Initializing device')
         neuron_ids = pickle.loads(content)
         frequencies = neuron_to_note.get_frequencies_for_range(440, 1200, len(neuron_ids))
         message = {'ids': neuron_ids,
