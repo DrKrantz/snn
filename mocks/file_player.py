@@ -34,5 +34,5 @@ class FilePlayer:
             if time_passed >= next_time:
                 neuron = self.neurons.pop(0)
                 print('sending %s' % neuron)
-                self.spike_socket.send_neuron(neuron)
+                self.spike_socket.send_converted(neuron)
                 next_time = self.times.pop(0)

@@ -98,13 +98,16 @@ elif args.app == 'file_player':
     player.play()
 
 elif args.app == 'spike_forwarder':
-    from output.spike_socket import SpikeForwarder
+    from output.spike_socket import SpikeSocket, SpikeForwarder
     import config_parser
     from output import neuron_to_note
     converter = neuron_to_note.LinearConverter(offset=1)
 
-    spike_forwarder = SpikeForwarder(config_parser.get_address('instrument'))
-    spike_forwarder.start_forwarding(config_parser.get_address('output_server'), converter.id_to_index)
+    spike_forwarder = SpikeForwarder(config_parser.get_address('output_server'))
+    instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
+    spike_forwarder.register_target(instrument_socket)
+
+    spike_forwarder.start_forwarding()
 
 else:
     print('Unknown app {}!'.format(args.app))
