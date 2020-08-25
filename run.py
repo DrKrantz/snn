@@ -85,6 +85,7 @@ elif args.app == 'file_player':
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
     initialization_client = DefaultClient(config_parser.get_address('output_server'), routing.RECORDED_NEURONS)
     spike_socket = SpikeSocket(config_parser.get_address('output_server'))
+
     player = FilePlayer(file, spike_socket, time_to_start=13)
     player.init_instrument(initialization_client)
     player.play()
@@ -93,8 +94,8 @@ elif args.app == 'spike_forwarder':
     from output.spike_socket import SpikeForwarder
     import config_parser
 
-    spike_forwarder = SpikeForwarder(config_parser.get_address('output_server'))
-    spike_forwarder.start_forwarding(config_parser.get_address('instrument'))
+    spike_forwarder = SpikeForwarder(config_parser.get_address('instrument'))
+    spike_forwarder.start_forwarding(config_parser.get_address('output_server'))
 
 else:
     print('Unknown app {}!'.format(args.app))
