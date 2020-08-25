@@ -30,8 +30,11 @@ class LinearConverter:
     def __init__(self, offset=0):
         self.__offset = offset
 
-    def convert(self, neuron_ids):
-        return [neuron_id + self.__offset for neuron_id in neuron_ids]
+    def id_to_index(self, neuron_id):
+        return neuron_id - self.__offset
+
+    def index_to_id(self, index):
+        return index + self.__offset
 
 
 class TogglingConverter(Neuron2NoteConverter):

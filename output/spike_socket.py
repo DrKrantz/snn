@@ -14,15 +14,16 @@ class SpikeSocket(socket.socket):
 class SpikeForwarder(SpikeSocket):
     SIZE = 4
 
-    def start_forwarding(self, receiving_address):
+    def start_forwarding(self, receiving_address, id_to_index):
         self.bind(receiving_address)
 
         while True:
             data, addr = self.recvfrom(SpikeForwarder.SIZE)
             if data:
-                neuron_id = struct.unpack('i', data)
-                print('received id: %s' % neuron_id)
-                # TODO: translate neuron_ID to idx and forward to instrument
+                [neuron_id] = struct.unpack('i', data)
+                index = id_to_index(neuron_id)
+                print('received id {} and converted to index {}'.format(neuron_id, index))
+                self.send_neuron(index)
 
 
 class InitSocket(socket.socket):

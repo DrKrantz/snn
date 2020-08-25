@@ -76,24 +76,18 @@ elif args.app == 'start':
     client.send_message(routing.START_SIMULATION, 1)
 
 elif args.app == 'file_player':
-    from osc_helpers.clients import DefaultClient
     import config_parser
-    from config import routing
     from mocks.file_player import FilePlayer
     from output.spike_socket import SpikeSocket, InitSocket
     from output import neuron_to_note
 
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    initialization_client = DefaultClient(config_parser.get_address('output_server'), routing.RECORDED_NEURONS)
     spike_socket = SpikeSocket(config_parser.get_address('output_server'))
-
     player = FilePlayer(file, spike_socket, time_to_start=13)
 
     # Initialize instrument
     print('Initializing instrument')
-    converter = neuron_to_note.LinearConverter(offset=0)
-    indices = converter.convert(player.get_neuron_ids())
-    frequencies = neuron_to_note.get_frequencies_for_range(20, 10000, len(indices))
+    frequencies = neuron_to_note.get_frequencies_for_range(20, 10000, len(player.get_neuron_ids()))
     init_socket = InitSocket(config_parser.get_address('instrument'))
 
     complete = 'n'
@@ -106,9 +100,11 @@ elif args.app == 'file_player':
 elif args.app == 'spike_forwarder':
     from output.spike_socket import SpikeForwarder
     import config_parser
+    from output import neuron_to_note
+    converter = neuron_to_note.LinearConverter(offset=1)
 
     spike_forwarder = SpikeForwarder(config_parser.get_address('instrument'))
-    spike_forwarder.start_forwarding(config_parser.get_address('output_server'))
+    spike_forwarder.start_forwarding(config_parser.get_address('output_server'), converter.id_to_index)
 
 else:
     print('Unknown app {}!'.format(args.app))
