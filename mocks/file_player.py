@@ -1,11 +1,8 @@
-import argparse
 import csv
 import time
 import pickle
-import socket
 
 import numpy as np
-from config import routing
 
 
 def load_gdf(file):
@@ -20,9 +17,9 @@ def load_gdf(file):
 
 
 class FilePlayer:
-    def __init__(self, filename, spike_socket, sim_to_real=2):
+    def __init__(self, filename, spike_socket, sim_to_real=1, time_to_start=0):
         self.neurons, sim_times = load_gdf(filename)
-        self.times = list(np.array(sim_times) / sim_to_real)  # sim_to_real second in simulation time corresponds to 1 second in real time
+        self.times = list((np.array(sim_times) - time_to_start)/ sim_to_real)  # sim_to_real second in simulation time corresponds to 1 second in real time
         self.spike_socket = spike_socket
 
     def init_instrument(self, client):
@@ -31,9 +28,14 @@ class FilePlayer:
     def play(self):
         start_time = time.time()
 
-        next_time = self.times.pop()
+        next_time = self.times.pop(0)
         while len(self.neurons) >= 1:
             time_passed = time.time() - start_time
             if time_passed >= next_time:
-                self.spike_socket.send_neuron(self.neurons.pop())
-                next_time = self.times.pop()
+                neuron = self.neurons.pop(0)
+                print('sending %s' % neuron)
+                self.spike_socket.send_neuron(neuron)
+                next_time = self.times.pop(0)
+            else:
+                print(time_passed, next_time)
+                time.sleep(0.001)

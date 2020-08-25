@@ -46,7 +46,7 @@ elif args.app == 'instrument':
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address(args.app)))
 
-elif args.app ==  'simulator':
+elif args.app == 'simulator':
     import config_parser
     from config import routing
     from osc_helpers.clients import DefaultClient
@@ -85,10 +85,16 @@ elif args.app == 'file_player':
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
     initialization_client = DefaultClient(config_parser.get_address('output_server'), routing.RECORDED_NEURONS)
     spike_socket = SpikeSocket(config_parser.get_address('output_server'))
-    player = FilePlayer(file, spike_socket)
+    player = FilePlayer(file, spike_socket, time_to_start=13)
     player.init_instrument(initialization_client)
     player.play()
 
+elif args.app == 'spike_forwarder':
+    from output.spike_socket import SpikeForwarder
+    import config_parser
+
+    spike_forwarder = SpikeForwarder(config_parser.get_address('output_server'))
+    spike_forwarder.start_forwarding(config_parser.get_address('instrument'))
 
 else:
     print('Unknown app {}!'.format(args.app))

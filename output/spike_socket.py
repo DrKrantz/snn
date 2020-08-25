@@ -2,14 +2,13 @@ import socket
 
 
 class SpikeSocket(socket.socket):
-
     def __init__(self, address, *args, **kwargs):
         self.target_address = address
 
         super(SpikeSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def send_neuron(self, neuron_id):
-        self.sendto(bytes(neuron_id, encoding='utf8'), self.target_address)
+        self.sendto(bytes(str(neuron_id), encoding='utf8'), self.target_address)
 
 
 class SpikeForwarder(SpikeSocket):
