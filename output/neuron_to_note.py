@@ -24,6 +24,9 @@ class Neuron2NoteConverter:
 
 
 class LinearConverter:
+    """
+    Converts the neuron_IDs to indices by assuming that ID = index + offset
+    """
     def __init__(self, offset=0):
         self.__offset = offset
 

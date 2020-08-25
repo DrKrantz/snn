@@ -24,8 +24,8 @@ class FilePlayer:
         # sim_to_real second in simulation time corresponds to 1 second in real time
         self.times = list((np.array(sim_times) - time_to_start) / sim_to_real)
 
-    def init_instrument(self, client):
-        client.send_to_default(pickle.dumps(np.unique(self.neurons)))
+    def get_neuron_ids(self):
+        return np.unique(self.neurons)
 
     def play(self):
         start_time = time.time()

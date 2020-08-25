@@ -3,8 +3,8 @@ import struct
 
 
 class SpikeSocket(socket.socket):
-    def __init__(self, address, *args, **kwargs):
-        self.target_address = address
+    def __init__(self, target_address, *args, **kwargs):
+        self.target_address = target_address
         super(SpikeSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def send_neuron(self, neuron_id):
@@ -26,8 +26,8 @@ class SpikeForwarder(SpikeSocket):
 
 
 class InitSocket(socket.socket):
-    def __init__(self, address, *args, **kwargs):
-        self.target_address = address
+    def __init__(self, target_address, *args, **kwargs):
+        self.target_address = target_address
         super(InitSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def send_init(self, frequencies):
