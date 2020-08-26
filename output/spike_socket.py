@@ -1,6 +1,9 @@
 import socket
 import struct
 
+MESSAGETYPE_PERFORMANCE = 0
+MESSAGETYPE_INIT = 1
+
 
 class SpikeSocket(socket.socket):
     def __init__(self, target_address, convert=None, *args, **kwargs):
@@ -13,7 +16,7 @@ class SpikeSocket(socket.socket):
         super(SpikeSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def send_converted(self, neuron_id):
-        self.sendto(struct.pack('i', self.convert(neuron_id)), self.target_address)
+        self.sendto(struct.pack('bH', MESSAGETYPE_PERFORMANCE, self.convert(neuron_id)), self.target_address)
 
 
 class SpikeForwarder(socket.socket):
@@ -44,6 +47,6 @@ class InitSocket(socket.socket):
         super(InitSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def send_init(self, frequencies):
-        self.sendto(struct.pack('id', len(frequencies), 0.0), self.target_address)
+        self.sendto(struct.pack('bHf', MESSAGETYPE_INIT, len(frequencies), 0.0), self.target_address)
         for idx, freq in enumerate(frequencies):
-            self.sendto(struct.pack('id', idx, freq), self.target_address)
+            self.sendto(struct.pack('bHf', MESSAGETYPE_INIT, idx, freq), self.target_address)
