@@ -65,8 +65,8 @@ if __name__ == '__main__':
     network_instance = network_module.Network()
     network_instance.setup()
 
-    osc_client = SimpleUDPClient(config_parser.config['ip']['output_server'],
-                                 config_parser.config['port']['output_server'])
+    osc_client = SimpleUDPClient(config_parser.config['ip']['spike_forwarder'],
+                                 config_parser.config['port']['spike_forwarder'])
 
     server = NetworkServer(config_parser.get_address('simulator'), network_instance, osc_client)
 

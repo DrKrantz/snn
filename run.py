@@ -52,7 +52,7 @@ elif args.app == 'simulator':
     from osc_helpers.clients import DefaultClient
     from simulator import network_server
 
-    osc_client = DefaultClient(config_parser.get_address('output_server'), routing.FIRING_NEURONS)
+    osc_client = DefaultClient(config_parser.get_address('spike_forwarder'), routing.FIRING_NEURONS)
 
     print(" ----------------------- Creating forwarder")
     forwarder = network_server.OSCForwarder(osc_client)
@@ -82,7 +82,7 @@ elif args.app == 'file_player':
     from output import neuron_to_note
 
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    spike_socket = SpikeSocket(config_parser.get_address('output_server'))
+    spike_socket = SpikeSocket(config_parser.get_address('spike_forwarder'))
     player = FilePlayer(file, spike_socket, time_to_start=13)
 
     # Initialize instrument
@@ -103,7 +103,7 @@ elif args.app == 'spike_forwarder':
     from output import neuron_to_note
     converter = neuron_to_note.LinearConverter(offset=1)
 
-    spike_forwarder = SpikeForwarder(config_parser.get_address('output_server'))
+    spike_forwarder = SpikeForwarder(config_parser.get_address('spike_forwarder'))
     instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
     spike_forwarder.register_target(instrument_socket)
 

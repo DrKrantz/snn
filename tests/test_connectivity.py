@@ -30,7 +30,7 @@ elif args.app == 'start-client':
     client.send_message(routing.START_SIMULATION, 1)
 
 elif args.app == 'simulator-client':
-    ip, port = config_parser.get_address('output_server')
+    ip, port = config_parser.get_address('spike_forwarder')
     client = SimpleUDPClient(ip, port)
     print('Sending Firing neurons: [1]')
     client.send_message(routing.FIRING_NEURONS, [1])
@@ -39,7 +39,7 @@ elif args.app == 'output-server':
     def success(_, msg):
         print('Success: output-server receives {}'.format(msg))
 
-    ip, port = config_parser.get_address('output_server')
+    ip, port = config_parser.get_address('spike_forwarder')
 
     dispatcher = Dispatcher()
     dispatcher.map(routing.FIRING_NEURONS, success)
