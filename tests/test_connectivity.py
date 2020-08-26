@@ -35,18 +35,6 @@ elif args.app == 'simulator-client':
     print('Sending Firing neurons: [1]')
     client.send_message(routing.FIRING_NEURONS, [1])
 
-elif args.app == 'output-server':
-    def success(_, msg):
-        print('Success: output-server receives {}'.format(msg))
-
-    ip, port = config_parser.get_address('spike_forwarder')
-
-    dispatcher = Dispatcher()
-    dispatcher.map(routing.FIRING_NEURONS, success)
-    output_server = BlockingOSCUDPServer((ip, port), dispatcher)
-    print('Starting output-server')
-    output_server .serve_forever()
-
 elif args.app == 'output-client':
     ip, port = config_parser.get_address('instrument')
     client = SimpleUDPClient(ip, port)

@@ -5,33 +5,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('app')
 args = parser.parse_args()
 
-if args.app == 'output':
-
-    import config_parser
-    from config import routing
-    from output.output_server import OutputServer
-
-    from output import neuron_to_note, output_devices
-
-    server = OutputServer(config_parser.get_address('output_server'))  # TODO: allow other sound targets
-
-    # import numpy as np
-    # converter = neuron_to_note.TogglingConverter(np.arange(1, 96), neuron_to_note.SCALE_MAJOR,
-    #                                              neuron_to_note.SCALE_MAJOR + 1)
-    # # simple_synth = sound_devices.SoundDevice(converter)
-    # server.register_device(simple_synth)
-
-    # iac = output_devices.MidiDevice(converter, midi_port='IAC Driver Bus 1')
-
-    converter = neuron_to_note.LinearConverter(offset=0)
-    osc_device = output_devices.OscDevice(converter, config_parser.get_address('instrument'))
-
-    server.register_device(osc_device)
-    server.register_callback(routing.RECORDED_NEURONS, osc_device.init_instrument)
-
-    server.start()
-
-elif args.app == 'instrument':
+if args.app == 'instrument':
     from output import instrument
     import asyncio
     import os
