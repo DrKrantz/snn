@@ -20,22 +20,6 @@ if args.app == 'instrument':
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(instrument_server.init_main(config_parser.get_address(args.app)))
 
-elif args.app == 'simulator':
-    import config_parser
-    from config import routing
-    from osc_helpers.clients import DefaultClient
-    from simulator import network_server
-
-    osc_client = DefaultClient(config_parser.get_address('spike_forwarder'), routing.FIRING_NEURONS)
-
-    print(" ----------------------- Creating forwarder")
-    forwarder = network_server.OSCForwarder(osc_client)
-    try:
-        forwarder.run()
-    except (KeyboardInterrupt, SystemExit):
-        print('\n  --- Quitting simulation --- \n')
-        forwarder.recorder.terminate()  # make sure to kill recorder in order to free osc-port
-
 elif args.app == 'start':
     from pythonosc.udp_client import SimpleUDPClient
     from config_parser import config
