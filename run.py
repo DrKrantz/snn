@@ -36,27 +36,20 @@ elif args.app == 'start':
 elif args.app == 'file_player':
     import config_parser
     from mocks.file_player import FilePlayer
-    from output.spike_socket import SpikeSocket, InitSocket
     from output import neuron_to_note
 
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    spike_socket = SpikeSocket(config_parser.get_address('spike_forwarder'))
-    player = FilePlayer(file, spike_socket, time_to_start=13)
-
-    # Initialize instrument
-    print('Initializing instrument')
-    frequencies = neuron_to_note.get_frequencies_for_range(20, 10000, len(player.get_neuron_ids()))
-    init_socket = InitSocket(config_parser.get_address('instrument'))
+    player = FilePlayer(file, config_parser.get_address('spike_forwarder'), time_to_start=13)
 
     complete = 'n'
     while complete != 'Y':
-        init_socket.send_init(frequencies)
+        player.send_init()
         complete = input('Initialization complete? [Y / n]') or 'Y'
 
     player.play()
 
 elif args.app == 'spike_forwarder':
-    from output.spike_socket import SpikeSocket, SpikeForwarder
+    from output.sockets import SpikeSocket, SpikeForwarder
     import config_parser
     from output import neuron_to_note
     converter = neuron_to_note.LinearConverter(offset=1)
@@ -65,7 +58,7 @@ elif args.app == 'spike_forwarder':
     instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
     spike_forwarder.register_target(instrument_socket)
 
-    spike_forwarder.start_forwarding()
+    spike_forwarder.run()
 
 else:
     print('Unknown app {}!'.format(args.app))
