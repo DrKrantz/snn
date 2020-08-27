@@ -10,9 +10,7 @@ __date__ = 140620
 import matplotlib
 matplotlib.use('TkAgg') # do this before importing pylab
 import matplotlib.pyplot as plt
-import numpy as np
-from Dunkel_pars import parameters
-from Dunkel_functions import *
+from V1.Dunkel_functions import *
 
 
 class Membrane_Display:

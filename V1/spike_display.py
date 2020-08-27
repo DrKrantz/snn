@@ -1,8 +1,8 @@
 import numpy as np
 import pygame
-from Dunkel_functions import linear2grid
-from Dunkel_pars import parameters
-import outputHandler
+from V1.Dunkel_functions import linear2grid
+from V1.Dunkel_pars import parameters
+from V1 import outputHandler
 import asyncio
 
 from pythonosc.dispatcher import Dispatcher

@@ -1,10 +1,7 @@
-from scipy import *
 from numpy import *
 #import pylab as pll
 import pygame
 import pygame.midi as pm
-import time
-import sys
 
 # packages need for the webcam
 #import pkg_resources 
@@ -12,7 +9,7 @@ import sys
 # packages needed for the parameter-display
 from pygame.locals import *
 
-from Dunkel_pars import parameters
+from V1.Dunkel_pars import parameters
 global pars
 pars = parameters()
 # Created by B. Staude to simulate the Thalamic Network (Figs. 3 and 4) of Destexhe 2009, J Comp Neurosci.

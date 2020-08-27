@@ -8,7 +8,7 @@ __date__ = 140620
 
 import random
 
-from Dunkel_functions import *
+from V1.Dunkel_functions import *
 
 
 class ConnectivityMatrix(object):

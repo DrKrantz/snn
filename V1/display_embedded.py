@@ -5,7 +5,7 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
-from Dunkel_functions import *
+from V1.Dunkel_functions import *
 
 
 class Display:

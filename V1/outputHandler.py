@@ -1,8 +1,7 @@
-import pygame.font
 from numpy import intersect1d
 from pythonosc.udp_client import SimpleUDPClient
 
-from outputDevices import *
+from V1.outputDevices import *
 
 
 class OutputHandler(object):
@@ -30,7 +29,7 @@ class OutputHandler(object):
 
 
 if __name__ == '__main__':
-    from Dunkel_functions import parameters
+    from V1.Dunkel_functions import parameters
     import config_parser
     pm.init()
     output_handler = OutputHandler(parameters(), config_parser.config)

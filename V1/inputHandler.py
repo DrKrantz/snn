@@ -8,7 +8,7 @@ __date__ = 140620
 
 from pygame import midi as pm
 from numpy import array, unique, union1d
-from inputDevices import InputDevice
+from V1.inputDevices import InputDevice
 
 
 class InputHandler(object):

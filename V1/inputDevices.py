@@ -228,6 +228,7 @@ class SensoryObject(InputDevice):
 
 
 if __name__ == '__main__':
-    import Dunkel_pars
+    from V1 import Dunkel_pars
+
     inputDevice = SensoryObject(Dunkel_pars.parameters(), '')
     inputDevice.map_keys()

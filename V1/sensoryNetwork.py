@@ -17,13 +17,11 @@ import pygame
 import pygame.locals
 import sys
 
-from Dunkel_pars import parameters
-from outputHandler import OutputHandler
-from inputHandler import InputHandler
-import outputDevices
-import inputDevices
-from connectivityMatrix import ConnectivityMatrix
-import settingsReader
+from V1.Dunkel_pars import parameters
+from V1.outputHandler import OutputHandler
+from V1.inputHandler import InputHandler
+from V1 import inputDevices, outputDevices, settingsReader
+from V1.connectivityMatrix import ConnectivityMatrix
 
 
 class SensoryNetwork(object):

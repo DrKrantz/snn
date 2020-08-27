@@ -16,7 +16,7 @@ from pyglet import window
 from pyglet import image
 from pygarrayimage.arrayimage import ArrayInterfaceImage
 
-from Dunkel_pars import parameters
+from V1.Dunkel_pars import parameters
 
 
 class Window:

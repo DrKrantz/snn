@@ -9,7 +9,7 @@ __date__ = 140621
 import pygame.midi as pm
 import time
 import numpy as np
-from Dunkel_functions import chordConversion, chromaticConversion
+from V1.Dunkel_functions import chordConversion, chromaticConversion
 
 
 class Neuron2NoteConverter(object):
