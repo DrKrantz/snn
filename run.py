@@ -49,14 +49,29 @@ elif args.app == 'file_player':
     player.play()
 
 elif args.app == 'spike_forwarder':
-    from output.sockets import SpikeSocket, SpikeForwarder
+    from output.sockets import SpikeSocket, SpikeForwarder, InitSocket
     import config_parser
     from output import neuron_to_note
+    import numpy as np
+
     converter = neuron_to_note.LinearConverter(offset=1)
 
     spike_forwarder = SpikeForwarder(config_parser.get_address('spike_forwarder'))
     instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
     spike_forwarder.register_target(instrument_socket)
+    spike_forwarder.start_init()
+
+    #  TODO: this is not a real neuron_ID to frequency conversion yet!
+    first_f = 300
+    last_f = 15000
+
+    frequencies = np.linspace(first_f, last_f, spike_forwarder.n_neurons)
+    init_socket = InitSocket(config_parser.get_address('instrument'))
+
+    complete = 'n'
+    while complete != 'Y':
+        init_socket.send_init(frequencies)
+        complete = input('Initialization complete? [Y / n]') or 'Y'
 
     spike_forwarder.run()
 
