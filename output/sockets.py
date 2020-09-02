@@ -40,9 +40,6 @@ class SpikeForwarder(socket.socket):
     def register_target(self, target):
         self.targets.append(target)
 
-    def run(self):
-        self.start_forwarding()
-
     def start_init(self):
         self.bind(self.receiving_address)
         while True:

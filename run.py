@@ -39,8 +39,9 @@ elif args.app == 'file_player':
     from output import neuron_to_note
 
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    player = FilePlayer(file, config_parser.get_address('spike_forwarder'), time_to_start=13)
+    player = FilePlayer(file, config_parser.get_address('spike_forwarder'), time_to_start=13 )
 
+    print('Starting forwarder initialization')
     complete = 'n'
     while complete != 'Y':
         player.send_init()
@@ -61,19 +62,19 @@ elif args.app == 'spike_forwarder':
     spike_forwarder.register_target(instrument_socket)
     spike_forwarder.start_init()
 
+    print('Starting instrument initialization')
     #  TODO: this is not a real neuron_ID to frequency conversion yet!
     first_f = 300
     last_f = 15000
-
     frequencies = np.linspace(first_f, last_f, spike_forwarder.n_neurons)
     init_socket = InitSocket(config_parser.get_address('instrument'))
 
     complete = 'n'
     while complete != 'Y':
         init_socket.send_init(frequencies)
-        complete = input('Initialization complete? [Y / n]') or 'Y'
+        complete = input('Instrument initialization complete? [Y / n]') or 'Y'
 
-    spike_forwarder.run()
+    spike_forwarder.start_forwarding()
 
 else:
     print('Unknown app {}!'.format(args.app))
