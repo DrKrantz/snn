@@ -36,34 +36,43 @@ elif args.app == 'start':
 elif args.app == 'file_player':
     import config_parser
     from mocks.file_player import FilePlayer
-    from output.spike_socket import SpikeSocket, InitSocket
     from output import neuron_to_note
 
     file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    spike_socket = SpikeSocket(config_parser.get_address('spike_forwarder'))
-    player = FilePlayer(file, spike_socket, time_to_start=13)
+    player = FilePlayer(file, config_parser.get_address('spike_forwarder'), time_to_start=13 )
 
-    # Initialize instrument
-    print('Initializing instrument')
-    frequencies = neuron_to_note.get_frequencies_for_range(20, 10000, len(player.get_neuron_ids()))
-    init_socket = InitSocket(config_parser.get_address('instrument'))
-
+    print('Starting forwarder initialization')
     complete = 'n'
     while complete != 'Y':
-        init_socket.send_init(frequencies)
+        player.send_init()
         complete = input('Initialization complete? [Y / n]') or 'Y'
 
     player.play()
 
 elif args.app == 'spike_forwarder':
-    from output.spike_socket import SpikeSocket, SpikeForwarder
+    from output.sockets import SpikeSocket, SpikeForwarder, InitSocket
     import config_parser
     from output import neuron_to_note
+    import numpy as np
+
     converter = neuron_to_note.LinearConverter(offset=1)
 
     spike_forwarder = SpikeForwarder(config_parser.get_address('spike_forwarder'))
     instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
     spike_forwarder.register_target(instrument_socket)
+    spike_forwarder.start_init()
+
+    print('Starting instrument initialization')
+    #  TODO: this is not a real neuron_ID to frequency conversion yet!
+    first_f = 300
+    last_f = 15000
+    frequencies = np.linspace(first_f, last_f, spike_forwarder.n_neurons)
+    init_socket = InitSocket(config_parser.get_address('instrument'))
+
+    complete = 'n'
+    while complete != 'Y':
+        init_socket.send_init(frequencies)
+        complete = input('Instrument initialization complete? [Y / n]') or 'Y'
 
     spike_forwarder.start_forwarding()
 
