@@ -1,13 +1,13 @@
 # IPS
 ip:
   simulator: 127.0.0.1
-  output_server: 127.0.0.1
+  spike_forwarder: 127.0.0.1
   instrument: 127.0.0.1
 
 # PORTS
 port:
   simulator: 5020
-  output_server: 8080
+  spike_forwarder: 8080
   instrument: 5020
 
 simulation_script: brunel_delta_nest
