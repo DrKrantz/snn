@@ -10,4 +10,4 @@ port:
   spike_forwarder: 8080
   instrument: 5020
 
-simulation_script: brunel_delta_nest
+simulation_script: brunel_basic
