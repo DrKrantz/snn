@@ -31,7 +31,7 @@ def load_spike_file(model_node):
 
 
 class FilePlayer:
-    def __init__(self, model_node, target_address, sim_to_real=1, time_to_start=0):
+    def __init__(self, model_node, init_socket, sim_to_real=1, time_to_start=0):
         """
         :param model_node: the name of the file to use.  See
         https://nest-simulator-sg.readthedocs.io/en/latest/guides/parallel_computing.html?highlight=parallel#device-distribution
@@ -41,14 +41,14 @@ class FilePlayer:
         :param time_to_start:
         """
         self.neurons, sim_times = load_spike_file(model_node)
-        self.target_address = target_address
-        self.socket = sockets.InitSocket(target_address)
+        self.target_address = init_socket.target_address
+        self.socket = init_socket
 
         # sim_to_real second in simulation time corresponds to 1 second in real time
         self.times = list((np.array(sim_times) - time_to_start) / sim_to_real)
 
     def send_init(self):
-        self.socket.send_init(np.unique(self.neurons))
+        self.socket.send_init()
 
     def play(self):
         start_time = time.time()

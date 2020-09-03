@@ -42,7 +42,7 @@ class SpikeForwarder(socket.socket):
             data, addr = self.recvfrom(MESSAGESIZE_INIT)
             if data:
                 msg_type, index, number = struct.unpack('<bHf', data)
-                print('received type {} with index {} and number {}'.format(msg_type, index, number))
+                # print('received type {} with index {} and number {}'.format(msg_type, index, number))
                 if number == 0.0:
                     self.n_neurons = index
                 else:

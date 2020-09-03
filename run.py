@@ -33,19 +33,42 @@ elif args.app == 'start':
     print('Sending start signal to simulator')
     client.send_message(routing.START_SIMULATION, 1)
 
+elif args.app == 'simulator':
+    import importlib
+    import config_parser
+    from output import sockets
+
+    network_module = importlib.import_module('simulator.nest_code.{}'.format(config_parser.get('simulation_script')))
+
+    network_instance = network_module.Network()
+    network_instance.setup()
+
+    init_socket = sockets.InitSocket(config_parser.get_address('forwarder_from_docker'))
+    neuron_ids = network_instance.get_recorded_neuron_ids()
+
+    print('Starting forwarder initialization')
+    complete = 'n'
+    while complete != 'Y':
+        init_socket.send_init(neuron_ids)
+        complete = input('Forwarder initialization complete? [Y / n]') or 'Y'
+
+    # network_instance.simulate()
+
 elif args.app == 'file_player':
     import config_parser
     from mocks.file_player import FilePlayer
     from output import neuron_to_note
+    from output import sockets
 
-    model_node = 'brunel-py-ex-10002'
-    player = FilePlayer(model_node, config_parser.get_address('spike_forwarder'), time_to_start=13 )
+    model_node = 'brunel-py-ex-15002'
+    init_socket = sockets.InitSocket(config_parser.get_address('forwarder_local'))
+    player = FilePlayer(model_node, init_socket, time_to_start=13 )
 
     print('Starting forwarder initialization')
     complete = 'n'
     while complete != 'Y':
         player.send_init()
-        complete = input('Initialization complete? [Y / n]') or 'Y'
+        complete = input('Forwarder initialization complete? [Y / n]') or 'Y'
 
     player.play()
 
@@ -57,12 +80,15 @@ elif args.app == 'spike_forwarder':
 
     converter = neuron_to_note.LinearConverter(offset=1)
 
-    spike_forwarder = SpikeForwarder(config_parser.get_address('spike_forwarder'))
+    spike_forwarder = SpikeForwarder(config_parser.get_address('forwarder_local'))
     instrument_socket = SpikeSocket(config_parser.get_address('instrument'), converter.id_to_index)
     spike_forwarder.register_target(instrument_socket)
+
+    print('Waiting for initialization')
     spike_forwarder.start_init()
 
     print('Starting instrument initialization')
+
     #  TODO: this is not a real neuron_ID to frequency conversion yet!
     first_f = 300
     last_f = 15000

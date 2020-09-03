@@ -1,13 +1,13 @@
 # IPS
 ip:
-  simulator: 127.0.0.1
-  spike_forwarder: 127.0.0.1
+  forwarder_from_docker: host.docker.internal
+  forwarder_local: 127.0.0.1
   instrument: 127.0.0.1
 
 # PORTS
 port:
-  simulator: 5020
-  spike_forwarder: 8080
+  forwarder_from_docker: 5000
+  forwarder_local: 5000
   instrument: 5020
 
 simulation_script: brunel_basic
