@@ -74,11 +74,11 @@ class Network:
         # Definition of the number of neurons in the network and the number of neuron
         # recorded from
 
-        self.order = 2500
+        self.order = 4000
         self.NE = 4 * self.order  # number of excitatory neurons
         self.NI = 1 * self.order  # number of inhibitory neurons
         self.N_neurons = self.NE + self.NI  # number of neurons in total
-        self.N_rec = 2  # record from 50 neurons
+        self.N_rec = 10000 # self.order  # number of neurons to record
 
         ###############################################################################
         # Definition of connectivity parameter
@@ -163,9 +163,13 @@ class Network:
         # each spike is saved to file by stating the gid of the spiking neuron and
         # the spike time in one line.
 
-        nest.SetStatus(self.espikes, [{"label": "brunel-py-ex", "record_to": "screen"}])
+        # DEFINE RECORDER
+        target = 'ascii'
+        nest.SetKernelStatus({'data_path': '/opt/data/data'})
 
-        nest.SetStatus(self.ispikes, [{"label": "brunel-py-in"}])
+        nest.SetStatus(self.espikes, [{"label": "brunel-py-ex", "record_to": target}])
+
+        # nest.SetStatus(self.ispikes, [{"label": "brunel-py-in", "record_to": target}])
 
         print("Connecting devices")
 
