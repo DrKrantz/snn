@@ -322,7 +322,7 @@ class Network:
 
     def get_recorded_neuron_ids(self):
         neuron_ids = self.nodes_ex[:self.N_rec].tolist()
-        neuron_ids.extend(self.nodes_in[:self.N_rec].tolist())
+        # neuron_ids.extend(self.nodes_in[:self.N_rec].tolist())
         return neuron_ids
 
 
