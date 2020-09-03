@@ -3,7 +3,6 @@ import time
 import os
 import glob
 import numpy as np
-import socket
 import struct
 from output import sockets
 
@@ -12,7 +11,7 @@ def load_spike_file(model_node):
     times = []
     neurons = []
     for file in glob.glob(os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                      'data/{}-[0-9].dat'.format(model_node))):
+                                       'data/{}-[0-9].dat'.format(model_node))):
 
         print('Reading %s ' % file)
         with open(file, 'r') as csvfile:
@@ -28,7 +27,7 @@ def load_spike_file(model_node):
     times = np.array(times)[indices]
     neurons = np.array(neurons)[indices]
 
-    return neurons, times
+    return neurons.tolist(), times.tolist()
 
 
 class FilePlayer:
@@ -43,16 +42,13 @@ class FilePlayer:
         """
         self.neurons, sim_times = load_spike_file(model_node)
         self.target_address = target_address
-        self.spike_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket = sockets.InitSocket(target_address)
 
         # sim_to_real second in simulation time corresponds to 1 second in real time
         self.times = list((np.array(sim_times) - time_to_start) / sim_to_real)
 
     def send_init(self):
-        neuron_ids = np.unique(self.neurons)
-        self.spike_socket.sendto(struct.pack('HH', sockets.MESSAGETYPE_TOTAL_NEURONS, len(neuron_ids)), self.target_address)
-        for idx, n_id in enumerate(neuron_ids):
-            self.spike_socket.sendto(struct.pack('HH', sockets.MESSAGETYPE_INIT_FORWARDER, n_id), self.target_address)
+        self.socket.send_init(np.unique(self.neurons))
 
     def play(self):
         start_time = time.time()
@@ -63,5 +59,5 @@ class FilePlayer:
             if time_passed >= next_time:
                 neuron = self.neurons.pop(0)
                 print('sending %s' % neuron)
-                self.spike_socket.sendto(struct.pack('HH', sockets.MESSAGETYPE_PERFORMANCE, neuron), self.target_address)
+                self.socket.sendto(struct.pack('<bH', sockets.MESSAGETYPE_PERFORMANCE, neuron), self.target_address)
                 next_time = self.times.pop(0)
