@@ -34,5 +34,3 @@ if __name__ == '__main__':
         send(sock, sender_ip)
     elif args.type == 'listen':
         listen(sock, (receiver_ip, receiver_port))
-
-
