@@ -6,20 +6,28 @@ import struct
 from output import sockets
 
 
-def load_gdf(file):
+def load_spike_file(file):
     times = []
     neurons = []
     with open(file, 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter='\t')
         for row in reader:
-            neurons.append(int(row[0]))
-            times.append(float(row[1]))
+            # skip first three rows
+            if row[0][0] not in ['#', 's']:
+                neurons.append(int(row[0]))
+                times.append(float(row[1]))
+
+    # nest does not write the times in chronological order, hence sorting is necessary
+    indices = np.argsort(times)
+    times = np.array(times)[indices]
+    neurons = np.array(neurons)[indices]
+
     return neurons, times
 
 
 class FilePlayer:
     def __init__(self, filename, target_address, sim_to_real=1, time_to_start=0):
-        self.neurons, sim_times = load_gdf(filename)
+        self.neurons, sim_times = load_spike_file(filename)
         self.target_address = target_address
         self.spike_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
