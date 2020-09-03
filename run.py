@@ -38,8 +38,8 @@ elif args.app == 'file_player':
     from mocks.file_player import FilePlayer
     from output import neuron_to_note
 
-    file = 'simulator/nest_code/brunel-py-ex-12502-0.gdf'
-    player = FilePlayer(file, config_parser.get_address('spike_forwarder'), time_to_start=13 )
+    model_node = 'brunel-py-ex-10002'
+    player = FilePlayer(model_node, config_parser.get_address('spike_forwarder'), time_to_start=13 )
 
     print('Starting forwarder initialization')
     complete = 'n'
