@@ -18,7 +18,19 @@
 int main()
 {
     char buffer[100];
-    char *message = "Hello Server";
+    uint32_t message = 0; //  IDENTIFYER NEURON_ID
+    uint16_t neuron_ID = 10;
+    const uint8_t IDENTITYER_PERFORMANCE_MESSAGE = 3;
+
+    memcpy(&message,
+        &IDENTITYER_PERFORMANCE_MESSAGE,
+        sizeof(IDENTITYER_PERFORMANCE_MESSAGE));
+
+    void* secondAddr = &message + 1;
+    memcpy(secondAddr,
+        &neuron_ID,
+        sizeof(neuron_ID));
+
     int sockfd, n;
     struct sockaddr_in servaddr;
 
@@ -41,7 +53,7 @@ int main()
     // request to send datagram
     // no need to specify server address in sendto
     // connect stores the peers IP and port
-    sendto(sockfd, message, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(servaddr));
+    sendto(sockfd, &message, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(servaddr));
 
     // waiting for response
     recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
