@@ -17,5 +17,10 @@ docker run -it --rm -e LOCAL_USER_ID=`id -u $USER` --name nest -p 5000:5000
             -v $(pwd):/opt/data nestsim/nest:3.0 /bin/bash
 ```
 
-for more info, see https://github.com/nest/nest-docker
 
+To login as root, type
+```
+docker exec -u root -t -i CONTAINER_ID /bin/bash
+```
+
+for more info, see https://github.com/nest/nest-docker
