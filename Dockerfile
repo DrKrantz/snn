@@ -86,7 +86,7 @@ RUN wget https://github.com/INCF/MUSIC/archive/master.tar.gz && \
 #    make install
 
 # Install NEST
-RUN git clone https://github.com/nest/nest-simulator.git && \
+RUN git clone https://github.com/staudamm/nest-simulator.git && \
   cd nest-simulator && \
   git checkout master && \
   cd .. && \
@@ -164,5 +164,11 @@ COPY --from=builder30 /opt/music-install /opt/music-install
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+
+# Additional dependecies for SNN
+RUN pip install pyyaml
+
