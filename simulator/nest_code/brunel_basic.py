@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# brunel_delta_nest.py
+# brunel_basic.py
 #
 # This file is part of NEST.
 #
@@ -55,10 +55,13 @@ class Network:
         self.__set_parameters()
 
     def __set_parameters(self):
+        nest.SetKernelStatus({'local_num_threads': 4})
+
+
         ###############################################################################
         # Assigning the simulation parameters to variables.
 
-        self.dt = 0.1  # the resolution in ms
+        self.dt = 0.01  # the resolution in ms
         self.simtime = 1000.0  # Simulation time in ms
         self.delay = 1.5  # synaptic delay in ms
 
@@ -74,11 +77,11 @@ class Network:
         # Definition of the number of neurons in the network and the number of neuron
         # recorded from
 
-        self.order = 2500
+        self.order = 3000
         self.NE = 4 * self.order  # number of excitatory neurons
         self.NI = 1 * self.order  # number of inhibitory neurons
         self.N_neurons = self.NE + self.NI  # number of neurons in total
-        self.N_rec = 2  # record from 50 neurons
+        self.N_rec = 10000 # self.order  # number of neurons to record
 
         ###############################################################################
         # Definition of connectivity parameter
@@ -163,9 +166,13 @@ class Network:
         # each spike is saved to file by stating the gid of the spiking neuron and
         # the spike time in one line.
 
-        nest.SetStatus(self.espikes, [{"label": "brunel-py-ex", "record_to": "screen"}])
+        # DEFINE RECORDER
+        target = 'ascii'
+        nest.SetKernelStatus({'data_path': '/opt/data/data'})
 
-        nest.SetStatus(self.ispikes, [{"label": "brunel-py-in"}])
+        nest.SetStatus(self.espikes, [{"label": "brunel-py-ex", "record_to": target}])
+
+        # nest.SetStatus(self.ispikes, [{"label": "brunel-py-in", "record_to": target}])
 
         print("Connecting devices")
 
@@ -200,7 +207,7 @@ class Network:
         # above is used.
 
         nest.Connect(self.nodes_ex[:self.N_rec], self.espikes, syn_spec="excitatory")
-        nest.Connect(self.nodes_in[:self.N_rec], self.ispikes, syn_spec="excitatory")
+        #nest.Connect(self.nodes_in[:self.N_rec], self.ispikes, syn_spec="excitatory")
 
         print("Connecting network")
 
@@ -315,7 +322,7 @@ class Network:
 
     def get_recorded_neuron_ids(self):
         neuron_ids = self.nodes_ex[:self.N_rec].tolist()
-        neuron_ids.extend(self.nodes_in[:self.N_rec].tolist())
+        # neuron_ids.extend(self.nodes_in[:self.N_rec].tolist())
         return neuron_ids
 
 
@@ -323,5 +330,11 @@ class Network:
 # Plot a raster of the excitatory neurons and a histogram.
 
 # nest.raster_plot.from_device(espikes, hist=True)
+
+if __name__ == '__main__':
+    network = Network()
+    network.setup()
+    network.simulate()
+    network.read()
 
 

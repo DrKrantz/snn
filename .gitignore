@@ -59,12 +59,13 @@ docs/_build/
 .DS_store
 
 # instruments etc...
-SimpleSynth.app
-BCF2000.app
+
 NEST
 .idea
 SensoryNetwork.app
 test.pkl
 .vagrant
 
+# data files
+data/*
 

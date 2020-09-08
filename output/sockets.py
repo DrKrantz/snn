@@ -1,16 +1,12 @@
 import socket
 import struct
-import numpy as np
 
 MESSAGETYPE_ERROR = -1
 MESSAGETYPE_PERFORMANCE = 0
-MESSAGETYPE_INIT_INSTRUMENT = 1
-MESSAGETYPE_INIT_FORWARDER = 2
-MESSAGETYPE_TOTAL_NEURONS = 3
+MESSAGETYPE_INIT = 1
 
 MESSAGESIZE_PERFORMANCE = 4
-MESSAGESIZE_INIT_INSTRUMENT = 7
-MESSAGESIZE_INIT_FORWARDER = 4
+MESSAGESIZE_INIT = 7
 
 
 class SpikeSocket(socket.socket):
@@ -43,19 +39,17 @@ class SpikeForwarder(socket.socket):
     def start_init(self):
         self.bind(self.receiving_address)
         while True:
-            data, addr = self.recvfrom(MESSAGESIZE_INIT_FORWARDER)
+            data, addr = self.recvfrom(MESSAGESIZE_INIT)
             if data:
-                msg_type, content = struct.unpack('<HH', data)
-                print('received type {} with content {}'.format(msg_type, content))
-                if msg_type == MESSAGETYPE_TOTAL_NEURONS:
-                    self.n_neurons = content
-                elif msg_type == MESSAGETYPE_INIT_FORWARDER:
-                    self.__neuron_ids.append(content)
+                msg_type, index, number = struct.unpack('<bHf', data)
+                # print('received type {} with index {} and number {}'.format(msg_type, index, number))
+                if number == 0.0:
+                    self.n_neurons = index
+                else:
+                    self.__neuron_ids.append(int(number))
                     if self.n_neurons != 0 and len(self.__neuron_ids) == self.n_neurons:
                         print('Forwarder initialization complete!')
                         return True
-                else:
-                    print('Error: unknown message-type {}'.format(msg_type))
 
     def start_forwarding(self):
         while True:
@@ -69,7 +63,7 @@ class SpikeForwarder(socket.socket):
                     [target.send_converted(neuron_id) for target in self.targets]
 
     def __validate_performance_msg(self, data):
-        msg_type, neuron_id = struct.unpack('<HH', data)
+        msg_type, neuron_id = struct.unpack('<bH', data)
         if neuron_id not in self.__neuron_ids:
             msg_type = MESSAGETYPE_ERROR
         return msg_type, neuron_id
@@ -80,7 +74,7 @@ class InitSocket(socket.socket):
         self.target_address = target_address
         super(InitSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
-    def send_init(self, frequencies):
-        self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT_INSTRUMENT, len(frequencies), 0.0), self.target_address)
-        for idx, freq in enumerate(frequencies):
-            self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT_INSTRUMENT, idx, freq), self.target_address)
+    def send_init(self, data):
+        self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, len(data), 0.0), self.target_address)
+        for idx, field in enumerate(data):
+            self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, idx, field), self.target_address)
