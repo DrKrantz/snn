@@ -18,47 +18,44 @@
 int main()
 {
     char buffer[100];
-    uint32_t message = 0; //  IDENTIFYER NEURON_ID
-    uint16_t neuron_ID = 10;
-    const uint8_t IDENTITYER_PERFORMANCE_MESSAGE = 3;
-
-    memcpy(&message,
-        &IDENTITYER_PERFORMANCE_MESSAGE,
-        sizeof(IDENTITYER_PERFORMANCE_MESSAGE));
-
-    void* secondAddr = &message + 1;
-    memcpy(secondAddr,
-        &neuron_ID,
-        sizeof(neuron_ID));
-
-    int sockfd, n;
+    char message[3];
+    int sockfd;
     struct sockaddr_in servaddr;
-
+    
+    uint8_t id    = 1;
+    uint16_t index = 36;
+    
+    memcpy(&message, &id, sizeof(id));
+    memcpy(&message + sizeof(id), &index, sizeof(index));
+    
+    
+    
     // clear servaddr
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     servaddr.sin_port = htons(PORT);
     servaddr.sin_family = AF_INET;
-
+    
     // create datagram socket
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-
+    
     // connect to server
     if(connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
     {
         printf("\n Error : Connect Failed \n");
         exit(0);
     }
-
+    
     // request to send datagram
     // no need to specify server address in sendto
     // connect stores the peers IP and port
-    sendto(sockfd, &message, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(servaddr));
-
+    sendto(sockfd, message, MAXLINE, 0, (struct sockaddr*)NULL, sizeof(servaddr));
+    
     // waiting for response
     recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
     puts(buffer);
-
+    
     // close the descriptor
     close(sockfd);
 }
+
