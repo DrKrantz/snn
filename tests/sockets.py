@@ -1,15 +1,15 @@
 import socket
 
 
-sender_ip = 'host.docker.internal'
-receiver_ip = ''
+target_ip = '192.168.0.112'
+receiving_ip = ''
 
-sender_port = 5000
-receiver_port = 5000
+target_port = 5000
+receiving_port = 5000
 
 
 def send(sock, ip):
-    sock.sendto(b'uwe', (ip, sender_port))
+    sock.sendto(b'uwe', (ip, target_port))
 
 
 def listen(sock, address):
@@ -31,6 +31,6 @@ if __name__ == '__main__':
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if args.type == 'send':
-        send(sock, sender_ip)
+        send(sock, target_ip)
     elif args.type == 'listen':
-        listen(sock, (receiver_ip, receiver_port))
+        listen(sock, (receiving_ip, receiving_port))
