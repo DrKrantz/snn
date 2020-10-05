@@ -48,7 +48,7 @@ class FilePlayer:
         self.times = list((np.array(sim_times) - time_to_start) / sim_to_real)
 
     def send_init(self):
-        self.socket.send_init()
+        self.socket.send_short_init(np.unique(self.neurons))
 
     def play(self):
         start_time = time.time()

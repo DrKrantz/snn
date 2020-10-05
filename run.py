@@ -54,7 +54,7 @@ elif args.app == 'simulator':
 
     # network_instance.simulate()
 
-elif args.app == 'file_player':
+elif args.app == 'file-player':
     import config_parser
     from mocks.file_player import FilePlayer
     from output import neuron_to_note
@@ -72,7 +72,7 @@ elif args.app == 'file_player':
 
     player.play()
 
-elif args.app == 'spike_forwarder':
+elif args.app == 'forwarder':
     from output.sockets import SpikeSocket, SpikeForwarder, InitSocket
     import config_parser
     from output import neuron_to_note
@@ -97,7 +97,7 @@ elif args.app == 'spike_forwarder':
     init_socket = InitSocket(config_parser.get_address('instrument'))
     complete = 'n'
     while complete != 'Y':
-        init_socket.send_init(frequencies)
+        init_socket.send_long_init(frequencies)
         complete = input('Instrument initialization complete? [Y / n]') or 'Y'
 
     spike_forwarder.start_forwarding()

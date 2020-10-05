@@ -1,9 +1,12 @@
 import socket
 import struct
+import numpy as np
+import time
 
 MESSAGETYPE_ERROR = -1
 MESSAGETYPE_PERFORMANCE = 0
 MESSAGETYPE_INIT = 1
+MESSAGETYPE_INIT_CONTENT = 2
 
 MESSAGESIZE_PERFORMANCE = 4
 MESSAGESIZE_INIT = 7
@@ -75,7 +78,27 @@ class InitSocket(socket.socket):
         self.target_address = target_address
         super(InitSocket, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
-    def send_init(self, data):
+    def send_long_init(self, data):
+        n_data = len(data)
+        package_size = 1000.
+
+        print('Sending init to: ', self.target_address)
+        self.sendto(
+            struct.pack('<bHH', MESSAGETYPE_INIT, n_data, int(package_size)),
+            self.target_address)
+
+        n_chunks = int(np.ceil(n_data / package_size))
+        padded_data = np.pad(data, (0, n_data-int(n_chunks * package_size)), constant_values=0)
+        chunks = np.split(padded_data, n_chunks)
+        for idx, chunk in enumerate(chunks):
+            print('sending chunk {}/{}'.format(idx+1, n_chunks))
+            # print(chunk)
+            self.sendto(
+                struct.pack('<b', MESSAGETYPE_INIT_CONTENT) + np.array(chunk).astype('f').tobytes(),
+                self.target_address)
+            time.sleep(1)
+
+    def send_short_init(self, data):
         self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, len(data), 0.0), self.target_address)
         for idx, field in enumerate(data):
             self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, idx, field), self.target_address)
