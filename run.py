@@ -93,8 +93,8 @@ elif args.app == 'spike_forwarder':
     first_f = 300
     last_f = 15000
     frequencies = np.linspace(first_f, last_f, spike_forwarder.n_neurons)
-    init_socket = InitSocket(config_parser.get_address('instrument'))
 
+    init_socket = InitSocket(config_parser.get_address('instrument'))
     complete = 'n'
     while complete != 'Y':
         init_socket.send_init(frequencies)

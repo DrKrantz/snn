@@ -30,7 +30,7 @@ class SpikeForwarder(socket.socket):
         self.receiving_address = receiving_address
         self.targets = []
         self.n_neurons = 0
-        self.__neuron_ids = []
+        self.__neuron_ids = set()
         super(SpikeForwarder, self).__init__(socket.AF_INET, socket.SOCK_DGRAM, *args, **kwargs)
 
     def register_target(self, target):
@@ -45,8 +45,9 @@ class SpikeForwarder(socket.socket):
                 # print('received type {} with index {} and number {}'.format(msg_type, index, number))
                 if number == 0.0:
                     self.n_neurons = index
+                    self.__neuron_ids = set()
                 else:
-                    self.__neuron_ids.append(int(number))
+                    self.__neuron_ids.add(int(number))
                     if self.n_neurons != 0 and len(self.__neuron_ids) == self.n_neurons:
                         print('Forwarder initialization complete!')
                         return True

@@ -27,6 +27,20 @@ class TestServer(BlockingOSCUDPServer):
         print(f"{address}: {args}")
 
 
+class NetworkParser:
+    def __init__(self, cmd, send_cb):
+        self.recorder = Popen(cmd, stdout=PIPE)
+        self.__send_cb = send_cb
+
+    def run(self):
+        while True:
+            out = self.recorder.stdout.readline()
+            if out:  # == b'\n':
+                if b'\t' in out:
+                    neuron, spiketime = out.split(b'\t')
+                    self.__send_cb(out)
+
+
 class OSCForwarder:
     """ start this script and forward the data written to STDOUT via osc.
      to check on open ports, run
@@ -65,6 +79,8 @@ class NetworkServer(BlockingOSCUDPServer):
 
 
 if __name__ == '__main__':
+
+    #  command = ['python3', 'tests/write_to_screen.py']
     # import sys
     # sys.path.append('..')
     # from simulator.nest_code import brunel_basic
