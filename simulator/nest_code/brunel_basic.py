@@ -45,6 +45,7 @@ References
 import time
 import os
 import json
+import sys
 import nest
 
 
@@ -167,7 +168,7 @@ class Network:
         # the spike time in one line.
 
         # DEFINE RECORDER
-        target = 'ascii'
+        target = 'screen'
         nest.SetKernelStatus({'data_path': '/opt/data/data'})
 
         nest.SetStatus(self.espikes, [{"label": "brunel-py-ex", "record_to": target}])
@@ -251,6 +252,7 @@ class Network:
 
         # Storage of the time point after the buildup of the network in a variable.
         self.endbuild = time.time()
+        sys.stdout.flush()
 
     def simulate(self, *args):
         ###############################################################################

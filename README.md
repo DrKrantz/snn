@@ -13,8 +13,7 @@ docker build -t nestsim/nest:3.0 .
 
 To start the container, type
 ```
-docker run -it --rm -e LOCAL_USER_ID=`id -u $USER` --name nest -p 5000:5000
-            -v $(pwd):/opt/data nestsim/nest:3.0 /bin/bash
+docker run -it --rm -e LOCAL_USER_ID=`id -u $USER` --name nest -p 5000:5000 -v $(pwd):/opt/data nestsim/nest:3.0 /bin/bash
 ```
 
 

@@ -34,25 +34,23 @@ elif args.app == 'start':
     client.send_message(routing.START_SIMULATION, 1)
 
 elif args.app == 'simulator':
-    import importlib
+    import socket
     import config_parser
     from output import sockets
+    import struct
 
-    network_module = importlib.import_module('simulator.nest_code.{}'.format(config_parser.get('simulation_script')))
+    spike_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    network_instance = network_module.Network()
-    network_instance.setup()
-
-    init_socket = sockets.InitSocket(config_parser.get_address('forwarder_from_docker'))
-    neuron_ids = network_instance.get_recorded_neuron_ids()
-
-    print('Starting forwarder initialization')
-    complete = 'n'
-    while complete != 'Y':
-        init_socket.send_init(neuron_ids)
-        complete = input('Forwarder initialization complete? [Y / n]') or 'Y'
-
-    # network_instance.simulate()
+    def forward_cb(in_msg):
+        if '\t' in in_msg:
+            neuron, _ = in_msg.split('\t')
+            out_msg = struct.pack('<bH', sockets.MESSAGETYPE_PERFORMANCE, int(neuron))
+            spike_socket.sendto(out_msg, config_parser.get_address('forwarder_from_docker'))
+        else:
+            print(in_msg)
+            
+    parser = sockets.ScreenParser(['python', 'tests/network_server.py'], forward_cb)
+    parser.run()
 
 elif args.app == 'file-player':
     import config_parser

@@ -1,5 +1,7 @@
 import socket
 import struct
+from subprocess import Popen, PIPE
+
 import numpy as np
 import time
 
@@ -88,7 +90,7 @@ class InitSocket(socket.socket):
             self.target_address)
 
         n_chunks = int(np.ceil(n_data / package_size))
-        padded_data = np.pad(data, (0, n_data-int(n_chunks * package_size)), constant_values=0)
+        padded_data = np.pad(data, (0, n_data-int(n_chunks * package_size)), mode='constant', constant_values=0)
         chunks = np.split(padded_data, n_chunks)
         for idx, chunk in enumerate(chunks):
             print('sending chunk {}/{}'.format(idx+1, n_chunks))
@@ -102,3 +104,15 @@ class InitSocket(socket.socket):
         self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, len(data), 0.0), self.target_address)
         for idx, field in enumerate(data):
             self.sendto(struct.pack('<bHf', MESSAGETYPE_INIT, idx, field), self.target_address)
+
+
+class ScreenParser:
+    def __init__(self, cmd, send_cb):
+        self.recorder = Popen(cmd, stdout=PIPE)
+        self.__send_cb = send_cb
+
+    def run(self):
+        while True:
+            out = self.recorder.stdout.readline()
+            if out:
+                self.__send_cb(out.decode())
