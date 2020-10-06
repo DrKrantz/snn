@@ -1,8 +1,9 @@
 import yaml
+import os
 
 
 def load_config():
-    filename = './config/config.yml'
+    filename = os.path.join(os.path.dirname(__file__), 'config/config.yml')
     with open(filename, 'r') as ymlfile:
         data = yaml.load_all(ymlfile, Loader=yaml.FullLoader)
         cfg = {}

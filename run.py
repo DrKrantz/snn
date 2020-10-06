@@ -48,8 +48,8 @@ elif args.app == 'simulator':
             spike_socket.sendto(out_msg, config_parser.get_address('forwarder_from_docker'))
         else:
             print(in_msg)
-            
-    parser = sockets.ScreenParser(['python', 'tests/network_server.py'], forward_cb)
+
+    parser = sockets.ScreenParser(['python', 'simulator/simulate.py'], forward_cb)
     parser.run()
 
 elif args.app == 'file-player':
