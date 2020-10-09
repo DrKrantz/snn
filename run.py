@@ -58,9 +58,11 @@ elif args.app == 'file-player':
     from output import neuron_to_note
     from output import sockets
 
+    ids_to_use = list(range(10))
+
     model_node = 'brunel-py-ex-15002'
     init_socket = sockets.InitSocket(config_parser.get_address('forwarder_local'))
-    player = FilePlayer(model_node, init_socket, time_to_start=13)
+    player = FilePlayer(model_node, init_socket, time_to_start=13, ids_to_use=ids_to_use)
 
     print('Starting forwarder initialization')
     complete = 'n'
