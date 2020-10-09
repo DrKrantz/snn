@@ -60,7 +60,7 @@ elif args.app == 'file-player':
 
     model_node = 'brunel-py-ex-15002'
     init_socket = sockets.InitSocket(config_parser.get_address('forwarder_local'))
-    player = FilePlayer(model_node, init_socket, time_to_start=13 )
+    player = FilePlayer(model_node, init_socket, time_to_start=13)
 
     print('Starting forwarder initialization')
     complete = 'n'

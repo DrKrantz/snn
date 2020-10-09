@@ -58,6 +58,8 @@ class SpikeForwarder(socket.socket):
                         return True
 
     def start_forwarding(self):
+        print_limit = 1000  # print every print_limit-th event
+        event_counter = 0
         while True:
             data, addr = self.recvfrom(MESSAGESIZE_PERFORMANCE)
             if data:
@@ -65,7 +67,9 @@ class SpikeForwarder(socket.socket):
                 if msg_type == MESSAGETYPE_ERROR:
                     print('Unknown neuron_id {}'.format(neuron_id))
                 else:
-                    print('received id {}'.format(neuron_id))
+                    event_counter += 1
+                    if event_counter % print_limit == 0:
+                        print('Received id {}, {}th event'.format(neuron_id, event_counter))
                     [target.send_converted(neuron_id) for target in self.targets]
 
     def __validate_performance_msg(self, data):
@@ -82,18 +86,18 @@ class InitSocket(socket.socket):
 
     def send_long_init(self, data):
         n_data = len(data)
-        package_size = 1000.
+        chunk_size = 50.
 
         print('Sending init to: ', self.target_address)
         self.sendto(
-            struct.pack('<bHH', MESSAGETYPE_INIT, n_data, int(package_size)),
+            struct.pack('<bHH', MESSAGETYPE_INIT, n_data, int(chunk_size)),
             self.target_address)
 
-        n_chunks = int(np.ceil(n_data / package_size))
-        padded_data = np.pad(data, (0, n_data-int(n_chunks * package_size)), mode='constant', constant_values=0)
+        n_chunks = int(np.ceil(n_data / chunk_size))
+        padded_data = np.pad(data, (0, n_data-int(n_chunks * chunk_size)), mode='constant', constant_values=0)
         chunks = np.split(padded_data, n_chunks)
         for idx, chunk in enumerate(chunks):
-            print('sending chunk {}/{}'.format(idx+1, n_chunks))
+            print('sending chunk {}/{} with {} freqs'.format(idx+1, n_chunks, len(chunk)))
             # print(chunk)
             self.sendto(
                 struct.pack('<b', MESSAGETYPE_INIT_CONTENT) + np.array(chunk).astype('f').tobytes(),
