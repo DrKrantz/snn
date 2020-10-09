@@ -88,14 +88,20 @@ class InitSocket(socket.socket):
         n_data = len(data)
         chunk_size = 50.
 
+        if n_data <= chunk_size:
+            n_chunks = 1
+            chunks = [data]
+            chunk_size = n_data
+        else:
+            n_chunks = int(np.ceil(n_data / chunk_size))
+            padded_data = np.pad(data, (0, n_data-int(n_chunks * chunk_size)), mode='constant', constant_values=0)
+            chunks = np.split(padded_data, n_chunks)
+
         print('Sending init to: ', self.target_address)
         self.sendto(
             struct.pack('<bHH', MESSAGETYPE_INIT, n_data, int(chunk_size)),
             self.target_address)
 
-        n_chunks = int(np.ceil(n_data / chunk_size))
-        padded_data = np.pad(data, (0, n_data-int(n_chunks * chunk_size)), mode='constant', constant_values=0)
-        chunks = np.split(padded_data, n_chunks)
         for idx, chunk in enumerate(chunks):
             print('sending chunk {}/{} with {} freqs'.format(idx+1, n_chunks, len(chunk)))
             # print(chunk)
