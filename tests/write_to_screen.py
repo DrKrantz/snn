@@ -14,5 +14,5 @@ while True:
         pass
     else:
         counter += 1
-        print('{}\t{}\n'.format(counter, time.time()-start))
+        print('{}\t{}\n'.format(counter, time.time()))
         sys.stdout.flush()

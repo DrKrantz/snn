@@ -2,12 +2,15 @@
 
 import asyncio
 import websockets
+import time
 
 
 async def receive(websocket, path):
     data = await websocket.recv()
-    if len(data)>1:
-        print(f"< {data}")
+
+    if len(data) > 1:
+        neuron, t_stamp = data.split('\t')
+        print(f"Time passed: {time.time() - float(t_stamp)}")
 
 start_server = websockets.serve(receive, "localhost", 5000)
 
