@@ -49,16 +49,24 @@ class OSCForwarder:
     """
     def __init__(self, client: SimpleUDPClient):
         self.__client = client
-        self.recorder = Popen(['python3', 'tests/write_to_screen.py'], stdout=PIPE)
-        # self.buffer = b''
+        self.recorder = Popen(['python3', 'write_to_screen.py'], stdout=PIPE)
+        self.buffer = b''
 
     def run(self):
         while True:
-            out = self.recorder.stdout.readline()
-            if out:  # == b'\n':
-                if b'\t' in out:
-                    neuron, spiketime = out.split(b'\t')
+            out = self.recorder.stdout.read(1)
+            print(out)
+            if out == b'\n':
+                if self.buffer.find(b'\t') > 0:
+                    neuron, spiketime = self.buffer.split(b'\t')
                     self.__client.send_message(ROUTE, int(neuron))
+                    # print('Receiving: neuron {} at time {}'.format(
+                    #     int(neuron), float(spiketime)))
+                else:
+                    print(self.buffer.decode('utf-8'))
+                self.buffer = b''
+            else:
+                self.buffer += out
 
 
 class NetworkServer(BlockingOSCUDPServer):
@@ -81,6 +89,7 @@ class NetworkServer(BlockingOSCUDPServer):
 if __name__ == '__main__':
 
     #  command = ['python3', 'tests/write_to_screen.py']
+
     # import sys
     # sys.path.append('..')
     # from simulator.nest_code import brunel_basic

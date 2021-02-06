@@ -35,10 +35,13 @@ elif args.app == 'start':
 
 elif args.app == 'simulator':
     import socket
+    import asyncio
     import config_parser
     from output import sockets
     import struct
+    import websockets
 
+    uri = "ws://host.docker.internal:5000"
     spike_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def forward_cb(in_msg):
@@ -48,6 +51,21 @@ elif args.app == 'simulator':
             spike_socket.sendto(out_msg, config_parser.get_address('forwarder_from_docker'))
         else:
             print(in_msg)
+
+    async def forward_ws(in_msg):
+        if '\t' in in_msg:
+            neuron, _ = in_msg.split('\t')
+            out_msg = struct.pack('<bH', sockets.MESSAGETYPE_PERFORMANCE, int(neuron))
+            async with websockets.connect(uri) as websocket:
+                await websocket.send(out_msg)
+            # spike_socket.sendto(out_msg, config_parser.get_address('forwarder_from_docker'))
+        else:
+            print(in_msg)
+
+    def ws_callback(msg):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(forward_ws(msg))
+        loop.run_forever()
 
     parser = sockets.ScreenParser(['python', 'simulator/simulate.py'], forward_cb)
     parser.run()
