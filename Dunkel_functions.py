@@ -1,13 +1,8 @@
-from scipy import *
 from numpy import *
-#import pylab as pll
 import pygame
-import pygame.midi as pm
-import time
-import sys
+
 
 # packages need for the webcam
-#import pkg_resources 
 
 # packages needed for the parameter-display
 from pygame.locals import *
@@ -159,76 +154,76 @@ def map_keys(eingang):
 			data = eingang.read(2)
 			print(data)
 
-def construct_output(type='SimpleSynth virtual input',instrument=1):
-# this constructs an output 
-	pygame.init()
-	pm.init()
-	pm.init()
-	n_device = pm.get_count()
-	out_id = -1
-	for id in range(n_device):
-		if int(pm.get_device_info(id)[1]==type) & int(pm.get_device_info(id)[3]==1):
-			out_id = id
-			ausgang = pm.Output(out_id,0)
-			ausgang.set_instrument(instrument)
-			print("output: "+type)
-			return ausgang
-	print("output: "+type+" not available")
-#	if out_id == -1:
-#		print "desired output: "+type+ " not available"
+
+# def construct_output(type='IAC Driver Bus 1', instrument=1):
+# 	# this constructs an output
+# 	return mido.open_out
+#
+# 	n_device = pm.get_count()
+# 	out_id = -1
+# 	for id in range(n_device):
+# 		if int(pm.get_device_info(id)[1]==type) & int(pm.get_device_info(id)[3]==1):
+# 			out_id = id
+# 			ausgang = pm.Output(out_id,0)
+# 			ausgang.set_instrument(instrument)
+# 			print("output: "+type)
+# 			return ausgang
+# 	print("output: "+type+" not available")
+# #	if out_id == -1:
+# #		print "desired output: "+type+ " not available"
 	
 	
 
-def construct_input(type='MK-449C USB MIDI Keyboard'):
-	pm.init()
-	n_device = pm.get_count()
-	in_id = -1
-	for id in range(n_device):
-		if int(pm.get_device_info(id)[1]==type) & int(pm.get_device_info(id)[2]==1):
-			in_id = id
-			print("input: "+type)
-#	if in_id == -1:
-#		print "desired input: "+type+ " not available"
-
-	eingang = pm.Input(in_id)
-	return eingang
+# def construct_input(type='MK-449C USB MIDI Keyboard'):
+# 	pm.init()
+# 	n_device = pm.get_count()
+# 	in_id = -1
+# 	for id in range(n_device):
+# 		if int(pm.get_device_info(id)[1]==type) & int(pm.get_device_info(id)[2]==1):
+# 			in_id = id
+# 			print("input: "+type)
+# #	if in_id == -1:
+# #		print "desired input: "+type+ " not available"
+#
+# 	eingang = pm.Input(in_id)
+# 	return eingang
 
 
 		
-class MIDI:	
-	def __init__(self,instrument=1):
-		########
-		
-		#type_in = 'USB MIDI ADC 64       '
-#		type_in ='MK-449C USB MIDI Keyboard'
-		#type_in = 'MK-225C USB MIDI keyboard'
-		type_in = 'Virtual BCF2000'#type_in='USB Axiom 61 Port 1'
-		#type_in ='Network TEst'
-		type_out ='SimpleSynth virtual input'
-		#type_out_concious = 'MIDISPORT 2x2 Anniv B '
-#		type_out_soundextern = 'MIDISPORT 2x2 Anniv Port A'
-		#type_out ='Network TEst'
-		#type_out = 'PreSonus FIREBOX (1808) Plug 1'
-		# initialize the MIDI-setup
-#		try:
-#			self.ausgang = construct_output(type_out,instrument)
-#		except:
-#			print "desired output: "+type_out+ " not available"
-#		
-		#try:
-		#	self.ausgang_concious = construct_output(type_out_concious,instrument)
-		#except:
-		#	pass
-#			print "desired input: "+type_out_concious+ " not available"
-#		try:
-#			self.ausgang_soundextern = construct_output(type_out_soundextern,instrument)
-#		except:
-##			pass
-#			print "desired input: "+type_out_soundextern+ " not available"
-		try:	
-			self.eingang = construct_input(type_in)
-		except:
-			print("desired input: "+type_in+ " not available")
+# class MIDI:
+# 	def __init__(self,instrument=1):
+# 		########
+#
+# 		#type_in = 'USB MIDI ADC 64       '
+# #		type_in ='MK-449C USB MIDI Keyboard'
+# 		#type_in = 'MK-225C USB MIDI keyboard'
+# 		type_in = 'Virtual BCF2000'#type_in='USB Axiom 61 Port 1'
+# 		#type_in ='Network TEst'
+# 		type_out ='SimpleSynth virtual input'
+# 		#type_out_concious = 'MIDISPORT 2x2 Anniv B '
+# #		type_out_soundextern = 'MIDISPORT 2x2 Anniv Port A'
+# 		#type_out ='Network TEst'
+# 		#type_out = 'PreSonus FIREBOX (1808) Plug 1'
+# 		# initialize the MIDI-setup
+# #		try:
+# #			self.ausgang = construct_output(type_out,instrument)
+# #		except:
+# #			print "desired output: "+type_out+ " not available"
+# #
+# 		#try:
+# 		#	self.ausgang_concious = construct_output(type_out_concious,instrument)
+# 		#except:
+# 		#	pass
+# #			print "desired input: "+type_out_concious+ " not available"
+# #		try:
+# #			self.ausgang_soundextern = construct_output(type_out_soundextern,instrument)
+# #		except:
+# ##			pass
+# #			print "desired input: "+type_out_soundextern+ " not available"
+# 		try:
+# 			self.eingang = construct_input(type_in)
+# 		except:
+# 			print("desired input: "+type_in+ " not available")
 			
 class Spike_Display:
 	#global pars
@@ -265,9 +260,4 @@ class Spike_Display:
 				pygame.draw.lines(self.screen,(0,0,255),1,coord)
 			elif len(coord)==1:
 				pygame.draw.circle(self.screen,(0,0,255),coord[0],self.point_size,0)
-		
 
-			
-		
-		
-		

@@ -128,7 +128,7 @@ class DeviceManager:
 class MainApp:
     def __init__(self, deviceManager, pars):
         self.__fullscreen = False
-        pygame.init()
+
         self.pars = pars
         self.keyboardInput = deviceManager.inputs['KeyboardInput']
 
@@ -197,6 +197,7 @@ class MainApp:
 
 
 if __name__ == '__main__':
+    pygame.init()
     pars = parameters()
     settingsFile = 'settings.csv'
     for i, value in enumerate(sys.argv):

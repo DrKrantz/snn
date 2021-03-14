@@ -1,5 +1,6 @@
 import pygame.font
 from numpy import intersect1d
+# import pygame.midi as pm
 
 from display import Display
 from outputDevices import *
@@ -16,7 +17,6 @@ class OutputHandler(object):
             self.display = Display(pars['N_col'], pars['N_row'],
                                    ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
                                     'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
-        pm.init()
         self.__output = outputs
         self.__input = {}
 

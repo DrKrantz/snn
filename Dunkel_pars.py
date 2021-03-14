@@ -1,16 +1,15 @@
-'''
+"""
 
 THIS SCRIPT CONSTAINS THE PARMETERS NEEDED FOR SNESORYNETWORK.PY
 
 Benjamin Staude, Berlin, July 2010
-'''
+"""
+
+import numpy as np
 
 
-from numpy import *
-from scipy import *
+#  #################    DEFINE THE DEFAULT PARAMETERS  #########################
 
-
-##################    DEFINE THE DEFAULT PARAMETERS  #########################
 def parameters():
     pars = dict()
     # The connectivity of the torus demands square grid!
@@ -22,11 +21,11 @@ def parameters():
     pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
     pars['Ts'] = 1000  # total simulation time in secs
     pars['h'] = 1e-3  # resolution of simulation in s
-    ids = random.permutation(arange(pars['N']))  # randomize arangement
-    pars['Exc_ids'] = sort(ids[arange(pars['Ne'], dtype=int)])  # hence the INDICES
+    ids = np.random.permutation(np.arange(pars['N']))  # randomize arangement
+    pars['Exc_ids'] = np.sort(ids[np.arange(pars['Ne'], dtype=int)])  # hence the INDICES
                                                 # of the neurons run from
                                                 # 0 to N-1!!!!!!!
-    pars['Inh_ids'] = sort(ids[arange(pars['Ne'], pars['N'], dtype=int)])
+    pars['Inh_ids'] = np.sort(ids[np.arange(pars['Ne'], pars['N'], dtype=int)])
     
     # parameters of the neuron model
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
@@ -43,23 +42,23 @@ def parameters():
 
     # Parameters of Synapses 
     pars['s_e_range'] = (1e-11, 1e-8)  # the allowed range of s_e values
-    pars['s_e_step'] = diff(pars['s_e_range'])[0] / 127  # additive increase of s_e
+    pars['s_e_step'] = np.diff(pars['s_e_range'])[0] / 127  # additive increase of s_e
                                         # when pressing the corresonding  button
     pars['s_e'] = 6e-10  # increment of excitatory synaptic conductance per spike, S,
     pars['s_e_def'] = pars['s_e_range'][0]  # the default value...
     
     pars['s_i_range'] = (1e-11, 1e-8)
-    pars['s_i_step'] = diff(pars['s_i_range'])[0] / 127
+    pars['s_i_step'] = np.diff(pars['s_i_range'])[0] / 127
     pars['s_i'] = 67e-10  # increment of inhibitory synaptic conductance S per spike
     pars['s_i_def'] = pars['s_i_range'][0]
     
     pars['tau_e_range'] = (5e-5, 5e-2)
-    pars['tau_e_step'] = diff(pars['tau_e_range'])[0] / 127
+    pars['tau_e_step'] = np.diff(pars['tau_e_range'])[0] / 127
     pars['tau_e'] = 5e-3  # sec
     pars['tau_e_def'] = pars['tau_e_range'][0]
 
     pars['tau_i_range'] = (5e-5, 5e-2)
-    pars['tau_i_step'] = diff(pars['tau_i_range'])[0] / 127
+    pars['tau_i_step'] = np.diff(pars['tau_i_range'])[0] / 127
     pars['tau_i'] = 10e-3  # sec
     pars['tau_i_def'] = pars['tau_i_range'][0]
 
@@ -83,11 +82,11 @@ def parameters():
     ''' parameters of membrane potential display '''
     pars['v_disp'] = 0  # 0: off; 1: on
     pars['v_range'] = [pars['EL'], -30e-3]
-    pars['v_show_ids'] = hstack((pars['Exc_ids'][0:5], pars['Inh_ids'][0:5]))
+    pars['v_show_ids'] = np.hstack((pars['Exc_ids'][0:5], pars['Inh_ids'][0:5]))
                                         # size of the dots for each neuron
 
     ''' Spike display parameters '''
-    pars['screen_size'] = [1680,1050]
+    pars['screen_size'] = [1680, 1050]
 
     ''' parameters of WEBCAM stimuluation generation '''
     pars['cam_flux'] = 10  # if subsequent webcam pixels (in time) deviate further
@@ -106,10 +105,10 @@ def parameters():
     pars['n_read'] = 100 # buffersize to be read from the input in each simulation step
     pars['velocity'] = 64 
     pars['note_add'] = 36
-    pars['midi_external'] = zeros((pars['N']))
+    pars['midi_external'] = np.zeros((pars['N']))
     pars['midi_ext_e'] = 0  # external drive to excitatory population
     pars['midi_ext_i'] = 0  # external drive to inhibitory population
-    pars['note_ids'] = arange(pars['N'])  # the neurons that are played
+    pars['note_ids'] = np.arange(pars['N'])  # the neurons that are played
     pars['midi_per_sec'] = 5  # maximal number of midi-sounds o be sent to Qlab per sec
 
     pars['ext_step'] = 0.25e-5
@@ -125,8 +124,8 @@ def parameters():
     if keys == 'home':  # my home-configuration
         pars['midistat_keys'] = 146  # the MIDI status that identifies keys
         pars['key_ids_ext'] = list(range(36, 85))  # the 0-octave keyboard notes
-        pars['key_ids_pars'] = array((),int)
-        pars['key_action_pars'] = array((),int)
+        pars['key_ids_pars'] = np.array((), int)
+        pars['key_action_pars'] = np.array((), int)
         pars['midistat_slide'] = 178  # the MIDI status that identifies sliders
         pars['slide_ids_pars'] = [71, 5, 84, 7]  # these IDs control parameters
         pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
@@ -142,8 +141,8 @@ def parameters():
     elif keys == 'virtual': # the BCF2000
         pars['midistat_keys'] = None  # the MIDI status that identifies keys
         pars['key_ids_ext'] = None
-        pars['key_ids_pars'] = array((), int)
-        pars['key_action_pars'] = array((), int)
+        pars['key_ids_pars'] = np.array((), int)
+        pars['key_action_pars'] = np.array((), int)
         pars['midistat_slide'] = 176  # the MIDI status that identifies sliders
         pars['slide_ids_pars'] = list(range(81, 86)) # these IDs control parameters
         pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
@@ -156,10 +155,10 @@ def parameters():
     elif keys=='boris':  # joens sein usb-keyboars
         pars['midistat_keys'] = 144 # the MIDI status that identifies keys
         pars['key_ids_ext'] = list(range(36, 85)) # the 0-octave keyboard notes
-        pars['key_ids_pars'] = array((), int)
-        pars['key_action_pars'] = array((), int)
-        pars['midistat_slide'] = 176 # the MIDI status that identifies sliders
-        pars['slide_ids_pars'] = [47, 48, 49, 50] # these IDs control parameters
+        pars['key_ids_pars'] = np.array((), int)
+        pars['key_action_pars'] = np.array((), int)
+        pars['midistat_slide'] = 176  # the MIDI status that identifies sliders
+        pars['slide_ids_pars'] = [47, 48, 49, 50]  # these IDs control parameters
         pars['slide_action_pars'] = ['s_e', 's_i', 'tau_e', 'tau_i']
         pars['slide_action_ext'] = [0,  1,  2]  # the actions of the slide_ids
             # 0: input to all neurons
@@ -171,7 +170,7 @@ def parameters():
     elif keys=='D-50':
         pars['midistat_keys'] = 200
         pars['key_ids_ext'] = list(range(40, 80))
-        pars['key_ids_pars'] = list(range(10, 16)) # the keys for continous parameters
+        pars['key_ids_pars'] = list(range(10, 16))  # the keys for continous parameters
         pars['key_action_pars'] = list(range(14))
             # 0: increase all external input
             # 1: decrease all external input 
@@ -190,7 +189,7 @@ def parameters():
         pars['midistat_slide'] = None
     elif keys=='andys':
         pars['midistat_keys'] = 159
-        pars['key_ids_ext'] = [36,38,40,41,43,45]
+        pars['key_ids_ext'] = [36, 38, 40, 41, 43, 45]
         pars['key_action_ext'] = list(range(6))
             # 0: decrease all external input
             # 1: increase all external input 
@@ -198,7 +197,7 @@ def parameters():
             # 3: increase input to excit pop.
             # 4: decrease input to inhib pop.
             # 5: increase input to inhib pop.
-        pars['key_ids_pars'] = [48,50,52,53,55,57,59,60] # keys for continous parameters
+        pars['key_ids_pars'] = [48, 50, 52, 53, 55, 57, 59, 60]  # keys for continous parameters
         pars['key_action_pars'] = list(range(8))
             # 0: decreae s_e
             # 1: increase s_e
