@@ -11,7 +11,7 @@ from Dunkel_functions import *
 
 class Display:
     def __init__(self, N_col, N_row, parnames=[],
-                 disp_type='dot', screenSize=(1680, 1050)):  # disp_type='dot'
+                 disp_type='dot', screenSize=(480, 250)):  # disp_type='dot'
         pygame.init()
         # pars = parameters()
         # parnames: list of names for the parameters

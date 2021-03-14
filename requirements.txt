@@ -2,3 +2,4 @@ pygame
 tkinter
 numpy
 scipy
+python-rtmidi

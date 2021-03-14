@@ -142,6 +142,7 @@ class OutputDevice(pm.Output):
             print("SETUP output: " + deviceStruct['midiport'] + " connected")
 
     def __getDeviceId(self, midiport):
+        pm.init()
         n_device = pm.get_count()
         foundId = -1
         for id in range(n_device):

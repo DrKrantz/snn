@@ -7,12 +7,15 @@ global pars
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars, neuron2NoteConversion=4):
+    def __init__(self, outputs, pars, neuron2NoteConversion=4, display=False):
         self.pars = pars
         super(OutputHandler, self).__init__()
-        self.display = Display(pars['N_col'], pars['N_row'],
-                               ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
-                                'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
+
+        self.display = display
+        if self.display:
+            self.display = Display(pars['N_col'], pars['N_row'],
+                                   ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
+                                    'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
         pm.init()
         self.__output = outputs
         self.__input = {}
@@ -38,13 +41,14 @@ class OutputHandler(object):
             for neuron_id in neuron_ids:
                 for name, output in self.__output.items():
                     output.note_on(neuron_id)
-                
-        # display spikes and update display
-        self.display.update_fired(fired)
-        self.display.update_pars(
-            ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
-             'tau_e', 'tau_i', 'cam_external_max'])
-        pygame.display.update()
+
+        if self.display:
+            # display spikes and update display
+            self.display.update_fired(fired)
+            self.display.update_pars(
+                ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
+                 'tau_e', 'tau_i', 'cam_external_max'])
+            pygame.display.update()
 
     def turnOff(self):
         for outputName in self.__output.keys():
