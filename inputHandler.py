@@ -6,9 +6,7 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
-from pygame import midi as pm
 from numpy import array, unique, union1d
-from inputDevices import InputDevice
 
 
 class InputHandler(object):
@@ -40,7 +38,8 @@ class InputHandler(object):
             self.pars.update(inputDict['pars'])
 
 
-if __name__ == '__main__':
-    pm.init()
-    device = InputDevice('USB MIDI Device')  # Virtual BCF2000
-    device.map_keys()
+# if __name__ == '__main__':
+# from inputDevices import InputDevice
+#     pm.init()
+#     device = InputDevice('USB MIDI Device')  # Virtual BCF2000
+#     device.map_keys()

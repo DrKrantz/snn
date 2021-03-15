@@ -8,6 +8,7 @@ __date__ = 140620
 
 import csv
 
+
 class SettingsReader:
     def __init__(self, filename='~/settings.csv'):
         self.devices = {'inputs': {}, 'outputs': {}}

@@ -6,10 +6,9 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
-from pygame import midi as pm
 from numpy import array, intersect1d, unique, union1d
 
-
+'''
 class InputDevice(pm.Input):
     def __init__(self, name, n_read=100):
         pm.init()
@@ -70,11 +69,11 @@ class BCF(InputDevice):
                 key_data_on = key_data[key_data[:, 2] > 0, :]  # take only "note on"
                 if key_data_on.__len__() > 0:
                     # maps the key inputs to external inputs to specific notes (1-to-1)
-                    '''  TO BE RE-IMPLEMENTED
+                    """  TO BE RE-IMPLEMENTED
                     key_ids_ext =
                         intersect1d(unique(key_data_on[:,1]), self.pars['key_ids_ext'])
                     v[note2neuron(key_ids_ext)] = self.pars['threshold']
-                    '''
+                    """
                     # this maps key inputs to changes in parameters and external inputs
                     # i.e. gradual up/down changes
                     key_ids_pars = intersect1d(
@@ -196,6 +195,8 @@ class BCF(InputDevice):
                     self.pars['midi_external'][self.pars['Inh_ids']] += \
                         self.pars['ext_step']
 
+'''
+
 class KeyboardInput:
     def __init__(self, *args):
         self.triggered = array([], int)
@@ -208,7 +209,7 @@ class KeyboardInput:
     def triggerSpike(self, key):
         self.triggered = union1d(self.triggered, array([key], int))
 
-
+"""
 class SensoryObject(InputDevice):
     NAME = 'USB MIDI Device'
 
@@ -224,7 +225,7 @@ class SensoryObject(InputDevice):
             [fired.append(dd[1]) for dd in MIDI_data]
             print('object:', fired)
         return {'pars': self.pars, 'fired': array(fired, int)}
-
+"""
 
 if __name__ == '__main__':
     import Dunkel_pars

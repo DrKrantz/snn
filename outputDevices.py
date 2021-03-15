@@ -6,7 +6,7 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140621
 
-import pygame.midi as pm
+import mido
 import time
 import numpy as np
 from Dunkel_functions import chordConversion, chromaticConversion
@@ -121,35 +121,24 @@ class DeviceFactory(object):
         )
 
 
-class OutputDevice(pm.Output):
+class OutputDevice:
     def __init__(self, deviceStruct, neuron2NoteConverter):
-        id = self.__getDeviceId(deviceStruct['midiport'])
-        if id == -1:
-            print("SETUP Warning: output: " + deviceStruct['midiport'] + " not available!!!")
-        else:
-            super(OutputDevice,self).__init__(id)
-            self.__neuron2NoteConverter = neuron2NoteConverter;
-            self.__midiport = deviceStruct['midiport']
-            self.__velocity = deviceStruct['velocity']
-            self.set_instrument(deviceStruct['instrument'])
-            self.__maxNumSignals = deviceStruct['maxNumSignals']
-            self.__updateInterval = deviceStruct['updateInterval']
-            self.__onNotes = set()
-            if self.__maxNumSignals is not None:
-                self.__activeNotes = []
-                self.__activeTimes = []
-                self.__now = time.time()
-            print("SETUP output: " + deviceStruct['midiport'] + " connected")
+        self.__midiport = deviceStruct['midiport']
+        self.__port = mido.open_output(deviceStruct['midiport'])
 
-    def __getDeviceId(self, midiport):
-        pm.init()
-        n_device = pm.get_count()
-        foundId = -1
-        for id in range(n_device):
-            if int(pm.get_device_info(id)[1] == midiport.encode()) & \
-                    int(pm.get_device_info(id)[3] == 1):
-                foundId = id
-        return foundId
+        self.__neuron2NoteConverter = neuron2NoteConverter;
+        self.__velocity = deviceStruct['velocity']
+        # self.set_instrument(deviceStruct['instrument'])  # TODO set instrument in mido (via channels?)
+
+        self.__maxNumSignals = deviceStruct['maxNumSignals']
+        self.__updateInterval = deviceStruct['updateInterval']
+        self.__onNotes = set()
+        if self.__maxNumSignals is not None:
+            self.__activeNotes = []
+            self.__activeTimes = []
+            self.__now = time.time()
+        print("SETUP output: " + deviceStruct['midiport'] + " connected")
+
 
     def setNeuron2NoteConversion(self, conversion):
         self.__neuron2NoteConversion = conversion
@@ -164,7 +153,7 @@ class OutputDevice(pm.Output):
         """
         self.__onNotes.add(note)
         if self.__maxNumSignals is None:
-            super(OutputDevice, self).note_on(note, self.__velocity)
+            self.__send_note(note)
         else:
             now = time.time()
             # update active times of active notes and remove notes from list
@@ -183,7 +172,7 @@ class OutputDevice(pm.Output):
                         done = True
             self.__now = now
             if len(self.__activeTimes) < self.__maxNumSignals:
-                super(OutputDevice, self).note_on(note, self.__velocity)
+                self.__send_note(note)
                 if self.__activeNotes.__contains__(note):
                     idx = self.__activeNotes.index(note)
                     self.__activeNotes.remove(note)
@@ -191,10 +180,15 @@ class OutputDevice(pm.Output):
                 self.__activeNotes.append(note)
                 self.__activeTimes.append(0)
 
+    def __send_note(self, note, note_type='note_on'):
+        self.__port.send(
+            mido.Message(note_type, note=note, velocity=self.__velocity)
+        )
+
     def turnAllOff(self):
         for note in self.__onNotes:
             if note != 1:
-                    self.note_off(note, 100)
+                    self.__send_note(note, 'note_off')
         self.__onNotes = set()
 
 
@@ -300,5 +294,5 @@ class Visuals(OutputDevice):
 
 
 if __name__ == '__main__':
-    pm.init()
+    # pm.init()
     simple = DeviceFactory().create('SimpleSynth virtual input')

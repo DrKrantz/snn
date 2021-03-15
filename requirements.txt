@@ -1,5 +1,5 @@
-pygame
-tkinter
+pygame==1.9.6
+tk
 numpy
-scipy
 python-rtmidi
+mido
