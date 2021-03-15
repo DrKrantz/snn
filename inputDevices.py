@@ -197,6 +197,7 @@ class BCF(InputDevice):
 
 '''
 
+
 class KeyboardInput:
     def __init__(self, *args):
         self.triggered = array([], int)
