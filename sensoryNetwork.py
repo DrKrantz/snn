@@ -31,11 +31,7 @@ import asyncio
 
 IP = "127.0.0.1"
 PORT = 1337
-
-
-async def async_while():
-    while True:
-        yield('ich')
+GUI_TARGET = '/gui'
 
 
 class SensoryNetwork(object):
@@ -234,7 +230,7 @@ async def init_main():
     app = MainApp(dm, pars)
 
     dispatcher = Dispatcher()
-    dispatcher.map("/filter", dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_receive)
+    dispatcher.map(GUI_TARGET, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_receive)
 
     server = AsyncIOOSCUDPServer((IP, PORT), dispatcher, asyncio.get_event_loop())
     transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
