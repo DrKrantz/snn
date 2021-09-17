@@ -3,3 +3,4 @@ tk
 numpy
 python-rtmidi
 mido
+python-osc

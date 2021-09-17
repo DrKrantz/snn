@@ -202,13 +202,30 @@ class KeyboardInput:
     def __init__(self, *args):
         self.triggered = array([], int)
 
-    def update(self, pars):
+    def update(self):
         fired = self.triggered
         self.triggered = array([], int)
-        return {'pars': pars, 'fired': fired}
+        return fired
 
     def triggerSpike(self, key):
         self.triggered = union1d(self.triggered, array([key], int))
+
+
+class GuiAdapter:
+    NAME = 'Gui'
+
+    def __init__(self, pars, *args):
+        self.triggered = array([], int)
+        self.pars = pars
+
+    def on_receive(self, address, *args):
+        print(args)
+
+    def update(self, pars):
+        fired = self.triggered
+        self.triggered = array([], int)
+        return {'pars': self.pars, 'fired': fired}
+
 
 """
 class SensoryObject(InputDevice):
