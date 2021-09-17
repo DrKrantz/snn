@@ -218,8 +218,8 @@ class GuiAdapter:
         self.triggered = array([], int)
         self.pars = pars
 
-    def on_receive(self, address, *args):
-        print(args)
+    def on_receive(self, address, name, value):
+        self.pars.update({name: float(value)})
 
     def update(self, pars):
         fired = self.triggered

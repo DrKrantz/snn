@@ -65,7 +65,10 @@ class SensoryNetwork(object):
         # GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
-        external = self.pars['midi_external']
+
+        #  TODO: improve management of external drive from different sources
+        external = self.pars['midi_external'] + np.ones_like(self.pars['midi_external'])*self.pars['gui_external']
+
         self.outputHandler.turnOff()
 
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
