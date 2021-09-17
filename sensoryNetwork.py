@@ -127,7 +127,7 @@ class DeviceManager:
 
 
 class MainApp:
-    def __init__(self, deviceManager, pars):
+    def __init__(self, deviceManager, gui, pars):
         self.__fullscreen = False
 
         self.pars = pars
@@ -146,8 +146,6 @@ class MainApp:
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivityMatrix)
         if self.network is not None:
             self.run()
-
-
 
     def input(self, events):
         for event in events:
