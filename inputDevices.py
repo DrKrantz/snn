@@ -215,15 +215,18 @@ class GuiAdapter:
     NAME = 'Gui'
 
     def __init__(self, pars, *args):
-        self.triggered = array([], int)
+        self.triggered = []
         self.pars = pars
 
-    def on_receive(self, address, name, value):
+    def on_par_receive(self, address, name, value):
         self.pars.update({name: float(value)})
+
+    def on_spike_receive(self, address, neuron_id):
+        self.triggered.append(int(neuron_id))
 
     def update(self, pars):
         fired = self.triggered
-        self.triggered = array([], int)
+        self.triggered = []
         return {'pars': self.pars, 'fired': fired}
 
 
