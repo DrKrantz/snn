@@ -30,7 +30,9 @@ import asyncio
 
 
 IP = "127.0.0.1"
-PORT = 1337
+GUI_PORT = 1337
+SPIKE_DISPLAY_PORT = 1338
+SPIKE_DISPLAY_ADDRESS = '/display_spikes'
 GUI_PAR_ADDRESS = '/gui_pars'
 GUI_SPIKE_ADDRESS = '/gui_spikes'
 
@@ -237,7 +239,7 @@ async def init_main():
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
 
-    server = AsyncIOOSCUDPServer((IP, PORT), dispatcher, asyncio.get_event_loop())
+    server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
     transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
 
     if app.network is not None:

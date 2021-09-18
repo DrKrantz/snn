@@ -54,7 +54,7 @@ class Gui(Tk):
         self.__create_buttons()
 
     def __create_osc_client(self):
-        self.__client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.PORT)
+        self.__client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.GUI_PORT)
 
     def __create_slider(self):
         self.slider = {}

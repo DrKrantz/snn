@@ -7,6 +7,9 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
 from numpy import array, intersect1d, unique, union1d
+import sensoryNetwork
+from pythonosc.udp_client import SimpleUDPClient
+
 
 '''
 class InputDevice(pm.Input):
@@ -217,12 +220,14 @@ class GuiAdapter:
     def __init__(self, pars, *args):
         self.triggered = []
         self.pars = pars
+        self.client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.SPIKE_DISPLAY_PORT)
 
     def on_par_receive(self, address, name, value):
         self.pars.update({name: float(value)})
 
     def on_spike_receive(self, address, neuron_id):
         self.triggered.append(int(neuron_id))
+        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS, neuron_id)
 
     def update(self, pars):
         fired = self.triggered
