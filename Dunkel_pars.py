@@ -85,6 +85,11 @@ def parameters():
     pars['v_show_ids'] = np.hstack((pars['Exc_ids'][0:5], pars['Inh_ids'][0:5]))
                                         # size of the dots for each neuron
 
+    ''' parameters of external drive through gui'''
+    pars['gui_external'] = 0
+    pars['gui_external_step'] = 0.25e-9
+    pars['gui_external_range'] = (1e-9, 1e-6)
+
     ''' Spike display parameters '''
     pars['screen_size'] = [1680, 1050]
 

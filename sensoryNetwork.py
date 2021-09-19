@@ -24,7 +24,17 @@ import outputDevices
 import inputDevices
 from connectivityMatrix import ConnectivityMatrix
 import settingsReader
-from SimulationGui import Gui
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
+import asyncio
+
+
+IP = "127.0.0.1"
+GUI_PORT = 1337
+SPIKE_DISPLAY_PORT = 1338
+SPIKE_DISPLAY_ADDRESS = '/display_spikes'
+GUI_PAR_ADDRESS = '/gui_pars'
+GUI_SPIKE_ADDRESS = '/gui_spikes'
 
 
 class SensoryNetwork(object):
@@ -58,7 +68,10 @@ class SensoryNetwork(object):
         # GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
-        external = self.pars['midi_external']
+
+        #  TODO: improve management of external drive from different sources
+        external = self.pars['midi_external'] + np.ones_like(self.pars['midi_external'])*self.pars['gui_external']
+
         self.outputHandler.turnOff()
 
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
@@ -109,32 +122,38 @@ class DeviceManager:
     def __init__(self, devices, pars):
         self.deviceSettings = devices
         self.pars = pars
-        self.inputs = {}
+        self.spike_inputs = {}
+        self.parameter_inputs = {}
         self.outputs = {}
-        self.__createInputDevices(pars)
-        self.__createOutputDevices()
+        self.__create_inputs(pars)
+        self.__create_outputs()
 
-    def __createInputDevices(self, pars):
+    def __create_inputs(self, pars):
         for devicename, midiport in self.deviceSettings['inputs'].items():
-            self.inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
+            self.spike_inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
+        self.parameter_inputs[inputDevices.GuiAdapter.NAME] = inputDevices.GuiAdapter(self.pars)
 
-    def __createOutputDevices(self):
+    def __create_outputs(self):
         for devicename, midiport in self.deviceSettings['outputs'].items():
             self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
 
-    def getInputDevices(self):
-        return list(self.inputs.values())
+    def get_spike_inputs(self):
+        return list(self.spike_inputs.values())
+
+    def get_parameter_inputs(self):
+        return list(self.parameter_inputs.values())
 
 
 class MainApp:
-    def __init__(self, deviceManager, gui, pars):
+    def __init__(self, deviceManager, pars):
         self.__fullscreen = False
 
         self.pars = pars
-        self.keyboardInput = deviceManager.inputs['KeyboardInput']
+        self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
 
         inputHandler = InputHandler(
-            inputDevices=deviceManager.getInputDevices(),
+            spike_inputs=deviceManager.get_spike_inputs(),
+            parameter_inputs=deviceManager.get_parameter_inputs(),
             pars=pars
         )
         outputHandler = OutputHandler(deviceManager.outputs, pars)
@@ -144,8 +163,6 @@ class MainApp:
         print('wiring completed')
 
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivityMatrix)
-        if self.network is not None:
-            self.run()
 
     def input(self, events):
         for event in events:
@@ -186,7 +203,7 @@ class MainApp:
                 elif event.dict['key'] == pygame.locals.K_0:
                     self.keyboardInput.triggerSpike(180)
 
-    def run(self):
+    async def run(self):
         lastUpdated = time.time()
         while True:
             self.input(pygame.event.get())
@@ -196,8 +213,10 @@ class MainApp:
                 self.network.update()
                 lastUpdated = time.time()
 
+            await asyncio.sleep(0.001)
 
-if __name__ == '__main__':
+
+async def init_main():
     pygame.init()
     pars = parameters()
     settingsFile = 'settings.csv'
@@ -213,7 +232,24 @@ if __name__ == '__main__':
 
     settingsReaderClass = settingsReader.SettingsReader(settingsFile)
     devices = settingsReaderClass.getDevices()
-    gui = Gui(pars)
     dm = DeviceManager(devices, pars)
-    app = MainApp(dm, gui, pars)
+    app = MainApp(dm, pars)
+
+    dispatcher = Dispatcher()
+    dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
+    dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
+
+    server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
+    transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
+
+    if app.network is not None:
+        await app.run()  # Enter main loop of program
+
+        transport.close()  # Clean up serve endpoint
+    else:
+        print('Network setup failed')
+
+
+if __name__ == '__main__':
+    asyncio.run(init_main())
     # app.run()
