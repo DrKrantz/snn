@@ -8,6 +8,25 @@ __date__ = 140801
 
 from numpy import array, intersect1d, unique, union1d
 
+import mido
+import sensoryNetwork
+
+from pythonosc.udp_client import SimpleUDPClient
+
+
+class InputDevice:
+    def __init__(self, name):
+        self.__messages = []
+        self.__inport = mido.open_input(name, False, self.__store_incoming)
+
+    def __store_incoming(self, msg):
+        self.__messages.append(msg)
+
+    def update(self):
+        content = self.__messages
+        self.__messages = []
+        return content
+
 '''
 class InputDevice(pm.Input):
     def __init__(self, name, n_read=100):
