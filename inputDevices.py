@@ -7,6 +7,9 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
 from numpy import array, intersect1d, unique, union1d
+import sensoryNetwork
+from pythonosc.udp_client import SimpleUDPClient
+
 
 import mido
 import sensoryNetwork
@@ -221,13 +224,35 @@ class KeyboardInput:
     def __init__(self, *args):
         self.triggered = array([], int)
 
-    def update(self, pars):
+    def update(self):
         fired = self.triggered
         self.triggered = array([], int)
-        return {'pars': pars, 'fired': fired}
+        return fired
 
     def triggerSpike(self, key):
         self.triggered = union1d(self.triggered, array([key], int))
+
+
+class GuiAdapter:
+    NAME = 'Gui'
+
+    def __init__(self, pars, *args):
+        self.triggered = []
+        self.pars = pars
+        self.client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.SPIKE_DISPLAY_PORT)
+
+    def on_par_receive(self, address, name, value):
+        self.pars.update({name: float(value)})
+
+    def on_spike_receive(self, address, neuron_id):
+        self.triggered.append(int(neuron_id))
+        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS, neuron_id)
+
+    def update(self, pars):
+        fired = self.triggered
+        self.triggered = []
+        return {'pars': self.pars, 'fired': fired}
+
 
 """
 class SensoryObject(InputDevice):

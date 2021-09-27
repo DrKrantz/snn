@@ -1,0 +1,11 @@
+{
+  "neuron_notes": {
+    "conversion": 7
+  },
+  "piano": {
+    "max_num_signals": 2,
+    "velocity": 80,
+    "max_note": 96,
+    "conversion": 7
+  }
+}

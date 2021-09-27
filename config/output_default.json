@@ -1,0 +1,8 @@
+{
+  "name": "default",
+  "max_num_signals": 3,
+  "velocity": 64,
+  "update_interval": 60,
+  "min_notes": 1,
+  "max_notes": 127,
+}
