@@ -11,21 +11,16 @@ NEEDS:
 """
 import json
 
-from numpy import ones, zeros, nonzero, sum, shape
 import numpy as np
 import time
-import pygame
-import pygame.locals
 import sys
 
 from Dunkel_pars import parameters
-from outputDevices import OutputDevice
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
 import inputDevices
 from connectivityMatrix import ConnectivityMatrix
-import settingsReader
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 import asyncio
@@ -50,7 +45,7 @@ class SensoryNetwork(object):
         
         n = self.pars['N']
         # vectors with parameters of adaptation and synapses
-        self.__a =np. ones(n)
+        self.__a = np. ones(n)
         self.__a[self.pars['Exc_ids']] = self.pars['a_e']
         self.__a[self.pars['Inh_ids']] = self.pars['a_i']
         self.__b = np.ones(n)
@@ -59,7 +54,7 @@ class SensoryNetwork(object):
         self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
         self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
         
-        self.__v = self.pars['EL']*ones(n)  # Initial values of the mmbrane potential v
+        self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
         self.__w = self.__b  # Initial values of adaptation variable w
         self.__neurons = np.array([])   # neuron IDs
         self.__hasPrinted = False
@@ -76,14 +71,14 @@ class SensoryNetwork(object):
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
         # update deadtimes
         self.deaddur += self.pars['h']    # increment the time of the dead
-        aliveID = nonzero(self.deaddur > self.pars['dead'])[0]
+        aliveID = np.nonzero(self.deaddur > self.pars['dead'])[0]
         if len(aliveID) > self.pars['N_concious']:
             self.deaddur = self.deaddur[aliveID[-1]+1::]
             self.deadIDs = self.deadIDs[aliveID[-1]+1::]
 
-        fired = nonzero(self.__v >= self.pars['threshold'])[0]
+        fired = np.nonzero(self.__v >= self.pars['threshold'])[0]
         self.deadIDs = np.concatenate((self.deadIDs, fired))  # put fired neuron to death
-        self.deaddur = np.concatenate((self.deaddur, zeros(shape(fired))))
+        self.deaddur = np.concatenate((self.deaddur, np.zeros_like(fired)))
         extFired = self.inputHandler.getFired()
 
         fired = np.array(np.union1d(fired, extFired), int)
@@ -97,14 +92,14 @@ class SensoryNetwork(object):
         # update conductances of excitatory synapses
         external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
         fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
-        nPreSp_e = sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
+        nPreSp_e = np.sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
         self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + \
                      nPreSp_e * self.pars['s_e']
 
         # update conductances of inh. synapses
         external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
         fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
-        nPreSp_i = sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
+        nPreSp_i = np.sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
         self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + \
                     nPreSp_i * self.pars['s_i']
 
@@ -123,7 +118,6 @@ class ConfigParser:
     def __init__(self):
         self.input_config = {}
         self.__load_config()
-        # self.__create_outputs()
 
     def __load_config(self):
         input_wiring = json.load(open('config/input_wiring.json', 'r'))
@@ -144,17 +138,9 @@ class ConfigParser:
     def get_inputs(self):
         return self.input_config
 
-    def __create_outputs(self):
-        self.outputs = {}
-        converter = None
-        for name, settings in self.output_config.items():
-            self.outputs[name] = OutputDevice(converter, **settings)
-            print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
-
 
 class DeviceManager:
     def __init__(self, input_config, output_config, pars):
-        self.__output_config = output_config
         self.spike_inputs = {}
         self.parameter_inputs = {}
         self.outputs = {}
@@ -164,13 +150,14 @@ class DeviceManager:
     def __create_inputs(self, input_config, pars):
         for name, settings in input_config.items():
             self.spike_inputs[name] = inputDevices.InputDevice(**settings)
+            print("SETUP INPUT. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
         self.parameter_inputs[inputDevices.GuiAdapter.NAME] = inputDevices.GuiAdapter(pars)
 
     def __create_outputs(self, output_config):
         for name, settings in output_config.items():
             self.outputs[name] = outputDevices.OutputDevice(**settings)
-            print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
+            print("SETUP OUTPUT. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
     def get_spike_inputs(self):
         return list(self.spike_inputs.values())
@@ -194,84 +181,33 @@ class MainApp:
         outputHandler = OutputHandler(deviceManager.outputs, pars)
 
         print("wiring....")
-        connectivityMatrix = ConnectivityMatrix().get()
+        connectivity_matrix = ConnectivityMatrix().get()
         print('wiring completed')
 
-        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivityMatrix)
-
-    def input(self, events):
-        for event in events:
-            if event.type == pygame.locals.QUIT:
-                sys.exit(0)
-            elif event.type == pygame.locals.KEYDOWN:
-                if event.dict['key'] == pygame.locals.K_ESCAPE:
-                    sys.exit(0)
-                elif event.dict['key'] == pygame.locals.K_f:
-                    self.__fullscreen = not self.__fullscreen
-                    if self.__fullscreen:
-                        pygame.display.set_mode(
-                            self.network.outputHandler.display.spikeScreenSize,
-                            pygame.locals.FULLSCREEN
-                        )
-                    else:
-                        pygame.display.set_mode(
-                            self.network.outputHandler.display.spikeScreenSize
-                        )
-                elif event.dict['key'] == pygame.locals.K_1:
-                    self.keyboardInput.triggerSpike(1)
-                elif event.dict['key'] == pygame.locals.K_2:
-                    self.keyboardInput.triggerSpike(100)
-                elif event.dict['key'] == pygame.locals.K_3:
-                    self.keyboardInput.triggerSpike(150)
-                elif event.dict['key'] == pygame.locals.K_4:
-                    self.keyboardInput.triggerSpike(200)
-                elif event.dict['key'] == pygame.locals.K_5:
-                    self.keyboardInput.triggerSpike(300)
-                elif event.dict['key'] == pygame.locals.K_6:
-                    self.keyboardInput.triggerSpike(140)
-                elif event.dict['key'] == pygame.locals.K_7:
-                    self.keyboardInput.triggerSpike(150)
-                elif event.dict['key'] == pygame.locals.K_8:
-                    self.keyboardInput.triggerSpike(60)
-                elif event.dict['key'] == pygame.locals.K_9:
-                    self.keyboardInput.triggerSpike(270)
-                elif event.dict['key'] == pygame.locals.K_0:
-                    self.keyboardInput.triggerSpike(180)
+        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivity_matrix)
 
     async def run(self):
-        lastUpdated = time.time()
+        last_updated = time.time()
         while True:
-            self.input(pygame.event.get())
-            if time.time()-lastUpdated < self.pars['pause']:
+            if time.time()-last_updated < self.pars['pause']:
                 pass
             else:
                 self.network.update()
-                lastUpdated = time.time()
+                last_updated = time.time()
 
             await asyncio.sleep(0.001)
 
 
 async def init_main():
-    pygame.init()
     pars = parameters()
-    settingsFile = 'settings.csv'
     for i, value in enumerate(sys.argv):
-        if value == '-f':
-            settingsFile = sys.argv[i+1]
         if value == '-w':
             pars['screen_size'][0] = int(sys.argv[i+1])
         if value == '-h':
             pars['screen_size'][1] = int(sys.argv[i+1])
 
-    print('Using settings from', settingsFile)
-
-
-    # settingsReaderClass = settingsReader.SettingsReader(settingsFile)
-    # devices = settingsReaderClass.getDevices()
-
     parser = ConfigParser()
     dm = DeviceManager(parser.get_inputs(), parser.get_outputs(), pars)
-    print("Devices are connected")
     app = MainApp(dm, pars)
 
     dispatcher = Dispatcher()
@@ -291,4 +227,3 @@ async def init_main():
 
 if __name__ == '__main__':
     asyncio.run(init_main())
-    # app.run()

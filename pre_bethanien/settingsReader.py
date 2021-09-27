@@ -14,7 +14,7 @@ class SettingsReader:
         self.devices = {'inputs': {}, 'outputs': {}}
         self.filename = filename
         if self.filename == '':
-            import fileSelector
+            from pre_bethanien import fileSelector
             selector = fileSelector.FileSelector(self.setFilename)
             selector.mainloop()
         self.readSettings(self.filename)

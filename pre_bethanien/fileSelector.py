@@ -7,7 +7,7 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140930
 
 import os
-import Tkinter as tk
+import tkinter as tk
 import tkFileDialog
 
 class FileSelector(tk.Frame):
