@@ -18,25 +18,23 @@ class SpikeButton(Frame):
 class LabelledSlider(Frame):
     width = 7
 
-    def __init__(self, parent, title, par_range, resolution, send_cb, *args):
+    def __init__(self, parent, title, default, par_range, resolution, send_cb, *args):
         super(LabelledSlider, self).__init__(parent, *args)
         self.__send_cb = send_cb
         self.title = title
+        self.var = DoubleVar()
+        self.var.set(default)
 
         Label(self, text=title, width=self.width).pack(side=TOP)
-        self.slider = Scale(self, from_=par_range[1], to=par_range[0],
+        self.slider = Scale(self, from_=par_range[1], to=par_range[0], variable=self.var,
                             command=self.__release_cb, showvalue=0, resolution=resolution, length=150)
         self.slider.pack(side=TOP)
-        self.value_label = Label(self, text=par_range[1], width=self.width)
+        self.value_label = Label(self, text=self.var.get(), width=self.width)
         self.value_label.pack(side=TOP)
 
     def __release_cb(self, value):
         self.value_label.config(text=value)
         self.__send_cb(self.title, value)
-
-    @property
-    def value(self):
-        return self.slider.get()
 
 
 class Gui(Tk):
@@ -59,8 +57,8 @@ class Gui(Tk):
     def __create_slider(self):
         self.slider = {}
         for col, name in enumerate(PARAMETERS):
-            slider = LabelledSlider(self, name, self.__pars[name + "_range"], self.__pars[name + "_step"],
-                                    self.__slider_cb)
+            slider = LabelledSlider(self, name, self.__pars[name], self.__pars[name + "_range"],
+                                    self.__pars[name + "_step"], self.__slider_cb)
             slider.pack(side=LEFT)
             self.slider[name] = slider
 
