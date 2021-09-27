@@ -72,7 +72,7 @@ class SensoryNetwork(object):
         #  TODO: improve management of external drive from different sources
         external = self.pars['midi_external'] + np.ones_like(self.pars['midi_external'])*self.pars['gui_external']
 
-        self.outputHandler.turnOff()
+        self.outputHandler.turn_off()
 
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
         # update deadtimes
@@ -119,7 +119,8 @@ class SensoryNetwork(object):
 
 
 class DeviceManager:
-    def __init__(self, devices, pars):
+    def __init__(self, output_config, devices, pars):
+        self.__output_config = output_config
         self.deviceSettings = devices
         self.pars = pars
         self.spike_inputs = {}
@@ -134,8 +135,9 @@ class DeviceManager:
         self.parameter_inputs[inputDevices.GuiAdapter.NAME] = inputDevices.GuiAdapter(self.pars)
 
     def __create_outputs(self):
-        for devicename, midiport in self.deviceSettings['outputs'].items():
-            self.outputs[devicename] = getattr(outputDevices, devicename)(midiport)
+        for name, settings in self.__output_config.items():
+            self.outputs[name] = outputDevices.OutputDevice(**settings)
+            print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
     def get_spike_inputs(self):
         return list(self.spike_inputs.values())
@@ -230,9 +232,12 @@ async def init_main():
 
     print('Using settings from', settingsFile)
 
+    parser = outputDevices.ConfigParser()
     settingsReaderClass = settingsReader.SettingsReader(settingsFile)
     devices = settingsReaderClass.getDevices()
-    dm = DeviceManager(devices, pars)
+    output_config = parser.get()
+    dm = DeviceManager(output_config, devices, pars)
+    print("Devices are connected")
     app = MainApp(dm, pars)
 
     dispatcher = Dispatcher()
