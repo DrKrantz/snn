@@ -9,6 +9,7 @@ NEEDS:
 # Taken From Dunkel_Master_Cam
 # version 1.0: included deadtime, 04.08.2011
 """
+import json
 
 from numpy import ones, zeros, nonzero, sum, shape
 import numpy as np
@@ -18,6 +19,7 @@ import pygame.locals
 import sys
 
 from Dunkel_pars import parameters
+from outputDevices import OutputDevice
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -118,24 +120,56 @@ class SensoryNetwork(object):
                                       self.__w)/self.pars['tau_w']
 
 
+class ConfigParser:
+    def __init__(self):
+        self.input_config = {}
+        self.__load_config()
+        # self.__create_outputs()
+
+    def __load_config(self):
+        input_wiring = json.load(open('config/input_wiring.json', 'r'))
+        for name, port in input_wiring.items():
+            self.input_config[name] = {'midiport': port}
+
+        #  TODO make sure only the devices in output_wiring are used!
+        self.output_config = json.load(open('config/outputs.json', 'r'))
+        output_wiring = json.load(open('config/output_wiring.json', 'r'))
+        for name in self.output_config.keys():
+            if name not in output_wiring:
+                raise Exception("Midiport for device {} not provided in output_wiring.json".format(name))
+            self.output_config[name]["midiport"] = output_wiring[name]
+
+    def get_outputs(self):
+        return self.output_config
+
+    def get_inputs(self):
+        return self.input_config
+
+    def __create_outputs(self):
+        self.outputs = {}
+        converter = None
+        for name, settings in self.output_config.items():
+            self.outputs[name] = OutputDevice(converter, **settings)
+            print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
+
+
 class DeviceManager:
-    def __init__(self, output_config, devices, pars):
+    def __init__(self, input_config, output_config, pars):
         self.__output_config = output_config
-        self.deviceSettings = devices
-        self.pars = pars
         self.spike_inputs = {}
         self.parameter_inputs = {}
         self.outputs = {}
-        self.__create_inputs(pars)
-        self.__create_outputs()
+        self.__create_inputs(input_config, pars)
+        self.__create_outputs(output_config)
 
-    def __create_inputs(self, pars):
-        for devicename, midiport in self.deviceSettings['inputs'].items():
-            self.spike_inputs[devicename] = getattr(inputDevices, devicename)(midiport, pars)
-        self.parameter_inputs[inputDevices.GuiAdapter.NAME] = inputDevices.GuiAdapter(self.pars)
+    def __create_inputs(self, input_config, pars):
+        for name, settings in input_config.items():
+            self.spike_inputs[name] = inputDevices.InputDevice(**settings)
 
-    def __create_outputs(self):
-        for name, settings in self.__output_config.items():
+        self.parameter_inputs[inputDevices.GuiAdapter.NAME] = inputDevices.GuiAdapter(pars)
+
+    def __create_outputs(self, output_config):
+        for name, settings in output_config.items():
             self.outputs[name] = outputDevices.OutputDevice(**settings)
             print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
@@ -151,7 +185,7 @@ class MainApp:
         self.__fullscreen = False
 
         self.pars = pars
-        self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
+        # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
 
         inputHandler = InputHandler(
             spike_inputs=deviceManager.get_spike_inputs(),
@@ -232,11 +266,12 @@ async def init_main():
 
     print('Using settings from', settingsFile)
 
-    parser = outputDevices.ConfigParser()
-    settingsReaderClass = settingsReader.SettingsReader(settingsFile)
-    devices = settingsReaderClass.getDevices()
-    output_config = parser.get()
-    dm = DeviceManager(output_config, devices, pars)
+
+    # settingsReaderClass = settingsReader.SettingsReader(settingsFile)
+    # devices = settingsReaderClass.getDevices()
+
+    parser = ConfigParser()
+    dm = DeviceManager(parser.get_inputs(), parser.get_outputs(), pars)
     print("Devices are connected")
     app = MainApp(dm, pars)
 

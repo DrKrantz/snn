@@ -7,7 +7,6 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
 from numpy import array, intersect1d, unique, union1d
-import sensoryNetwork
 from pythonosc.udp_client import SimpleUDPClient
 
 
@@ -18,12 +17,13 @@ from pythonosc.udp_client import SimpleUDPClient
 
 
 class InputDevice:
-    def __init__(self, name):
+    def __init__(self, midiport=None):
         self.__messages = []
-        self.__inport = mido.open_input(name, False, self.__store_incoming)
+        self.__inport = mido.open_input(midiport, False, self.__store_incoming)
 
-    def __store_incoming(self, msg):
-        self.__messages.append(msg)
+    def __store_incoming(self, msg: mido.Message):
+        if msg.type == 'note_on':
+            self.__messages.append(msg.note)
 
     def update(self):
         content = self.__messages
@@ -31,49 +31,6 @@ class InputDevice:
         return content
 
 '''
-class InputDevice(pm.Input):
-    def __init__(self, name, n_read=100):
-        pm.init()
-        self.nread = n_read
-        deviceId = self.__getDeviceId(name)
-
-        if deviceId == -1:
-            print("SETUP WARNING!!! input: " + name + " not available!!!")
-            return
-        else:
-            super(InputDevice,self).__init__(deviceId)
-            print("SETUP input: " + name + " connected with id", deviceId)
-
-    def __getDeviceId(self, name):
-        for deviceId in range(pm.get_count()):
-            if (pm.get_device_info(deviceId)[1] == name.encode()) & \
-                    (pm.get_device_info(deviceId)[2] == 1):
-                return deviceId
-        return -1
-
-    def getData(self):
-        if self.poll():
-            data = self.read(self.nread)
-            data.reverse()
-            return array([dd[0] for dd in data])
-
-    def map_keys(self):
-        """  print device's input """
-        while True:
-            try:
-                if self.poll():
-                    print(self.read(10))
-            except KeyboardInterrupt:
-                return
-
-    def update(self, pars):
-        """
-        the interface-function
-        :param pars:
-        :return:
-        """
-        return {'fired': [], 'pars': {}}
-
 
 class BCF(InputDevice):
     NAME = b'Virtual BCF2000'
@@ -271,8 +228,3 @@ class SensoryObject(InputDevice):
             print('object:', fired)
         return {'pars': self.pars, 'fired': array(fired, int)}
 """
-
-if __name__ == '__main__':
-    import Dunkel_pars
-    inputDevice = SensoryObject(Dunkel_pars.parameters(), '')
-    inputDevice.map_keys()

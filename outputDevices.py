@@ -8,7 +8,6 @@ __date__ = 140621
 
 import mido
 import time
-import json
 import numpy as np
 from Dunkel_functions import chordConversion, chromaticConversion
 
@@ -57,31 +56,6 @@ class Neuron2NoteConverter(object):
             note = self.__cromatic2[int(np.mod(neuron_id, len(self.__cromatic2)))]
 
         return note
-
-
-class ConfigParser:
-    def __init__(self):
-        self.__load_config()
-        # self.__create_outputs()
-
-    def __load_config(self):
-        #  TODO make sure only the devices in output_wiring are used!
-        self.output_config = json.load(open('config/outputs.json', 'r'))
-        output_wiring = json.load(open('config/output_wiring.json', 'r'))
-        for name in self.output_config.keys():
-            if name not in output_wiring:
-                raise Exception("Midiport for device {} not provided in output_wiring.json".format(name))
-            self.output_config[name]["midiport"] = output_wiring[name]
-
-    def get(self):
-        return self.output_config
-
-    def __create_outputs(self):
-        self.outputs = {}
-        converter = None
-        for name, settings in self.output_config.items():
-            self.outputs[name] = OutputDevice(converter, **settings)
-            print("SETUP output. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
 
 class OutputDevice:
