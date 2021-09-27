@@ -71,9 +71,6 @@ class SensoryNetwork(object):
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
 
-        #  TODO: improve management of external drive from different sources
-        external = self.pars['midi_external'] + np.ones_like(self.pars['midi_external'])*self.pars['gui_external']
-
         self.outputHandler.turn_off()
 
         # UPDATE DEADIMES AND GET FIRED IDs  ###########
@@ -98,14 +95,16 @@ class SensoryNetwork(object):
         self.outputHandler.update(fired)
 
         # update conductances of excitatory synapses
+        external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
         fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
-        nPreSp_e = sum(self.__A[:, fired_e], axis=1)  # number of presynaptic e-spikes
+        nPreSp_e = sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
         self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + \
                      nPreSp_e * self.pars['s_e']
 
         # update conductances of inh. synapses
+        external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
         fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
-        nPreSp_i = sum(self.__A[:, fired_i], axis=1)  # number of presynaptic i-spikes
+        nPreSp_i = sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
         self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + \
                     nPreSp_i * self.pars['s_i']
 
@@ -114,7 +113,7 @@ class SensoryNetwork(object):
               self.pars['gL']*self.pars['Delta']*np.exp((self.__v-self.pars['threshold'])/self.pars['Delta']) -
               self.__w/self.pars['S'] - self.__ge*(self.__v-self.pars['Ee'])/self.pars['S'] -
               self.__gi*(self.__v-self.pars['Ei'])/self.pars['S'])/self.pars['Cm'] + \
-              self.pars['h']*external/self.pars['Cm']
+              self.pars['h']*self.pars['midi_external']/self.pars['Cm']
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
         self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']

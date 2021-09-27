@@ -31,7 +31,7 @@ class OutputHandler(object):
         if n_fired > 0:
             print('OutputHandler: fired: ', neuron_ids)
             self.__checkKeyChange(neuron_ids)
-            
+
             for neuron_id in neuron_ids:
                 for name, output in self.__output.items():
                     output.note_on(neuron_id)
