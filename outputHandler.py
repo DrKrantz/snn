@@ -1,22 +1,15 @@
-# import pygame.font
-from numpy import intersect1d
-# import pygame.midi as pm
 
-from display import Display
-from outputDevices import *
+from numpy import intersect1d
+import time
 global pars
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars, neuron2NoteConversion=4, display=False):
+    def __init__(self, outputs, pars, neuron2NoteConversion=4, display=None):
         self.pars = pars
         super(OutputHandler, self).__init__()
 
         self.display = display
-        if self.display:
-            self.display = Display(pars['N_col'], pars['N_row'],
-                                   ['Ne', 'Ni', 's_e', 's_i', 'tau_e', 'tau_i', 'midi_ext_e', 'midi_ext_i',
-                                    'cam_ext', 'cam_external_max'], 'lines', screenSize=pars['screen_size'])
         self.__output = outputs
         self.__input = {}
 
@@ -38,11 +31,7 @@ class OutputHandler(object):
 
         if self.display:
             # display spikes and update display
-            self.display.update_fired(fired)
-            self.display.update_pars(
-                ['cam_ext', 'midi_ext_e', 'midi_ext_i', 's_e', 's_i',
-                 'tau_e', 'tau_i', 'cam_external_max'])
-            pygame.display.update()
+            self.display.update(fired)
 
     def turn_off(self):
         for name in self.__output.keys():

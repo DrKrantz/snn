@@ -8,7 +8,11 @@ __date__ = 140621
 
 import mido
 import time
+import json
+from pythonosc.udp_client import SimpleUDPClient
+
 import numpy as np
+import sensoryNetwork
 from Dunkel_functions import chordConversion, chromaticConversion
 
 
@@ -125,3 +129,11 @@ class OutputDevice:
             if note != 1:
                     self.__send_note(note, 'note_off')
         self.__on_notes = set()
+
+
+class DisplayAdapter:
+    def __init__(self):
+        self.client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.SPIKE_DISPLAY_PORT)
+
+    def update(self, fired):
+        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS, json.dumps(fired.tolist()))
