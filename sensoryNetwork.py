@@ -117,6 +117,7 @@ class SensoryNetwork(object):
 class ConfigParser:
     def __init__(self):
         self.input_config = {}
+        self.output_config = {}
         self.__load_config()
 
     def __load_config(self):
@@ -124,13 +125,14 @@ class ConfigParser:
         for name, port in input_wiring.items():
             self.input_config[name] = {'midiport': port}
 
-        #  TODO make sure only the devices in output_wiring are used!
-        self.output_config = json.load(open('config/outputs.json', 'r'))
+        outputs = json.load(open('config/outputs.json', 'r'))
         output_wiring = json.load(open('config/output_wiring.json', 'r'))
-        for name in self.output_config.keys():
-            if name not in output_wiring:
-                raise Exception("Midiport for device {} not provided in output_wiring.json".format(name))
-            self.output_config[name]["midiport"] = output_wiring[name]
+        for name, port in output_wiring.items():
+            if name not in outputs:
+                print("No config for device {} available, using default".format(name))
+            else:
+                self.output_config[name] = outputs[name]
+                self.output_config[name]["midiport"] = port
 
     def get_outputs(self):
         return self.output_config
@@ -178,7 +180,7 @@ class MainApp:
             parameter_inputs=deviceManager.get_parameter_inputs(),
             pars=pars
         )
-        outputHandler = OutputHandler(deviceManager.outputs, pars)
+        outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
 
         print("wiring....")
         connectivity_matrix = ConnectivityMatrix().get()
