@@ -25,13 +25,13 @@ class OutputHandler(object):
         self.__neuron2NoteConversion = neuron2NoteConversion
 
     def update(self, fired):
-        if len(fired):
-            print("OutputHander fired", fired)
         neuron_ids = intersect1d(fired, self.pars['note_ids'])
-        self.__checkKeyChange(neuron_ids)
+        n_fired = len(neuron_ids)
 
-        n_fired = neuron_ids.__len__()
         if n_fired > 0:
+            print('OutputHandler: fired: ', neuron_ids)
+            self.__checkKeyChange(neuron_ids)
+
             for neuron_id in neuron_ids:
                 for name, output in self.__output.items():
                     output.note_on(neuron_id)
@@ -51,7 +51,6 @@ class OutputHandler(object):
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids) > 20:
-            print(self.__output)
             self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion == 7 else 7)
             self.__output["neuron_notes"].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion

@@ -1,9 +1,10 @@
 from tkinter import *
+import numpy as np
 from Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
 import sensoryNetwork
 
-PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'gui_external']
+PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
 
 class SpikeButton(Frame):
@@ -18,25 +19,27 @@ class SpikeButton(Frame):
 class LabelledSlider(Frame):
     width = 7
 
-    def __init__(self, parent, title, par_range, resolution, send_cb, *args):
+    def __init__(self, parent, title, default, par_range, resolution, send_cb, *args):
         super(LabelledSlider, self).__init__(parent, *args)
         self.__send_cb = send_cb
         self.title = title
+        self.var = DoubleVar()
+        self.var.set(default)
 
         Label(self, text=title, width=self.width).pack(side=TOP)
-        self.slider = Scale(self, from_=par_range[1], to=par_range[0],
+        self.slider = Scale(self, from_=par_range[1], to=par_range[0], variable=self.var,
                             command=self.__release_cb, showvalue=0, resolution=resolution, length=150)
         self.slider.pack(side=TOP)
-        self.value_label = Label(self, text=par_range[1], width=self.width)
+        self.value_label = Label(self, text=self.var.get(), width=self.width)
         self.value_label.pack(side=TOP)
 
     def __release_cb(self, value):
+        self.var.set(value)
         self.value_label.config(text=value)
         self.__send_cb(self.title, value)
 
-    @property
-    def value(self):
-        return self.slider.get()
+    def get(self):
+        return self.var.get()
 
 
 class Gui(Tk):
@@ -45,6 +48,9 @@ class Gui(Tk):
 
     def __init__(self, pars, **kwargs):
         super(Gui, self).__init__(**kwargs)
+        Label(self, text="Balance", width=7).pack(side=TOP)
+        self.__balance_label = Label(self, text=0, width=7)
+        self.__balance_label.pack(side=TOP)
         self.__pars = pars
 
         self.title(self.__title)
@@ -59,8 +65,8 @@ class Gui(Tk):
     def __create_slider(self):
         self.slider = {}
         for col, name in enumerate(PARAMETERS):
-            slider = LabelledSlider(self, name, self.__pars[name + "_range"], self.__pars[name + "_step"],
-                                    self.__slider_cb)
+            slider = LabelledSlider(self, name, self.__pars[name], self.__pars[name + "_range"],
+                                    self.__pars[name + "_step"], self.__slider_cb)
             slider.pack(side=LEFT)
             self.slider[name] = slider
 
@@ -76,7 +82,17 @@ class Gui(Tk):
     def __button_cb(self, *args):
         self.__client.send_message(sensoryNetwork.GUI_SPIKE_ADDRESS, args)
 
+    def __update_balance(self):
+        balance = self.slider['s_e'].get() * self.slider['lambda_e'].get() - \
+                  self.slider['s_i'].get() * self.slider['lambda_i'].get()
+        self.__balance_label.config(text=np.around(balance, decimals=10))
+        self.after(500, self.__update_balance)
+
+    def start(self):
+        self.after(500, self.__update_balance)
+        self.mainloop()
+
 
 if __name__ == "__main__":
     gui = Gui(parameters())
-    gui.mainloop()
+    gui.start()

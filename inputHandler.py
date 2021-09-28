@@ -10,9 +10,6 @@ from numpy import array, unique, union1d
 
 
 class InputHandler(object):
-    PARAMETERS = 'Virtual BCF2000'
-    OBJECT = 'USB MIDI Device'  # 'USB MIDI Device'
-    WEBCAM = 'webcam'
 
     def __init__(self, spike_inputs, parameter_inputs, pars={}):
         self.pars = pars
