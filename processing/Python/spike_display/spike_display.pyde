@@ -24,20 +24,11 @@ class Listen(OscEventListener):
             print("Address not mapped")
             
 
-# def linear2grid(nid, n_col):
-#     # return col_id, row_id
-#     # neuron 0 will be in the bottom left corner with coordintates (0,0), neuron 1 is (1,0)
-#     #Nnotes = 120
-#     # the equation is n_col*row_id+col_id = nid
-#     col_id = math.remainder(nid, n_col)
-#     row_id = math.ceil((nid-col_id)/N_col)
-#     return col_id, row_id
-
 class SpikeSurface:
     CIRCLE_SIZE = 5
-    LINE_WIDTH = 5
+    LINE_WIDTH = 8
     
-    def __init__(self, n_col=20, n=400, plot_mode='dot', width=1280, height=720):
+    def __init__(self, n_col=20, n=400, plot_mode='line', width=1280, height=720):
         self.__border = 5
         self.__n_col = n_col
         self.__n_row = math.ceil(n / n_col)
@@ -48,14 +39,17 @@ class SpikeSurface:
         self.set_fired([])
         self.surface = createGraphics(width, height)
         self.surface.smooth()
-        stroke(255)
-        # strokeWeight(self.LINE_WIDTH)
+        
+        
         with self.surface.beginDraw():
             self.surface.background(0)
+            self.surface.stroke(222)
+            self.surface.strokeWeight(self.LINE_WIDTH)
     
     def draw(self):
         with self.surface.beginDraw():
-            self.surface.background(0)
+            self.surface.background(0)            
+
             if len(self.__fired) == 0:
                 pass  # self.surface.text("NICHTS", self.surface.width/2, self.surface.height/2)
             else:
@@ -85,7 +79,6 @@ class SpikeSurface:
                             y2 = y_vals[idx2]
                             self.surface.line(x1, y1, x2, y2)
                     
-                #self.surface.text("ETWAS", self.surface.width/2, self.surface.height/2)
         image(self.surface, 0, 0)
         self.set_fired([])
         
