@@ -27,29 +27,32 @@ class SpikeSurface {
     this.surface.background(0);
     this.surface.strokeWeight(10);
     this.surface.stroke(0, 255, 0);
+    
+    // copy this.fired to prevent override while draw is running
+    JSONArray currentFired = this.fired; 
 
-    if (this.fired.size() == 1) {
-      this.drawPoint(this.fired.getInt(0));
-    } else if ( this.fired.size() > 1 ) {
+    if (currentFired.size() == 1) {
+      this.drawPoint(currentFired.getInt(0));
+    } else if ( currentFired.size() > 1 ) {
       if (this.plotMode.equals("dot") == true) {
-        for (int n=0; n < this.fired.size(); n++) {
-          int neuron_id = (int) this.fired.get(n);
+        for (int n=0; n < currentFired.size(); n++) {
+          int neuron_id = (int) currentFired.get(n);
           this.drawPoint(neuron_id);
         }
       } else if (this.plotMode.equals("line") == true) {
         ArrayList xVals = new ArrayList();
         ArrayList yVals = new ArrayList();
-        for (int n=0; n < this.fired.size(); n++) {
-          int neuron_id = (int) this.fired.get(n);
+        for (int n=0; n < currentFired.size(); n++) {
+          int neuron_id = (int) currentFired.get(n);
           int colId = getCoord(neuron_id, 0);
           int rowId = getCoord(neuron_id, 1);
           xVals.add(round(this.border + colId*this.xDist));
           yVals.add(round(this.border + rowId*this.yDist));
         }
         
-        for (int n=0; n < this.fired.size(); n++) {
+        for (int n=0; n < currentFired.size(); n++) {
           int n2;
-          if (n < this.fired.size() -1 ) {
+          if (n < currentFired.size() -1 ) {
             n2 = n+1;
           } else {
             n2 = 0;
