@@ -136,4 +136,6 @@ class DisplayAdapter:
         self.client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.SPIKE_DISPLAY_PORT)
 
     def update(self, fired):
-        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS, json.dumps(fired.tolist()))
+        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS,
+                                 json.dumps({"fired": fired.tolist() })
+                                 )

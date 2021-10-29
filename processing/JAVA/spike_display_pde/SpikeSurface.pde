@@ -29,18 +29,18 @@ class SpikeSurface {
     this.surface.stroke(0, 255, 0);
 
     if (this.fired.size() == 1) {
-      this.drawPoint(this.fired.getString(0));
+      this.drawPoint(this.fired.getInt(0));
     } else if ( this.fired.size() > 1 ) {
       if (this.plotMode.equals("dot") == true) {
         for (int n=0; n < this.fired.size(); n++) {
-          String neuron_id = this.fired.getString(n);
+          int neuron_id = (int) this.fired.get(n);
           this.drawPoint(neuron_id);
         }
       } else if (this.plotMode.equals("line") == true) {
         ArrayList xVals = new ArrayList();
         ArrayList yVals = new ArrayList();
         for (int n=0; n < this.fired.size(); n++) {
-          String neuron_id = this.fired.getString(n);
+          int neuron_id = (int) this.fired.get(n);
           int colId = getCoord(neuron_id, 0);
           int rowId = getCoord(neuron_id, 1);
           xVals.add(round(this.border + colId*this.xDist));
@@ -70,7 +70,7 @@ class SpikeSurface {
     this.set_fired(new JSONArray());
   }
   
-  void drawPoint(String neuron_id) {
+  void drawPoint(int neuron_id) {
     int colId = getCoord(neuron_id, 0);
     int rowId = getCoord(neuron_id, 1);
     int x = round(this.border + rowId*this.xDist);
@@ -84,7 +84,7 @@ class SpikeSurface {
   }
 }
 
-int getCoord(String neuron_id, int idx) {
-  JSONArray coords = (JSONArray) linear2grid.get(neuron_id);
+int getCoord(int neuron_id, int idx) {
+  JSONArray coords = (JSONArray) linear2grid.get(str(neuron_id));
   return coords.getInt(idx);
 }
