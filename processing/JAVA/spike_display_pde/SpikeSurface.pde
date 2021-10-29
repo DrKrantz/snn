@@ -37,7 +37,30 @@ class SpikeSurface {
           this.drawPoint(neuron_id);
         }
       } else if (this.plotMode.equals("line") == true) {
-        println("Not ye implements", this.plotMode);
+        ArrayList xVals = new ArrayList();
+        ArrayList yVals = new ArrayList();
+        for (int n=0; n < this.fired.size(); n++) {
+          String neuron_id = this.fired.getString(n);
+          int colId = getCoord(neuron_id, 0);
+          int rowId = getCoord(neuron_id, 1);
+          xVals.add(round(this.border + colId*this.xDist));
+          yVals.add(round(this.border + rowId*this.yDist));
+        }
+        
+        for (int n=0; n < this.fired.size(); n++) {
+          int n2;
+          if (n < this.fired.size() -1 ) {
+            n2 = n+1;
+          } else {
+            n2 = 0;
+          }
+          int x1 = (int) xVals.get(n);
+          int y1 = (int) yVals.get(n);
+          int x2 = (int) xVals.get(n2);
+          int y2 = (int) yVals.get(n2);
+          
+          this.surface.line(x1, y1, x2, y2);
+        }
       } else {
         println("Unknown plotmode", this.plotMode);
       }

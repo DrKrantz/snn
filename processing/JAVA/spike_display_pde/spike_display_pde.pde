@@ -23,7 +23,7 @@ void setup() {
   linear2grid = loadJSONObject("../../../data/linear2grid_400_20.json");
   
   background(100);
-  spikeSurface = new SpikeSurface(10, 100, "dot", 1280, 720);
+  spikeSurface = new SpikeSurface(10, 100, "line", 1280, 720);
 }
 
 void draw() {
