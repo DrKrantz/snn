@@ -1,7 +1,9 @@
+import java.util.Collections;
+
 class SpikeSurface {
   PGraphics surface;
   int circleSize = 5;
-  int lineWidth = 8;
+  int lineWidth = 2;
   int border = 5;
   int sWidth, sHeight, pos_x, pos_y;
   int nCol, nRow;
@@ -25,14 +27,21 @@ class SpikeSurface {
   void draw() {
     this.surface.beginDraw();
     this.surface.background(0);
-    this.surface.strokeWeight(10);
+    this.surface.strokeWeight(this.lineWidth);
     this.surface.stroke(0, 255, 0);
     
     // copy this.fired to prevent override while draw is running
-    JSONArray currentFired = this.fired; 
+    //JSONArray currentFired = this.fired;
+    // convert JSONArray to IntList to shuffle the list 
+    IntList currentFired = new IntList();
+    for (int i=0; i<this.fired.size(); i++) {
+      currentFired.append( (int) this.fired.get(i) );
+    }
+    currentFired.shuffle();
+    this.set_fired(new JSONArray());
 
     if (currentFired.size() == 1) {
-      this.drawPoint(currentFired.getInt(0));
+      this.drawPoint((int) currentFired.get(0));
     } else if ( currentFired.size() > 1 ) {
       if (this.plotMode.equals("dot") == true) {
         for (int n=0; n < currentFired.size(); n++) {
@@ -70,7 +79,6 @@ class SpikeSurface {
     }
     this.surface.endDraw();
     image(this.surface, this.pos_x, this.pos_y);
-    this.set_fired(new JSONArray());
   }
   
   void drawPoint(int neuron_id) {
