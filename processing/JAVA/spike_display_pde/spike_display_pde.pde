@@ -4,12 +4,13 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress loc;
 
-
 String IP = "127.0.0.1";
 int SPIKE_DISPLAY_PORT = 1338;
 String SPIKE_DISPLAY_ADDRESS = "/display_spikes";
 SpikeSurface spikeSurface;
 
+
+JSONObject linear2grid;
 
 class SpikeSurface {
   PGraphics surface;
@@ -20,8 +21,8 @@ class SpikeSurface {
   int nCol, nRow, xDist, yDist;
   String plotMode;
   JSONArray fired = new JSONArray();
-  
-  
+
+
   SpikeSurface(int nCol, int n, String plotMode, int sWidth, int sHeight) {
     this.nCol = nCol;
     this.nRow = ceil(n/nCol);
@@ -33,25 +34,25 @@ class SpikeSurface {
     this.surface = createGraphics(sWidth, sHeight);
     this.surface.smooth();
   }
-  
+
   void draw() {
     this.surface.beginDraw();
     this.surface.background(0);
     this.surface.strokeWeight(10);
     this.surface.stroke(0, 255, 0);
-    
+
     if ( this.fired.size() > 0 ) {
-      for(int n=0; n < this.fired.size(); n++) {
+      for (int n=0; n < this.fired.size(); n++) {
         int id = this.fired.getInt(n);
         println(id);
       }
     }
-    
+
     this.surface.endDraw();
     image(this.surface, this.pos_x, this.pos_y);
     this.set_fired(new JSONArray());
   }
-  
+
   public void set_fired(JSONArray fired) {
     this.fired = fired; // TODO should be appended
   }
@@ -62,16 +63,15 @@ class SpikeSurface {
 void setup() {
   oscP5 = new OscP5(this, SPIKE_DISPLAY_PORT); //Audience Port
   loc = new NetAddress(IP, SPIKE_DISPLAY_PORT); // send to self
-  
-  
+
+
   frameRate(20);
   //fullScreen();
   size(1280, 720);
+  
+  linear2grid = loadJSONObject("../../../data/linear2grid_400_20.json");
   background(100);
-  spikeSurface = new SpikeSurface(10, 100, "line", 1280,  720);
-  
-  
-  
+  spikeSurface = new SpikeSurface(10, 100, "line", 1280, 720);
 }
 
 void draw() {
