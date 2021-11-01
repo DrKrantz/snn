@@ -3,9 +3,14 @@
     "conversion": 7
   },
   "piano": {
-    "max_num_signals": 2,
+    "max_num_signals": 6,
     "velocity": 80,
-    "max_note": 96,
+    "max_note": 127,
+    "update_interval": 10,
     "conversion": 7
+  },
+  "visuals": {
+    "max_num_signals": 5,
+    "update_interval": 20
   }
 }

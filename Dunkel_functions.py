@@ -91,15 +91,6 @@ def neuron2note(neuron_id, conversion_type):
         note = molllist[int(mod(neuron_id, nnotes))]
     return note
 
-def linear2grid(Nid,N_col):
-    # neuron 0 will be in the bottom left corner with coordintates (0,0), neuron 1 is (1,0)
-    #Nnotes = 120
-    # the equation is N_col*row_id+col_id = Nid
-    col_id = mod(Nid, N_col)
-    row_id = ceil((Nid-col_id)/N_col)
-    coord = array([col_id, row_id],int)
-    return coord
-
 def grid2linear(coord,N_col):
     Nid = N_col*coord[1]+coord[0]
     return Nid
