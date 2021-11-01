@@ -6,7 +6,7 @@ NetAddress loc;
 
 String plotMode="line";
 
-String IP = "127.0.0.1";
+String IP = "localhost";
 int SPIKE_DISPLAY_PORT = 1338;
 String SPIKE_DISPLAY_ADDRESS = "/display_spikes";
 SpikeSurface spikeSurface;

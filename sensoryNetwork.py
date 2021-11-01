@@ -26,7 +26,7 @@ from pythonosc.dispatcher import Dispatcher
 import asyncio
 
 
-IP = "127.0.0.1"
+IP = "localhost"
 GUI_PORT = 1337
 SPIKE_DISPLAY_PORT = 1338
 SPIKE_DISPLAY_ADDRESS = '/display_spikes'
