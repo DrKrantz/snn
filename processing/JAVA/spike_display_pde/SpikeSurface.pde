@@ -37,7 +37,6 @@ class SpikeSurface {
     for (int i=0; i<this.fired.size(); i++) {
       currentFired.append( (int) this.fired.get(i) );
     }
-    currentFired.shuffle();
     this.set_fired(new JSONArray());
 
     if (currentFired.size() == 1) {
