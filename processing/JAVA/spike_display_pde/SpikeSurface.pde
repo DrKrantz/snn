@@ -22,12 +22,13 @@ class SpikeSurface {
     this.plotMode = plotMode;
     this.surface = createGraphics(sWidth, sHeight);
     this.surface.smooth();
-    this.surface.strokeWeight(this.lineWidth);
-    this.surface.stroke(0, 255, 0);
+
   }
 
   void draw() {
     this.surface.beginDraw();
+    this.surface.strokeWeight(this.lineWidth);
+    this.surface.stroke(255, 255, 255);
     this.surface.background(0);
 
     // copy this.fired to prevent override while draw is running
