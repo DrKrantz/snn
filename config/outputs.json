@@ -12,5 +12,9 @@
   "visuals": {
     "max_num_signals": 5,
     "update_interval": 20
+  },
+  "external": {
+    "velocity": 1,
+    "conversion": 7
   }
 }
