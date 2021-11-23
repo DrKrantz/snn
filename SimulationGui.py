@@ -72,7 +72,7 @@ class Gui(Tk):
 
     def __create_buttons(self):
         for k in range(5):
-            button = SpikeButton(self, k+1, self.__button_cb)
+            button = SpikeButton(self, k+70, self.__button_cb)
             button.pack(side=TOP)
             self.__buttons = [button]
 

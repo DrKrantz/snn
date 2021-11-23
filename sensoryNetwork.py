@@ -80,6 +80,7 @@ class SensoryNetwork(object):
         self.deadIDs = np.concatenate((self.deadIDs, fired))  # put fired neuron to death
         self.deaddur = np.concatenate((self.deaddur, np.zeros_like(fired)))
         extFired = self.inputHandler.getFired()
+        self.outputHandler.update_external(extFired)
 
         fired = np.array(np.union1d(fired, extFired), int)
 

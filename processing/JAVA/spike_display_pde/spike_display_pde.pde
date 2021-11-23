@@ -11,8 +11,8 @@ int SPIKE_DISPLAY_PORT = 1338;
 String SPIKE_DISPLAY_ADDRESS = "/display_spikes";
 SpikeSurface spikeSurface;
 
-int displayWidth = 900;
-int displayHeight = 600;
+int displayWidth = 1280;
+int displayHeight = 720;
 
 JSONObject linear2grid;
 
@@ -21,8 +21,9 @@ void setup() {
   loc = new NetAddress(IP, SPIKE_DISPLAY_PORT); // send to self
 
   frameRate(20);
-  //fullScreen();
-  size(displayWidth, displayHeight);
+  //size(displayWidth, displayHeight);
+  fullScreen();
+
   
   linear2grid = loadJSONObject("../../../data/linear2grid_400_20.json");
   

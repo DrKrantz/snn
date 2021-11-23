@@ -22,22 +22,21 @@ class SpikeSurface {
     this.plotMode = plotMode;
     this.surface = createGraphics(sWidth, sHeight);
     this.surface.smooth();
+
   }
 
   void draw() {
     this.surface.beginDraw();
-    this.surface.background(0);
     this.surface.strokeWeight(this.lineWidth);
-    this.surface.stroke(0, 255, 0);
-    
+    this.surface.stroke(255, 255, 255);
+    this.surface.background(0);
+
     // copy this.fired to prevent override while draw is running
-    //JSONArray currentFired = this.fired;
     // convert JSONArray to IntList to shuffle the list 
     IntList currentFired = new IntList();
     for (int i=0; i<this.fired.size(); i++) {
       currentFired.append( (int) this.fired.get(i) );
     }
-    currentFired.shuffle();
     this.set_fired(new JSONArray());
 
     if (currentFired.size() == 1) {
@@ -58,7 +57,7 @@ class SpikeSurface {
           xVals.add(round(this.border + colId*this.xDist));
           yVals.add(round(this.border + rowId*this.yDist));
         }
-        
+
         for (int n=0; n < currentFired.size(); n++) {
           int n2;
           if (n < currentFired.size() -1 ) {
@@ -70,7 +69,7 @@ class SpikeSurface {
           int y1 = (int) yVals.get(n);
           int x2 = (int) xVals.get(n2);
           int y2 = (int) yVals.get(n2);
-          
+
           this.surface.line(x1, y1, x2, y2);
         }
       } else {
@@ -80,7 +79,7 @@ class SpikeSurface {
     this.surface.endDraw();
     image(this.surface, this.pos_x, this.pos_y);
   }
-  
+
   void drawPoint(int neuron_id) {
     int colId = getCoord(neuron_id, 0);
     int rowId = getCoord(neuron_id, 1);
@@ -88,7 +87,7 @@ class SpikeSurface {
     int y = round(this.border + colId*this.yDist);
     this.surface.circle(x, y, this.circleSize);
   }
-  
+
 
   public void set_fired(JSONArray fired) {
     this.fired = fired; // TODO should be appended
