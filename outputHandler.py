@@ -10,8 +10,11 @@ class OutputHandler(object):
         super(OutputHandler, self).__init__()
 
         self.display = display
+
+        self.__output_external = None
+        if "external" in outputs:
+            self.__output_external = outputs.pop('external')
         self.__output = outputs
-        self.__input = {}
 
         self.__now = time.time()
         self.__activeNotes = set()
@@ -19,9 +22,8 @@ class OutputHandler(object):
 
     def update(self, fired):
         neuron_ids = intersect1d(fired, self.pars['note_ids'])
-        n_fired = len(neuron_ids)
 
-        if n_fired > 0:
+        if len(neuron_ids) > 0:
             print('OutputHandler: fired: ', neuron_ids)
             self.__checkKeyChange(neuron_ids)
 
@@ -32,6 +34,14 @@ class OutputHandler(object):
         if self.display:
             # display spikes and update display
             self.display.update(fired)
+
+    def update_external(self, fired):
+        neuron_ids = intersect1d(fired, self.pars['note_ids'])
+
+        if len(neuron_ids) > 0:
+            print('OutputHandler: input: ', neuron_ids)
+            for neuron_id in neuron_ids:
+                self.__output_external.note_on(neuron_id)
 
     def turn_off(self):
         for name in self.__output.keys():

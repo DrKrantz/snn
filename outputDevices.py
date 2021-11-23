@@ -83,13 +83,13 @@ class OutputDevice:
         self.__neuron2NoteConversion = conversion
 
     def note_on(self, neuron_id):
-        note = self.__converter.convert(neuron_id)
         """
         turn the midi-note on
         If max_num_signals has been set, the note is only turned on if less than
         max_num_signals are on. Additionally, notes that started more than updateInterval
         ago are removed from the activeNotes list.
         """
+        note = self.__converter.convert(neuron_id)
         self.__on_notes.add(note)
         if self.__max_num_signals is None:
             self.__send_note(note)
