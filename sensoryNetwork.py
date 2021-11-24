@@ -24,6 +24,7 @@ from connectivityMatrix import ConnectivityMatrix
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 import asyncio
+import pickle
 
 
 IP = "localhost"
@@ -32,6 +33,27 @@ SPIKE_DISPLAY_PORT = 1338
 SPIKE_DISPLAY_ADDRESS = '/display_spikes'
 GUI_PAR_ADDRESS = '/gui_pars'
 GUI_SPIKE_ADDRESS = '/gui_spikes'
+
+
+class Recorder:
+    def __init__(self, n):
+        self.done = False
+        self.__k = 0
+        self.__nIter = 400
+        self.__vRec = np.zeros((n, self.__nIter))
+
+    def record(self, v):
+        self.__vRec[:, self.__k] = v
+        self.__k += 1
+
+        if self.__k >= self.__nIter:
+            self.done = True
+            self.__write()
+
+    def __write(self):
+        print('--------- WRITING WRITING --------------')
+        with open('./data/v_rec.pkl', 'wb') as f:
+            pickle.dump(self.__vRec, f)
 
 
 class SensoryNetwork(object):
@@ -60,6 +82,7 @@ class SensoryNetwork(object):
         self.__hasPrinted = False
         self.deaddur = np.array([])  # duration (secs) the dead neurons have been dead
         self.deadIDs = np.array([], int)
+        self.__recorder = Recorder(n)
         
     def update(self):
         # GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
@@ -105,14 +128,21 @@ class SensoryNetwork(object):
                     nPreSp_i * self.pars['s_i']
 
         # update membrane and adaptation variable
-        self.__v += self.pars['h']*(-self.pars['gL']*(self.__v-self.pars['EL']) +
-              self.pars['gL']*self.pars['Delta']*np.exp((self.__v-self.pars['threshold'])/self.pars['Delta']) -
-              self.__w/self.pars['S'] - self.__ge*(self.__v-self.pars['Ee'])/self.pars['S'] -
-              self.__gi*(self.__v-self.pars['Ei'])/self.pars['S'])/self.pars['Cm'] + \
+        neuron_dynamics = -self.pars['gL']*(self.__v-self.pars['EL']) + \
+              self.pars['gL']*self.pars['Delta']*np.exp((self.__v-self.pars['threshold'])/self.pars['Delta']) - \
+              self.__w/self.pars['S']
+
+        network_input = (-self.__ge*(self.__v-self.pars['Ee']) - self.__gi*(self.__v-self.pars['Ei']))/self.pars['S']
+
+        self.__v += self.pars['h']*(neuron_dynamics + network_input)/self.pars['Cm'] + \
               self.pars['h']*self.pars['midi_external']/self.pars['Cm']
+
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
         self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
+
+        if not self.__recorder.done:
+            self.__recorder.record(self.__v)
 
 
 class ConfigParser:

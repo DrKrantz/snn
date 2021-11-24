@@ -8,20 +8,18 @@ __date__ = 140620
 
 
 import matplotlib
-matplotlib.use('TkAgg') # do this before importing pylab
+matplotlib.use('Qt5Agg') # do this before importing pylab
 import matplotlib.pyplot as plt
 import numpy as np
-from Dunkel_pars import parameters
-from Dunkel_functions import *
+import pickle
 
 
 class Membrane_Display:
-    def __init__(self, N, vrange=[0, 1]):
-        plt.rcParams['backend'] = 'macosx'
+    def __init__(self, N, vrange):
+        plt.rcParams['backend'] = 'Qt5Agg'
         plt.rcParams['interactive'] = 'True'
 
         self.vrange = np.array(vrange)
-        #print self.vrange
         self.N = N
         self.nsteps = 100
         #normv = (v-self.vrange[0])/diff(self.vrange)[0]+arange((self.N)-diff(self.vrange)[0]/2)
@@ -30,23 +28,26 @@ class Membrane_Display:
         startv = normv
         for k in range(self.N-1):
             startv = np.vstack((startv, normv + k + 1))
-        self.fh = plt.figure()   # figure handle
+        self.fh = plt.figure(figsize=(10, 10))   # figure handle
         self.lines = plt.plot(np.transpose(startv))
         plt.ylim(0, self.N)
         plt.xlim(0, self.nsteps)
         plt.draw()
-        #pl.show()
-    def update(self,v):
+        plt.show()
+
+    def update(self, v):
         normv = (v-self.vrange[0])/np.diff(self.vrange)+np.arange(self.N)
         for k in range(self.N):
-            ndata = [self.lines[k].get_ydata()[idx] for idx in range(1,self.nsteps)]
-            ndata.append(normv[k])
-            self.lines[k].set_ydata(array(ndata))
+            ydata = np.append(self.lines[k].get_ydata()[1:self.nsteps], normv[k])
+            self.lines[k].set_ydata(np.array(ydata))
         plt.draw()
-    def test(self,nrep=100):
+
+    def test(self, nrep=100):
         for k in range(nrep):
             v = np.random.rand(self.N)
             self.update(v)
+            plt.pause(0.001)
+
 
 class MembraneDisplay:
     def __init__(self):
@@ -68,5 +69,17 @@ class MembraneDisplay:
         self.__i += 1
         self.line.set_ydata(np.sin(self.x+self.__i/10.0))          # update the data
         self.fig.canvas.draw()                        # redraw the canvas
-        print 'moved'
+        print('moved')
         self.line.figure.show()
+
+
+if __name__ == '__main__':
+    with open('data/v_rec.pkl', 'rb') as f:
+        data = np.array(pickle.load(f))
+
+    n_display = 10
+    display = Membrane_Display(n_display, vrange=[np.min(data), np.max(data)])
+
+    for v_t in data[0:n_display, :].T:
+        display.update(v_t)
+        plt.pause(0.001)
