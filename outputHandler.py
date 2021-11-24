@@ -36,12 +36,13 @@ class OutputHandler(object):
             self.display.update(fired)
 
     def update_external(self, fired):
-        neuron_ids = intersect1d(fired, self.pars['note_ids'])
+        if self.__output_external is not None:
+            neuron_ids = intersect1d(fired, self.pars['note_ids'])
 
-        if len(neuron_ids) > 0:
-            print('OutputHandler: input: ', neuron_ids)
-            for neuron_id in neuron_ids:
-                self.__output_external.note_on(neuron_id)
+            if len(neuron_ids) > 0:
+                print('OutputHandler: input: ', neuron_ids)
+                for neuron_id in neuron_ids:
+                    self.__output_external.note_on(neuron_id)
 
     def turn_off(self):
         for name in self.__output.keys():
