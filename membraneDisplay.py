@@ -15,20 +15,21 @@ import pickle
 
 
 class Membrane_Display:
+    size = (5, 10)
+
     def __init__(self, N, vrange):
+        print(vrange)
         plt.rcParams['backend'] = 'Qt5Agg'
         plt.rcParams['interactive'] = 'True'
 
         self.vrange = np.array(vrange)
         self.N = N
         self.nsteps = 100
-        #normv = (v-self.vrange[0])/diff(self.vrange)[0]+arange((self.N)-diff(self.vrange)[0]/2)
-        #startv = vstack((normv,normv))# resize(normv,[self.nsteps,self.N])
         normv = np.zeros((self.nsteps))
         startv = normv
         for k in range(self.N-1):
             startv = np.vstack((startv, normv + k + 1))
-        self.fh = plt.figure(figsize=(10, 10))   # figure handle
+        self.fh = plt.figure(figsize=self.size)   # figure handle/
         self.lines = plt.plot(np.transpose(startv))
         plt.ylim(0, self.N)
         plt.xlim(0, self.nsteps)
@@ -36,10 +37,21 @@ class Membrane_Display:
         plt.show()
 
     def update(self, v):
+        # plt.pause(0.01)
         normv = (v-self.vrange[0])/np.diff(self.vrange)+np.arange(self.N)
         for k in range(self.N):
             ydata = np.append(self.lines[k].get_ydata()[1:self.nsteps], normv[k])
             self.lines[k].set_ydata(np.array(ydata))
+        plt.draw()
+
+    def plot(self, v_mat):
+        normv = (v_mat[0:self.N, :] - self.vrange[0]) / np.diff(self.vrange)
+        startv = np.zeros_like(normv)
+        for k in range(self.N-1):
+            startv[k, :] = normv[k+1, :] + k+1
+
+        self.fh.clf()
+        self.lines = plt.plot(np.arange(startv.shape[1])/10, startv.T)  # TODO read proper resolution
         plt.draw()
 
     def test(self, nrep=100):
@@ -74,12 +86,19 @@ class MembraneDisplay:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', action='store_true', dest='test')
+    args = parser.parse_args()
+
     with open('data/v_rec.pkl', 'rb') as f:
-        data = np.array(pickle.load(f))
+        v_loaded = np.array(pickle.load(f))
+    n_display = 20
 
-    n_display = 10
-    display = Membrane_Display(n_display, vrange=[np.min(data), np.max(data)])
-
-    for v_t in data[0:n_display, :].T:
-        display.update(v_t)
-        plt.pause(0.001)
+    display = Membrane_Display(n_display, vrange=[np.min(v_loaded), np.max(v_loaded)])
+    while True:
+        input('Press enter to refresh')
+        with open('data/v_rec.pkl', 'rb') as f:
+            v_loaded = np.array(pickle.load(f))
+        display.plot(v_loaded)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 """ DOCSTRING """
+import config.osc
 
 __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
@@ -133,9 +134,9 @@ class OutputDevice:
 
 class DisplayAdapter:
     def __init__(self):
-        self.client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.SPIKE_DISPLAY_PORT)
+        self.client = SimpleUDPClient(config.osc.IP, config.osc.SPIKE_DISPLAY_PORT)
 
     def update(self, fired):
-        self.client.send_message(sensoryNetwork.SPIKE_DISPLAY_ADDRESS,
+        self.client.send_message(config.osc.SPIKE_DISPLAY_ADDRESS,
                                  json.dumps({"fired": fired.tolist() })
                                  )

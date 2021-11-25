@@ -15,7 +15,9 @@ import numpy as np
 import time
 import sys
 
+import config.osc
 from Dunkel_pars import parameters
+from config.osc import IP, GUI_PORT, RECORDING_PORT, GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -23,41 +25,13 @@ import inputDevices
 from connectivityMatrix import ConnectivityMatrix
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
+from pythonosc.udp_client import SimpleUDPClient
+import recorder
 import asyncio
-import pickle
-
-
-IP = "localhost"
-GUI_PORT = 1337
-SPIKE_DISPLAY_PORT = 1338
-SPIKE_DISPLAY_ADDRESS = '/display_spikes'
-GUI_PAR_ADDRESS = '/gui_pars'
-GUI_SPIKE_ADDRESS = '/gui_spikes'
-
-
-class Recorder:
-    def __init__(self, n):
-        self.done = False
-        self.__k = 0
-        self.__nIter = 400
-        self.__vRec = np.zeros((n, self.__nIter))
-
-    def record(self, v):
-        self.__vRec[:, self.__k] = v
-        self.__k += 1
-
-        if self.__k >= self.__nIter:
-            self.done = True
-            self.__write()
-
-    def __write(self):
-        print('--------- WRITING WRITING --------------')
-        with open('./data/v_rec.pkl', 'wb') as f:
-            pickle.dump(self.__vRec, f)
 
 
 class SensoryNetwork(object):
-    def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix):
+    def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix, client=None):
         super(SensoryNetwork, self).__init__()
         self.inputHandler = inputHandler
         self.pars = pars
@@ -82,10 +56,10 @@ class SensoryNetwork(object):
         self.__hasPrinted = False
         self.deaddur = np.array([])  # duration (secs) the dead neurons have been dead
         self.deadIDs = np.array([], int)
-        self.__recorder = Recorder(n)
+        self.__client = client
         
     def update(self):
-        # GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
+        #  UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
 
@@ -141,8 +115,8 @@ class SensoryNetwork(object):
         self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
 
-        if not self.__recorder.done:
-            self.__recorder.record(self.__v)
+        if self.__client is not None:
+            self.__client.send_message(config.osc.RECORDING_ADDRESS, self.__v)
 
 
 class ConfigParser:
@@ -217,7 +191,9 @@ class MainApp:
         connectivity_matrix = ConnectivityMatrix().get()
         print('wiring completed')
 
-        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivity_matrix)
+        client = SimpleUDPClient(IP, RECORDING_PORT)
+
+        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivity_matrix, client=client)
 
     async def run(self):
         last_updated = time.time()

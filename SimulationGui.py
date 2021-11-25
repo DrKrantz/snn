@@ -1,5 +1,7 @@
 from tkinter import *
 import numpy as np
+
+import config.osc
 from Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
 import sensoryNetwork
@@ -60,7 +62,7 @@ class Gui(Tk):
         self.__create_buttons()
 
     def __create_osc_client(self):
-        self.__client = SimpleUDPClient(sensoryNetwork.IP, sensoryNetwork.GUI_PORT)
+        self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
 
     def __create_slider(self):
         self.slider = {}
@@ -77,10 +79,10 @@ class Gui(Tk):
             self.__buttons = [button]
 
     def __slider_cb(self, *args):
-        self.__client.send_message(sensoryNetwork.GUI_PAR_ADDRESS, args)
+        self.__client.send_message(config.osc.GUI_PAR_ADDRESS, args)
 
     def __button_cb(self, *args):
-        self.__client.send_message(sensoryNetwork.GUI_SPIKE_ADDRESS, args)
+        self.__client.send_message(config.osc.GUI_SPIKE_ADDRESS, args)
 
     def __update_balance(self):
         balance = self.slider['s_e'].get() * self.slider['lambda_e'].get() - \

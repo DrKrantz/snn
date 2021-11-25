@@ -20,7 +20,7 @@ def parameters():
     pars['Ni'] = int(pars['N'] / pars['ex/in'])  # size of excit. population
     pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
     pars['Ts'] = 1000  # total simulation time in secs
-    pars['h'] = 1e-3  # resolution of simulation in s
+    pars['h'] = 1e-4  # resolution of simulation in s
     ids = np.random.permutation(np.arange(pars['N']))  # randomize arangement
     pars['Exc_ids'] = np.sort(ids[np.arange(pars['Ne'], dtype=int)])  # hence the INDICES
                                                 # of the neurons run from
