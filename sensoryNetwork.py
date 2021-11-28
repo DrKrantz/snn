@@ -57,6 +57,8 @@ class SensoryNetwork(object):
         self.deaddur = np.array([])  # duration (secs) the dead neurons have been dead
         self.deadIDs = np.array([], int)
         self.__client = client
+
+        self.__T = 0
         
     def update(self):
         #  UPDATE VIEWER & INPUTS ###########
@@ -91,8 +93,18 @@ class SensoryNetwork(object):
         external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
         fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
         nPreSp_e = np.sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
-        self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + \
-                     nPreSp_e * self.pars['s_e']
+
+        if self.__T < self.pars['stimdur']:
+            extstim = np.zeros(self.pars['N'])
+            ext_spikes = np.random.poisson(self.pars['stimrate'] * self.pars['h'], len(self.pars['stim_ids']))
+            extstim[self.pars['stim_ids']] = ext_spikes
+            nPreSp_e += extstim
+            print("T = ", self.__T)
+
+        elif self.__T == self.pars['stimdur']:
+            print('Stimulation Over!!!')
+
+        self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + nPreSp_e * self.pars['s_e']
 
         # update conductances of inh. synapses
         external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
@@ -114,6 +126,8 @@ class SensoryNetwork(object):
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
         self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
+
+        self.__T += self.pars['h']
 
         if self.__client is not None:
             self.__client.send_message(config.osc.RECORDING_ADDRESS, self.__v)
@@ -188,7 +202,7 @@ class MainApp:
         outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
 
         print("wiring....")
-        connectivity_matrix = ConnectivityMatrix().get()
+        connectivity_matrix = ConnectivityMatrix(connect_type=pars['connect_type']).get()
         print('wiring completed')
 
         client = SimpleUDPClient(IP, RECORDING_PORT)

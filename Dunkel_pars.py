@@ -14,12 +14,11 @@ def parameters():
     pars = dict()
     # The connectivity of the torus demands square grid!
     pars['N_col'] = 20  # pars['N_col'] = int(ceil(sqrt(pars['N'])/10)*10)
-    pars['N_row'] = pars['N_col']  # pars['N_row'] = pars['N']/pars['N_col']
-    pars['ex/in'] = 4
+    pars['N_row'] = 20  # pars['N_row'] = pars['N']/pars['N_col']
+    pars['ex/in'] = 1
     pars['N'] = int(pars['N_col'] * pars['N_row'])
-    pars['Ni'] = int(pars['N'] / pars['ex/in'])  # size of excit. population
+    pars['Ni'] = int(pars['N'] / (1+pars['ex/in']))  # size of inh. population
     pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
-    pars['Ts'] = 1000  # total simulation time in secs
     pars['h'] = 1e-4  # resolution of simulation in s
     ids = np.random.permutation(np.arange(pars['N']))  # randomize arangement
     pars['Exc_ids'] = np.sort(ids[np.arange(pars['Ne'], dtype=int)])  # hence the INDICES
@@ -34,22 +33,22 @@ def parameters():
     pars['EL'] = -60e-3  # resting potential = reset after spike, V
     pars['Delta'] = 2.5e-3  # steepness of exponential, V
     pars['S'] = 20000e-8  # membrane area, cm2
-    pars['a_e'] = 0  # 0.08e-6 # adaptation dynamics of e-synapses, S
-    pars['a_i'] = 0  # 0.04e-6 # adaptation dynamics of i-synapses, S
+    pars['a_e'] = 0.04e-6  # adaptation dynamics of e-synapses, S
+    pars['a_i'] = 0.08e-6  # adaptation dynamics of i-synapses, S
     pars['b_e'] = 0  # 0.03e-9 # adaptation increment of e-synapses, A
-    pars['b_i'] = 0  # 0e-9 # adaptation increment of i-synapses, A
+    pars['b_i'] = 0.03e-9  # adaptation increment of i-synapses, A
     pars['dead'] = 2.5e-3  # deadtime
 
     # Parameters of Synapses 
     pars['s_e_range'] = (1e-11, 1e-8)  # the allowed range of s_e values
     pars['s_e_step'] = np.diff(pars['s_e_range'])[0] / 127  # additive increase of s_e
                                         # when pressing the corresonding  button
-    pars['s_e'] = 6e-10  # increment of excitatory synaptic conductance per spike, S,
+    pars['s_e'] = 6e-9  # increment of excitatory synaptic conductance per spike, S,
     pars['s_e_def'] = pars['s_e_range'][0]  # the default value...
     
     pars['s_i_range'] = (1e-11, 1e-8)
     pars['s_i_step'] = np.diff(pars['s_i_range'])[0] / 127
-    pars['s_i'] = 67e-10  # increment of inhibitory synaptic conductance S per spike
+    pars['s_i'] = 67e-9  # increment of inhibitory synaptic conductance S per spike
     pars['s_i_def'] = pars['s_i_range'][0]
     
     pars['tau_e_range'] = (5e-5, 5e-2)
@@ -67,6 +66,7 @@ def parameters():
     pars['Ei'] = -80e-3  # reversal potential of inhibitory synapses, V
 
     ''' Connectivity parameters '''
+    pars['connect_type'] = 'random'
     pars['p_ee'] = 0.1  # probability of e->e connections
     pars['p_ei'] = 0.1  # probability of i->e connections
     pars['p_ie'] = 0.1  # probability of e->i connections
@@ -74,10 +74,18 @@ def parameters():
     pars['ncon'] = 30
     pars['sigma_con'] = pars['N_col'] / 4.
 
+    ''' FOR THE DESTEXHE-MODEL'''
+    pars['connect_type'] = 'destexhe'
+    pars['n_ee'] = 0  # number of incoming synapses (from e to e)
+    pars['n_ei'] = 2  # number of incoming synapses (from e to i)
+    pars['n_ie'] = 8  # number of incoming synapses (from i to e)
+    pars['n_ii'] = 8  # number of incoming synapses (from i to i)
+
     # parameters of external drive in the beginning phase of the simulation
-    pars['p_ext'] = 0  # probability for a neuron to receive external stimulation
-    pars['extrate'] = 0  # 20 # Rate of stimulation, Hz
-    pars['stimdur'] = pars['Ts']  # 0.1 # duration of stimulation
+    pars['p_stim'] = 0.2  # probability for a neuron to receive esc. external stimulation
+    pars['stimrate'] = 400  # Rate of stimulation, Hz
+    pars['stimdur'] = 50e-3  # duration of stimulation
+    pars['stim_ids'] = np.random.choice(np.arange(pars['N']), int(pars['p_stim']*pars['N']), False)  # stimulated neurons
     
     ''' parameters of membrane potential display '''
     pars['v_disp'] = 0  # 0: off; 1: on

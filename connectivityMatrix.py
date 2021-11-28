@@ -44,6 +44,26 @@ class ConnectivityMatrix(object):
                 random.shuffle(neighbor_ids)
                 idx = neighbor_ids[0:min([pars['ncon'], len(neighbor_ids)])]
                 self.A[idx, n1] = 1
+
+        elif connect_type == 'destexhe':
+            self.A = np.zeros((pars['N'], pars['N']))
+            #  ee is 0
+
+            # exc presynaptic IDs for inh neurons
+            pres_ids = np.random.choice(pars['Exc_ids'], (pars['Ni'], pars['n_ei']))
+            for pres_no, inh_id in enumerate(pars['Inh_ids']):
+                self.A[inh_id, pres_ids[pres_no]] = 1
+
+            # inh presynaptic IDs for exc neurons
+            pres_ids = np.random.choice(pars['Inh_ids'], (pars['Ne'], pars['n_ie']))
+            for pres_no, exc_id in enumerate(pars['Exc_ids']):
+                self.A[exc_id, pres_ids[pres_no]] = 1
+
+            # inh presynaptic IDs for inh neurons
+            pres_ids = np.random.choice(pars['Inh_ids'], (pars['Ni'], pars['n_ii']))
+            for pres_no, inh_id in enumerate(pars['Inh_ids']):
+                self.A[inh_id, pres_ids[pres_no]] = 1
+
         else:
             print("type " + connect_type + " not yet implemented")
 
