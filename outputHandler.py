@@ -21,7 +21,7 @@ class OutputHandler(object):
         self.__neuron2NoteConversion = neuron2NoteConversion
 
     def update(self, fired):
-        neuron_ids = intersect1d(fired, self.pars['note_ids'])
+        neuron_ids = self.__filter_fired(fired)
 
         if len(neuron_ids) > 0:
             print('OutputHandler: fired: ', neuron_ids)
@@ -59,3 +59,12 @@ class OutputHandler(object):
             #             name, output in self.__output.iteritems()]
 
             print('----------------------------------------key change')
+
+    @staticmethod
+    def __filter_fired(fired):
+        """
+        build filter to play only specific neuron IDs
+        :param fired:
+        :return:
+        """
+        return fired  #  intersect1d(fired, self.pars['note_ids']

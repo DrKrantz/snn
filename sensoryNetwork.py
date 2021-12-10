@@ -22,36 +22,28 @@ from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
 import inputDevices
-from connectivityMatrix import ConnectivityMatrix
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
-import recorder
+from networks import thalamus
 import asyncio
 
 
 class SensoryNetwork(object):
-    def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix, client=None):
+    def __init__(self, inputHandler, outputHandler, pars, network_model, client=None):
         super(SensoryNetwork, self).__init__()
         self.inputHandler = inputHandler
-        self.pars = pars
         self.outputHandler = outputHandler
+        self.pars = pars
+        self.model = network_model
+        self.__A = self.model.A
+        n = self.model.N
 
-        self.__A = connectivityMatrix
-        
-        n = self.pars['N']
-        # vectors with parameters of adaptation and synapses
-        self.__a = np. ones(n)
-        self.__a[self.pars['Exc_ids']] = self.pars['a_e']
-        self.__a[self.pars['Inh_ids']] = self.pars['a_i']
-        self.__b = np.ones(n)
-        self.__b[self.pars['Exc_ids']] = self.pars['b_e']
-        self.__b[self.pars['Inh_ids']] = self.pars['b_i']
         self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
         self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
         
         self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
-        self.__w = self.__b  # Initial values of adaptation variable w
+        self.__w = self.model.b  # Initial values of adaptation variable w
         self.__neurons = np.array([])   # neuron IDs
         self.__hasPrinted = False
         self.deaddur = np.array([])  # duration (secs) the dead neurons have been dead
@@ -59,6 +51,7 @@ class SensoryNetwork(object):
         self.__client = client
 
         self.__T = 0
+        self.__stim_ids = np.random.choice(np.arange(n), int(pars['p_stim']*n), False)  # stimulated neurons
         
     def update(self):
         #  UPDATE VIEWER & INPUTS ###########
@@ -84,26 +77,26 @@ class SensoryNetwork(object):
         fired = np.array(np.union1d(fired, extFired), int)
 
         self.__v[fired] = self.pars['EL']  # set spiked neurons to reset potential
-        self.__w[fired] += self.__b[fired]  # increment adaptation variable of fired neurons
+        self.__w[fired] += self.model.b[fired]  # increment adaptation variable of fired neurons
 
         # SEND TO HANDLER ###
         self.outputHandler.update(fired)
 
         # update conductances of inh. synapses
         external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
-        fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
+        fired_i = np.intersect1d(fired, self.model.inh_ids)  # spiking i-neurons
         nPreSp_i = np.sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
         self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + nPreSp_i * self.pars['s_i']
 
         # update conductances of excitatory synapses
         external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
-        fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
+        fired_e = np.intersect1d(fired, self.model.exc_ids)  # spiking e-neurons
         nPreSp_e = np.sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
 
         if self.__T < self.pars['stimdur']:
-            extstim = np.zeros(self.pars['N'])
-            ext_spikes = np.random.poisson(self.pars['stimrate'] * self.pars['h'], len(self.pars['stim_ids']))
-            extstim[self.pars['stim_ids']] = ext_spikes
+            extstim = np.zeros(self.model.N)
+            ext_spikes = np.random.poisson(self.pars['stimrate'] * self.pars['h'], len(self.__stim_ids))
+            extstim[self.__stim_ids] = ext_spikes
             nPreSp_e += extstim
             print("T = ", self.__T)
         elif self.__T <= self.pars['stimdur']+self.pars['h']:
@@ -120,12 +113,15 @@ class SensoryNetwork(object):
         self.__v += self.pars['h']*(neuron_dynamics + network_input + self.pars['midi_external'])/self.pars['Cm']
 
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
-        self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
+        self.__w += self.pars['h'] * (self.model.a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
         self.__T += self.pars['h']
 
         if self.__client is not None:
-            self.__client.send_message(config.osc.RECORDING_ADDRESS, self.__v)
+            try:
+                self.__client.send_message(config.osc.RECORDING_ADDRESS, self.__v)
+            except OverflowError:
+                print('Not recording, float too large to pack!')
 
 
 class ConfigParser:
@@ -195,14 +191,13 @@ class MainApp:
             pars=pars
         )
         outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
-
-        print("wiring....")
-        connectivity_matrix = ConnectivityMatrix(connect_type=pars['connect_type']).get()
-        print('wiring completed')
-
         client = SimpleUDPClient(IP, RECORDING_PORT)
 
-        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivity_matrix, client=client)
+        print("wiring....")
+        network_model = thalamus.Network()
+        print('wiring completed')
+
+        self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
 
     async def run(self):
         last_updated = time.time()
