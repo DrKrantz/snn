@@ -1,5 +1,5 @@
 import numpy as np
-from networks.NetworkBase import NetworkBase
+from networks.network_base import NetworkBase
 
 
 class Network(NetworkBase):
@@ -17,27 +17,26 @@ class Network(NetworkBase):
         self.N_row = 20
         self.percExc = 0.5  # proportion of excitatory neurons in network
 
-    def _connectivity_parameters(self):
-        self.n_ee = 0  # number of incoming synapses (from e to e)
-        self.n_ei = 2  # number of incoming synapses (from e to i)
-        self.n_ie = 8  # number of incoming synapses (from i to e)
-        self.n_ii = 8  # number of incoming synapses (from i to i)
-
     def _build_connectivity(self):
+        n_ee = 0  # number of incoming synapses (from e to e)
+        n_ei = 2  # number of incoming synapses (from e to i)
+        n_ie = 8  # number of incoming synapses (from i to e)
+        n_ii = 8  # number of incoming synapses (from i to i)
+
         self.A = np.zeros((self.N, self.N))
         #  ee is 0
 
         # exc presynaptic IDs for inh neurons
-        pres_ids = np.random.choice(self.exc_ids, (self.N_i, self.n_ei))
+        pres_ids = np.random.choice(self.exc_ids, (self.N_i, n_ei))
         for pres_no, inh_id in enumerate(self.inh_ids):
             self.A[inh_id, pres_ids[pres_no]] = 1
 
         # inh presynaptic IDs for exc neurons
-        pres_ids = np.random.choice(self.inh_ids, (self.N_e, self.n_ie))
+        pres_ids = np.random.choice(self.inh_ids, (self.N_e, n_ie))
         for pres_no, exc_id in enumerate(self.exc_ids):
             self.A[exc_id, pres_ids[pres_no]] = 1
 
         # inh presynaptic IDs for inh neurons
-        pres_ids = np.random.choice(self.inh_ids, (self.N_i, self.n_ii))
+        pres_ids = np.random.choice(self.inh_ids, (self.N_i, n_ii))
         for pres_no, inh_id in enumerate(self.inh_ids):
             self.A[inh_id, pres_ids[pres_no]] = 1  # TODO: remove self-loops!!!!

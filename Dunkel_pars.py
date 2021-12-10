@@ -12,20 +12,7 @@ import numpy as np
 
 def parameters():
     pars = dict()
-    # The connectivity of the torus demands square grid!
-    # pars['N_col'] = 20  # pars['N_col'] = int(ceil(sqrt(pars['N'])/10)*10)
-    # pars['N_row'] = 20  # pars['N_row'] = pars['N']/pars['N_col']
-    # pars['ex/in'] = 1
-    # pars['N'] = int(pars['N_col'] * pars['N_row'])
-    # pars['Ni'] = int(pars['N'] / (1+pars['ex/in']))  # size of inh. population
-    # pars['Ne'] = pars['N'] - pars['Ni']   # size of inh. population
 
-    # ids = np.random.permutation(np.arange(pars['N']))  # randomize arangement
-    # pars['Exc_ids'] = np.sort(ids[np.arange(pars['Ne'], dtype=int)])  # hence the INDICES
-    #                                             # of the neurons run from
-    #                                             # 0 to N-1!!!!!!!
-    # pars['Inh_ids'] = np.sort(ids[np.arange(pars['Ne'], pars['N'], dtype=int)])
-    
     # parameters of the neuron model
     pars['h'] = 1e-4  # resolution of simulation in s
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
@@ -67,21 +54,10 @@ def parameters():
     pars['Ei'] = -80e-3  # reversal potential of inhibitory synapses, V
 
     ''' Connectivity parameters '''
-    # TODO: move to separate class!
-    pars['connect_type'] = 'random'
-    pars['p_ee'] = 0.1  # probability of e->e connections
-    pars['p_ei'] = 0.1  # probability of i->e connections
-    pars['p_ie'] = 0.1  # probability of e->i connections
-    pars['p_ii'] = 0.1  # probability of e->i connections
+    # TODO: move torus to separate class!
+    pars['connect_type'] = 'torus'
     pars['ncon'] = 30
     # pars['sigma_con'] = pars['N_col'] / 4.
-
-    ''' FOR THE DESTEXHE-MODEL'''
-    # pars['connect_type'] = 'thalamus'
-    # pars['n_ee'] = 0  # number of incoming synapses (from e to e)
-    # pars['n_ei'] = 2  # number of incoming synapses (from e to i)
-    # pars['n_ie'] = 8  # number of incoming synapses (from i to e)
-    # pars['n_ii'] = 8  # number of incoming synapses (from i to i)
 
     # parameters of external drive in the beginning phase of the simulation
     pars['p_stim'] = 0.2  # probability for a neuron to receive esc. external stimulation

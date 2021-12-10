@@ -7,7 +7,6 @@ class NetworkBase:
         self.__build_network_arrays()
         self._neuron_parameters()
         self.__build_neuron_arrays()
-        self._connectivity_parameters()
         self._build_connectivity()
 
     def _neuron_parameters(self):
@@ -37,8 +36,16 @@ class NetworkBase:
         self.exc_ids = np.sort(ids[np.arange(self.N_e, dtype=int)])
         self.inh_ids = np.sort(ids[np.arange(self.N_e, self.N, dtype=int)])
 
-    def _connectivity_parameters(self):
-        pass
-
     def _build_connectivity(self):
-        pass
+        p_ee = 0.1  # probability of e->e connections
+        p_ei = 0.1  # probability of i->e connections
+        p_ie = 0.1  # probability of e->i connections
+        p_ii = 0.1  # probability of e->i connections
+
+        ee = (np.random.rand(self.N_e, self.N_e) < p_ee)
+        ei = (np.random.rand(self.N_e, self.N_i) < p_ei)
+        ii = (np.random.rand(self.N_i, self.N_i) < p_ii)
+        ie = (np.random.rand(self.N_i, self.N_e) < p_ie)
+        self.A = np.vstack((np.hstack((ee, ei)), np.hstack((ie, ii))))
+        self.A[list(range(self.N)), list(range(self.N))] = 0  # remove selfloops
+
