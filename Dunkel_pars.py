@@ -75,7 +75,7 @@ def parameters():
     pars['sigma_con'] = pars['N_col'] / 4.
 
     ''' FOR THE DESTEXHE-MODEL'''
-    pars['connect_type'] = 'destexhe'
+    pars['connect_type'] = 'thalamus'
     pars['n_ee'] = 0  # number of incoming synapses (from e to e)
     pars['n_ei'] = 2  # number of incoming synapses (from e to i)
     pars['n_ie'] = 8  # number of incoming synapses (from i to e)

@@ -89,6 +89,12 @@ class SensoryNetwork(object):
         # SEND TO HANDLER ###
         self.outputHandler.update(fired)
 
+        # update conductances of inh. synapses
+        external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
+        fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
+        nPreSp_i = np.sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
+        self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + nPreSp_i * self.pars['s_i']
+
         # update conductances of excitatory synapses
         external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
         fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
@@ -100,18 +106,9 @@ class SensoryNetwork(object):
             extstim[self.pars['stim_ids']] = ext_spikes
             nPreSp_e += extstim
             print("T = ", self.__T)
-
-        elif self.__T == self.pars['stimdur']:
+        elif self.__T <= self.pars['stimdur']+self.pars['h']:
             print('Stimulation Over!!!')
-
         self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + nPreSp_e * self.pars['s_e']
-
-        # update conductances of inh. synapses
-        external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
-        fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
-        nPreSp_i = np.sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
-        self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + \
-                    nPreSp_i * self.pars['s_i']
 
         # update membrane and adaptation variable
         neuron_dynamics = -self.pars['gL']*(self.__v-self.pars['EL']) + \
@@ -120,13 +117,11 @@ class SensoryNetwork(object):
 
         network_input = (-self.__ge*(self.__v-self.pars['Ee']) - self.__gi*(self.__v-self.pars['Ei']))/self.pars['S']
 
-        self.__v += self.pars['h']*(neuron_dynamics + network_input)/self.pars['Cm'] + \
-              self.pars['h']*self.pars['midi_external']/self.pars['Cm']
+        self.__v += self.pars['h']*(neuron_dynamics + network_input + self.pars['midi_external'])/self.pars['Cm']
 
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
         self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
-
         self.__T += self.pars['h']
 
         if self.__client is not None:

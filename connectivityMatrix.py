@@ -45,7 +45,7 @@ class ConnectivityMatrix(object):
                 idx = neighbor_ids[0:min([pars['ncon'], len(neighbor_ids)])]
                 self.A[idx, n1] = 1
 
-        elif connect_type == 'destexhe':
+        elif connect_type == 'thalamus':
             self.A = np.zeros((pars['N'], pars['N']))
             #  ee is 0
 
