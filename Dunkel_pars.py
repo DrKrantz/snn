@@ -21,10 +21,6 @@ def parameters():
     pars['EL'] = -60e-3  # resting potential = reset after spike, V
     pars['Delta'] = 2.5e-3  # steepness of exponential, V
     pars['S'] = 20000e-8  # membrane area, cm2
-    pars['a_e'] = 0.04e-6  # adaptation dynamics of e-synapses, S
-    pars['a_i'] = 0.08e-6  # adaptation dynamics of i-synapses, S
-    pars['b_e'] = 0  # 0.03e-9 # adaptation increment of e-synapses, A
-    pars['b_i'] = 0.03e-9  # adaptation increment of i-synapses, A
     pars['dead'] = 2.5e-3  # deadtime
 
     # Parameters of Synapses 
