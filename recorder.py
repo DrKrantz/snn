@@ -22,7 +22,7 @@ class Recorder:
 
     def __write(self):
         print('--------- WRITING WRITING --------------')
-        with open('./data/v_rec.pkl', 'wb') as f:
+        with open('display/v_rec.pkl', 'wb') as f:
             pickle.dump(self.__vRec, f)
 
 
@@ -38,7 +38,7 @@ class RecordingServer:
 
 
 if __name__ == '__main__':
-    n_display = 400
+    n_display = 500
     rec = Recorder(n_display)
     server = RecordingServer(rec)
     server.server.serve_forever()
