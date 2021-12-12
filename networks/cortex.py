@@ -53,4 +53,8 @@ class Network(NetworkBase):
         # inh presynaptic IDs for inh neurons
         pres_ids = np.random.choice(self.inh_ids, (self.N_i, n_ii))
         for pres_no, inh_id in enumerate(self.inh_ids):
-            self.A[inh_id, pres_ids[pres_no]] = 1  # TODO: remove self-loops!!!!
+            self.A[inh_id, pres_ids[pres_no]] = 1  # TODO:
+
+        self.A = self.A - np.diag(self.A)  # remove self-loops!!!!
+
+
