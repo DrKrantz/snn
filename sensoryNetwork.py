@@ -25,7 +25,7 @@ import inputDevices
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
-from networks import thalamus
+from networks.cortex import Network
 import asyncio
 
 
@@ -194,7 +194,7 @@ class MainApp:
         client = SimpleUDPClient(IP, RECORDING_PORT)
 
         print("wiring....")
-        network_model = thalamus.Network()
+        network_model = Network()
         print('wiring completed')
 
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
