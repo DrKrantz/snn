@@ -25,7 +25,7 @@ class Recorder:
 
     def __write(self):
         print('--------- WRITING WRITING --------------')
-        with open('display/v_rec.pkl', 'wb') as f:
+        with open('data/v_rec.pkl', 'wb') as f:
             pickle.dump(self.__vRec, f)
 
 

@@ -92,13 +92,13 @@ if __name__ == '__main__':
     parser.add_argument('-t', action='store_true', dest='test')
     args = parser.parse_args()
 
-    with open('v_rec.pkl', 'rb') as f:
+    with open('../data/v_rec.pkl', 'rb') as f:
         v_loaded = np.array(pickle.load(f))
     n_display = 20
 
     display = Membrane_Display(n_display, vrange=[np.min(v_loaded), np.max(v_loaded)])
     while True:
         input('Press enter to refresh')
-        with open('v_rec.pkl', 'rb') as f:
+        with open('../data/v_rec.pkl', 'rb') as f:
             v_loaded = np.array(pickle.load(f))
         display.plot(v_loaded)
