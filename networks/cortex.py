@@ -12,12 +12,12 @@ class Network(NetworkBase):
         self.percExc = 0.8  # proportion of excitatory neurons in network
 
     def _neuron_parameters(self):
-        self.a_e = 0.001  # adaptation dynamics of e-synapses, S
-        self.b_e = 0.04  # adaptation increment of e-synapses, A
-        self.a_lst = 0.002
+        self.a_e = 0.001e-6  # adaptation dynamics of e-synapses, S
+        self.b_e = 0.04e-9  # adaptation increment of e-synapses, A
+        self.a_lst = 0.002e-6
         self.b_lst = 0
 
-        self.a_i = 0.001  # adaptation dynamics of i-synapses, S
+        self.a_i = 0.001e-6  # adaptation dynamics of i-synapses, S
         self.b_i = 0  # adaptation increment of i-synapses, A
 
     def _build_neuron_arrays(self):
