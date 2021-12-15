@@ -48,6 +48,6 @@ class NetworkBase:
         ie = (np.random.rand(self.N_i, self.N_e) < p_ie)
         self.A = np.vstack((np.hstack((ee, ei)), np.hstack((ie, ii))))
 
-        self.A = self.A - np.diag(self.A)  # remove self-loops!!!!
+        np.fill_diagonal(self.A, 0)  # remove self-loops!!!!
 
 

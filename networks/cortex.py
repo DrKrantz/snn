@@ -55,6 +55,6 @@ class Network(NetworkBase):
         for pres_no, inh_id in enumerate(self.inh_ids):
             self.A[inh_id, pres_ids[pres_no]] = 1  # TODO:
 
-        self.A = self.A - np.diag(self.A)  # remove self-loops!!!!
+        np.fill_diagonal(self.A, 0)  # remove self-loops!!!!
 
 
