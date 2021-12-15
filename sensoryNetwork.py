@@ -10,10 +10,11 @@ NEEDS:
 # version 1.0: included deadtime, 04.08.2011
 """
 import json
-
-import numpy as np
 import time
 import sys
+import asyncio
+import pickle
+import numpy as np
 
 import config.osc
 from Dunkel_pars import parameters
@@ -25,8 +26,7 @@ import inputDevices
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
-from networks.cortex import Network
-import asyncio
+from networks.thalamus import Network
 
 
 class SensoryNetwork(object):
@@ -115,11 +115,22 @@ class SensoryNetwork(object):
         self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
         self.__w += self.pars['h'] * (self.model.a * (self.__v - self.pars['EL']) -
                                       self.__w)/self.pars['tau_w']
+
+        if np.any(self.__v > 1):
+            print("network explodes", np.max(self.__v), np.argmax(self.__v))
+            # breakpoint()
+
         self.__T += self.pars['h']
 
         if self.__client is not None:
+            n_rec = 100
+            rec_data = {'v': self.__v[0:n_rec],
+                        'g_e': self.__ge[0:n_rec],
+                        'g_i': self.__gi[0:n_rec],
+                        'w': self.__w[0:n_rec]}
+            pkl = pickle.dumps(rec_data)
             try:
-                self.__client.send_message(config.osc.RECORDING_ADDRESS, self.__v)
+                self.__client.send_message(config.osc.RECORDING_ADDRESS, pkl)
             except OverflowError:
                 print('Not recording, float too large to pack!')
 

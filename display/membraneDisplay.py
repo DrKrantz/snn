@@ -17,13 +17,16 @@ import pickle
 class Membrane_Display:
     size = (5, 10)
 
-    def __init__(self, N, vrange):
-        print(vrange)
+    def __init__(self, N, file_path):
         plt.rcParams['backend'] = 'Qt5Agg'
         plt.rcParams['interactive'] = 'True'
-
-        self.vrange = np.array(vrange)
         self.N = N
+        self.file_path = file_path
+        v_loaded = self.load_file()
+        vrange=[np.min(v_loaded), np.max(v_loaded)]
+        self.vrange = np.array(vrange)
+        print(vrange)
+
         self.nsteps = 100
         normv = np.zeros((self.nsteps))
         startv = normv
@@ -60,6 +63,11 @@ class Membrane_Display:
             self.update(v)
             plt.pause(0.001)
 
+    def load_file(self):
+        with open(self.file_path, 'rb') as f:
+            data = pickle.load(f)
+        return np.array(data['v'])
+
 
 class MembraneDisplay:
     def __init__(self):
@@ -87,18 +95,14 @@ class MembraneDisplay:
 
 if __name__ == '__main__':
     import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', action='store_true', dest='test')
     args = parser.parse_args()
 
-    with open('../data/v_rec.pkl', 'rb') as f:
-        v_loaded = np.array(pickle.load(f))
     n_display = 20
+    display = Membrane_Display(n_display, file_path='../data/v_rec.pkl')
 
-    display = Membrane_Display(n_display, vrange=[np.min(v_loaded), np.max(v_loaded)])
     while True:
         input('Press enter to refresh')
-        with open('../data/v_rec.pkl', 'rb') as f:
-            v_loaded = np.array(pickle.load(f))
+        v_loaded = display.load_file()
         display.plot(v_loaded)
