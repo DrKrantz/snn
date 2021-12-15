@@ -1,5 +1,3 @@
-display/v_rec.pkl
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -60,6 +58,7 @@ docs/_build/
 #OSX files
 .DS_store
 
-
+#Project specific files
 .idea
 .vagrant
+*.pkl
