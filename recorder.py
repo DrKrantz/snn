@@ -7,18 +7,21 @@ from config.osc import IP, RECORDING_PORT, RECORDING_ADDRESS
 
 
 class Recorder:
-    def __init__(self, n):
+    def __init__(self):
         self.__k = 0
         self.__nIter = 500
-        self.__vRec = np.zeros((n, self.__nIter))
+        self.__vRec = np.array([])
 
     def record(self, v):
+        if len(self.__vRec) == 0:
+            self.__vRec = np.zeros((len(v), self.__nIter))
         self.__vRec[:, self.__k] = v
         self.__k += 1
 
         if self.__k >= self.__nIter:
             self.__write()
             self.__k = 0
+            self.__vRec = np.zeros((len(v), self.__nIter))
 
     def __write(self):
         print('--------- WRITING WRITING --------------')
@@ -38,7 +41,6 @@ class RecordingServer:
 
 
 if __name__ == '__main__':
-    n_display = 500
-    rec = Recorder(n_display)
+    rec = Recorder()
     server = RecordingServer(rec)
     server.server.serve_forever()
