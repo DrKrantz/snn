@@ -7,13 +7,13 @@ class Network(NetworkBase):
         super(Network, self).__init__()
 
     def _network_parameters(self):
-        self.N_col = 25
+        self.N_col = 20
         self.N_row = 20
         self.percExc = 0.8  # proportion of excitatory neurons in network
 
     def _neuron_parameters(self):
         self.a_e = 0.001e-6  # adaptation dynamics of e-synapses, S
-        self.b_e = 0.04e-9  # adaptation increment of e-synapses, A
+        self.b_e = 0.004e-9  # adaptation increment of e-synapses, A
         self.a_lst = 0.002e-6
         self.b_lst = 0
 
