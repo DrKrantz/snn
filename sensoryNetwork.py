@@ -183,19 +183,21 @@ class MainApp:
         self.__fullscreen = False
 
         self.pars = pars
-        # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
-
-        inputHandler = InputHandler(
-            spike_inputs=deviceManager.get_spike_inputs(),
-            parameter_inputs=deviceManager.get_parameter_inputs(),
-            pars=pars
-        )
-        outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
-        client = SimpleUDPClient(IP, RECORDING_PORT)
 
         print("wiring....")
         network_model = Network()
         print('wiring completed')
+
+    # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
+
+        inputHandler = InputHandler(
+            spike_inputs=deviceManager.get_spike_inputs(),
+            parameter_inputs=deviceManager.get_parameter_inputs(),
+            exc_ids=network_model.exc_ids,
+            pars=pars
+        )
+        outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
+        client = SimpleUDPClient(IP, RECORDING_PORT)
 
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
 
