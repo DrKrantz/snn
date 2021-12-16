@@ -4,7 +4,6 @@ import numpy as np
 import config.osc
 from Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
-import sensoryNetwork
 
 PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
