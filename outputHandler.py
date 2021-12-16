@@ -37,7 +37,7 @@ class OutputHandler(object):
 
     def update_external(self, fired):
         if self.__output_external is not None:
-            neuron_ids = intersect1d(fired, self.pars['note_ids'])
+            neuron_ids = self.__filter_fired(fired)
 
             if len(neuron_ids) > 0:
                 print('OutputHandler: input: ', neuron_ids)

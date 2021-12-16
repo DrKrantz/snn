@@ -59,7 +59,7 @@ def parameters():
     # parameters of external drive in the beginning phase of the simulation
     pars['p_stim'] = 0.2  # probability for a neuron to receive esc. external stimulation
     pars['stimrate'] = 400  # Rate of stimulation, Hz
-    pars['stimdur'] = 50e-3  # duration of stimulation
+    pars['stimdur'] = 10e-3  # duration of stimulation
 
     
     ''' parameters of membrane potential display '''
