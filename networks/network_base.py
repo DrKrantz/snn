@@ -29,10 +29,10 @@ class NetworkBase:
         self.b_i = 0  # adaptation increment of i-synapses, A
 
     def _build_neuron_arrays(self):
-        self.a = np.ones(self.N)
+        self.a = np.zeros(self.N)
         self.a[self.exc_ids] = self.a_e
         self.a[self.inh_ids] = self.a_i
-        self.b = np.ones(self.N)
+        self.b = np.zeros(self.N)
         self.b[self.exc_ids] = self.b_e
         self.b[self.inh_ids] = self.b_i
 
