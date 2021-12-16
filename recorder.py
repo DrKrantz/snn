@@ -8,11 +8,14 @@ from config.osc import IP, RECORDING_PORT, RECORDING_ADDRESS
 
 class Recorder:
     def __init__(self):
+        self.__lock = False
         self.__k = 0
         self.__nIter = 1500
         self.__reset(0)
 
     def record(self, pkl):
+        if self.__lock:
+            return
         data = pickle.loads(pkl)
         if len(self.__vRec) == 0:
             self.__reset(len(data['v']))
@@ -23,9 +26,11 @@ class Recorder:
         self.__k += 1
 
         if self.__k >= self.__nIter:
+            self.__lock = True
             self.__write()
             self.__k = 0
             self.__reset(len(data['v']))
+            self.__lock = False
 
     def __write(self):
         print('--------- WRITING WRITING --------------')
