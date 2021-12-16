@@ -50,17 +50,10 @@ def parameters():
     pars['Ee'] = 0e-3  # reversal potential of excitatory synapses, V
     pars['Ei'] = -80e-3  # reversal potential of inhibitory synapses, V
 
-    ''' Connectivity parameters '''
-    # TODO: move torus to separate class!
-    pars['connect_type'] = 'torus'
-    pars['ncon'] = 30
-    # pars['sigma_con'] = pars['N_col'] / 4.
-
     # parameters of external drive in the beginning phase of the simulation
     pars['p_stim'] = 0.2  # probability for a neuron to receive esc. external stimulation
     pars['stimrate'] = 400  # Rate of stimulation, Hz
     pars['stimdur'] = 10e-3  # duration of stimulation
-
     
     ''' parameters of membrane potential display '''
     pars['v_disp'] = 0  # 0: off; 1: on
@@ -72,10 +65,11 @@ def parameters():
     pars['lambda_e'] = 0  # rate onto excitatory synapses
     pars['lambda_e_step'] = 1
     pars['lambda_e_range'] = (0, 1000)  # Hz
-
     pars['lambda_i'] = 0  # rate onto inhibitory synapses
     pars['lambda_i_step'] = 1
     pars['lambda_i_range'] = (0, 1000)  # Hz
+
+
 
     ''' Spike display parameters '''
     pars['screen_size'] = [1680, 1050]
@@ -106,10 +100,16 @@ def parameters():
     pars['tau_ext'] = 1e-2  # if external drive should be exponentiallt decaying
     
     # parameters of conciousness 
-    pars['N_concious'] = 10  # the numbers of synchronous neurons to generate 'concious' events
+    pars['N_concious'] = 7  # the numbers of synchronous neurons to trigger state changes
     
     pars['midi_spikepitch'] = list(range(64, 107))
     pars['midi_spikeneuron'] = list(range(64, 107))
+
+    ''' Connectivity parameters '''
+    # TODO: move torus to separate class!
+    pars['connect_type'] = 'torus'
+    pars['ncon'] = 30
+    # pars['sigma_con'] = pars['N_col'] / 4.
     
     keys = 'virtual'
     if keys == 'home':  # my home-configuration
