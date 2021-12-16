@@ -6,7 +6,8 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140801
 
-from numpy import array, intersect1d, unique, union1d
+from numpy import array, union1d
+import pickle
 
 import mido
 
@@ -197,6 +198,9 @@ class GuiAdapter:
 
     def on_spike_receive(self, address, neuron_id):
         self.triggered.append(int(neuron_id))
+
+    def on_reset(self, _, pars_pkl):
+        self.pars = pickle.loads(pars_pkl)
 
     def update(self, pars):
         fired = self.triggered
