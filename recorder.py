@@ -9,7 +9,7 @@ from config.osc import IP, RECORDING_PORT, RECORDING_ADDRESS
 class Recorder:
     def __init__(self):
         self.__k = 0
-        self.__nIter = 500
+        self.__nIter = 1500
         self.__reset(0)
 
     def record(self, pkl):
