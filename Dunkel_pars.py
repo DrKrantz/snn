@@ -31,7 +31,7 @@ def parameters():
     pars['s_e'] = 6e-9  # increment of excitatory synaptic conductance per spike, S,
     pars['s_e_def'] = pars['s_e_range'][0]  # the default value...
     
-    pars['s_i_range'] = (1e-11, 1e-8)
+    pars['s_i_range'] = (1e-9, 1e-7)
     pars['s_i_step'] = np.diff(pars['s_i_range'])[0] / 127
     pars['s_i'] = 67e-9  # increment of inhibitory synaptic conductance S per spike
     pars['s_i_def'] = pars['s_i_range'][0]

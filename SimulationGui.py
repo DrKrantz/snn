@@ -14,7 +14,7 @@ class SpikeButton(Frame):
 
     def __init__(self, parent, title, send_cb, *args):
         super(SpikeButton, self).__init__(parent, *args)
-        Label(self, text=title, width=self.width).pack(side=TOP)
+        # Label(self, text=title, width=self.width).pack(side=RIGHT)
         self.button = Button(self, command=lambda: send_cb(title)).pack(side=TOP)
 
 
@@ -73,7 +73,7 @@ class Gui(Tk):
             self.slider[name] = slider
 
     def __create_buttons(self):
-        for k in range(5):
+        for k in range(10):
             button = SpikeButton(self, k+70, self.__button_cb)
             button.pack(side=TOP)
             self.__buttons = [button]
