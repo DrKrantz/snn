@@ -49,5 +49,3 @@ class NetworkBase:
         self.A = np.vstack((np.hstack((ee, ei)), np.hstack((ie, ii))))
 
         np.fill_diagonal(self.A, 0)  # remove self-loops!!!!
-
-

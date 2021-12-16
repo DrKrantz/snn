@@ -42,4 +42,3 @@ class Network(NetworkBase):
             self.A[inh_id, pres_ids[pres_no]] = 1
 
         np.fill_diagonal(self.A, 0)  # remove self-loops!!!!
-
