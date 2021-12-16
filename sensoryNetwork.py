@@ -26,7 +26,7 @@ import inputDevices
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
-from networks.thalamus import Network
+from networks.cortex import Network
 
 
 class SensoryNetwork(object):
@@ -58,14 +58,8 @@ class SensoryNetwork(object):
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
 
-        self.outputHandler.turn_off()
         ext_fired_ids = self.inputHandler.getFired()
-        self.outputHandler.update_external(ext_fired_ids)
-
         fired_ids = np.array(np.union1d(self.__fired_ids, ext_fired_ids), int)
-
-        # SEND TO HANDLER ###
-        self.outputHandler.update(fired_ids)
 
         # update conductances of inh. synapses
         external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
@@ -110,11 +104,10 @@ class SensoryNetwork(object):
 
         self.__fired_ids = fired_ids  # store fired neurons for synaptic input in next iteration
 
-        if np.any(self.__v > 1):
-            print("network explodes", np.max(self.__v), np.argmax(self.__v))
-            # breakpoint()
-
-        self.__T += self.pars['h']
+        # SEND TO HANDLER ###
+        self.outputHandler.turn_off()
+        self.outputHandler.update_external(ext_fired_ids)
+        self.outputHandler.update(np.array(np.union1d(self.__fired_ids, ext_fired_ids), int))
 
         if self.__client is not None:
             n_rec = 200
@@ -127,6 +120,8 @@ class SensoryNetwork(object):
                 self.__client.send_message(config.osc.RECORDING_ADDRESS, pkl)
             except OverflowError:
                 print('Not recording, float too large to pack!')
+
+        self.__T += self.pars['h']
 
 
 class ConfigParser:
