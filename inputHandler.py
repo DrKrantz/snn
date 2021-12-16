@@ -11,14 +11,15 @@ from numpy import array, unique, union1d
 
 class InputHandler(object):
 
-    def __init__(self, spike_inputs, parameter_inputs, pars={}):
+    def __init__(self, spike_inputs, parameter_inputs, exc_ids, pars={}):
         self.pars = pars
-        self.__fired = array([], int)
+        self.__exc_ids = exc_ids
+        self.__fired = array([], int)  # these are not the neuronIDs, but the midi-channels!
         self.spike_devices = spike_inputs
         self.parameter_adapter = parameter_inputs
 
     def getFired(self):
-        return self.__fired
+        return self.__get_fired_exc_ids()
 
     def getPars(self):
         return self.pars
@@ -41,8 +42,10 @@ class InputHandler(object):
                 self.__fired = union1d(inputDict['fired'], self.__fired)
             self.pars.update(inputDict['pars'])
 
-        self.__fired = unique(self.__fired)
+        self.__fired = array(unique(self.__fired), dtype=int)
 
+    def __get_fired_exc_ids(self):
+        return self.__exc_ids[self.__fired%len(self.__exc_ids)]
 
 # if __name__ == '__main__':
 # from inputDevices import InputDevice

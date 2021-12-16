@@ -58,6 +58,7 @@ docs/_build/
 #OSX files
 .DS_store
 
-
+#Project specific files
 .idea
 .vagrant
+*.pkl

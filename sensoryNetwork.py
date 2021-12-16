@@ -10,109 +10,118 @@ NEEDS:
 # version 1.0: included deadtime, 04.08.2011
 """
 import json
-
-import numpy as np
 import time
 import sys
+import asyncio
+import pickle
+import numpy as np
 
+import config.osc
 from Dunkel_pars import parameters
+from config.osc import IP, GUI_PORT, RECORDING_PORT, GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
 import inputDevices
-from connectivityMatrix import ConnectivityMatrix
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-import asyncio
-
-
-IP = "localhost"
-GUI_PORT = 1337
-SPIKE_DISPLAY_PORT = 1338
-SPIKE_DISPLAY_ADDRESS = '/display_spikes'
-GUI_PAR_ADDRESS = '/gui_pars'
-GUI_SPIKE_ADDRESS = '/gui_spikes'
+from pythonosc.udp_client import SimpleUDPClient
+from networks.cortex import Network
 
 
 class SensoryNetwork(object):
-    def __init__(self, inputHandler, outputHandler, pars, connectivityMatrix):
+    def __init__(self, inputHandler, outputHandler, pars, network_model, client=None):
         super(SensoryNetwork, self).__init__()
         self.inputHandler = inputHandler
-        self.pars = pars
         self.outputHandler = outputHandler
+        self.pars = pars
+        self.model = network_model
+        self.__fired_ids = np.array([])
+        self.__A = self.model.A
+        n = self.model.N
 
-        self.__A = connectivityMatrix
-        
-        n = self.pars['N']
-        # vectors with parameters of adaptation and synapses
-        self.__a = np. ones(n)
-        self.__a[self.pars['Exc_ids']] = self.pars['a_e']
-        self.__a[self.pars['Inh_ids']] = self.pars['a_i']
-        self.__b = np.ones(n)
-        self.__b[self.pars['Exc_ids']] = self.pars['b_e']
-        self.__b[self.pars['Inh_ids']] = self.pars['b_i']
         self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
         self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
         
         self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
-        self.__w = self.__b  # Initial values of adaptation variable w
+        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
         self.__neurons = np.array([])   # neuron IDs
         self.__hasPrinted = False
-        self.deaddur = np.array([])  # duration (secs) the dead neurons have been dead
-        self.deadIDs = np.array([], int)
+        self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
+        self.__client = client
+
+        self.__T = 0
+        self.__stim_ids = np.random.choice(np.arange(n), int(pars['p_stim']*n), False)  # stimulated neurons
         
     def update(self):
-        # GET WEBCAM IMAGE, UPDATE VIEWER & INPUTS ###########
+        #  UPDATE VIEWER & INPUTS ###########
         self.inputHandler.update()
         self.pars.update(self.inputHandler.getPars())
 
-        self.outputHandler.turn_off()
-
-        # UPDATE DEADIMES AND GET FIRED IDs  ###########
-        # update deadtimes
-        self.deaddur += self.pars['h']    # increment the time of the dead
-        aliveID = np.nonzero(self.deaddur > self.pars['dead'])[0]
-        if len(aliveID) > self.pars['N_concious']:
-            self.deaddur = self.deaddur[aliveID[-1]+1::]
-            self.deadIDs = self.deadIDs[aliveID[-1]+1::]
-
-        fired = np.nonzero(self.__v >= self.pars['threshold'])[0]
-        self.deadIDs = np.concatenate((self.deadIDs, fired))  # put fired neuron to death
-        self.deaddur = np.concatenate((self.deaddur, np.zeros_like(fired)))
-        extFired = self.inputHandler.getFired()
-        self.outputHandler.update_external(extFired)
-
-        fired = np.array(np.union1d(fired, extFired), int)
-
-        self.__v[fired] = self.pars['EL']  # set spiked neurons to reset potential
-        self.__w[fired] += self.__b[fired]  # increment adaptation variable of fired neurons
-
-        # SEND TO HANDLER ###
-        self.outputHandler.update(fired)
-
-        # update conductances of excitatory synapses
-        external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
-        fired_e = np.intersect1d(fired, self.pars['Exc_ids'])  # spiking e-neurons
-        nPreSp_e = np.sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
-        self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + \
-                     nPreSp_e * self.pars['s_e']
+        ext_fired_ids = self.inputHandler.getFired()
+        fired_ids = np.array(np.union1d(self.__fired_ids, ext_fired_ids), int)
 
         # update conductances of inh. synapses
         external_i = np.random.poisson(self.pars['lambda_i'] * self.pars['h'])
-        fired_i = np.intersect1d(fired, self.pars['Inh_ids'])  # spiking i-neurons
+        fired_i = np.intersect1d(fired_ids, self.model.inh_ids)  # spiking i-neurons
         nPreSp_i = np.sum(self.__A[:, fired_i], axis=1) + external_i  # number of presynaptic i-spikes
-        self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + \
-                    nPreSp_i * self.pars['s_i']
+        self.__gi += -self.pars['h'] * self.__gi/self.pars['tau_i'] + nPreSp_i * self.pars['s_i']
 
-        # update membrane and adaptation variable
-        self.__v += self.pars['h']*(-self.pars['gL']*(self.__v-self.pars['EL']) +
-              self.pars['gL']*self.pars['Delta']*np.exp((self.__v-self.pars['threshold'])/self.pars['Delta']) -
-              self.__w/self.pars['S'] - self.__ge*(self.__v-self.pars['Ee'])/self.pars['S'] -
-              self.__gi*(self.__v-self.pars['Ei'])/self.pars['S'])/self.pars['Cm'] + \
-              self.pars['h']*self.pars['midi_external']/self.pars['Cm']
-        self.__v[self.deadIDs] = self.pars['EL']  # clamp dead neurons to resting potential
-        self.__w += self.pars['h'] * (self.__a * (self.__v - self.pars['EL']) -
-                                      self.__w)/self.pars['tau_w']
+        # update conductances of excitatory synapses
+        external_e = np.random.poisson(self.pars['lambda_e'] * self.pars['h'])
+        fired_e = np.intersect1d(fired_ids, self.model.exc_ids)  # spiking e-neurons
+        nPreSp_e = np.sum(self.__A[:, fired_e], axis=1) + external_e  # number of presynaptic e-spikes
+
+        if self.__T < self.pars['stimdur']:
+            extstim = np.zeros(self.model.N)
+            ext_spikes = np.random.poisson(self.pars['stimrate'] * self.pars['h'], len(self.__stim_ids))
+            extstim[self.__stim_ids] = ext_spikes
+            nPreSp_e += extstim
+            print("T = ", self.__T)
+        elif self.__T <= self.pars['stimdur']+self.pars['h']:
+            print('Stimulation Over!!!')
+        self.__ge += -self.pars['h'] * self.__ge/self.pars['tau_e'] + nPreSp_e * self.pars['s_e']
+
+        # update membrane and get fired IDs
+        neuron_dynamics = -self.pars['gL']*(self.__v-self.pars['EL']) + \
+              self.pars['gL']*self.pars['Delta']*np.exp((self.__v-self.pars['threshold'])/self.pars['Delta']) - \
+              self.__w/self.pars['S']
+        network_input = (-self.__ge*(self.__v-self.pars['Ee']) - self.__gi*(self.__v-self.pars['Ei']))/self.pars['S']
+        self.__v += self.pars['h']*(neuron_dynamics + network_input + self.pars['midi_external'])/self.pars['Cm']
+
+        self.__v[self.deaddur > 0] = self.pars['EL']  # clamp dead neurons to resting potential
+        fired_ids, = np.nonzero(self.__v > self.pars['threshold'])
+        self.__v[fired_ids] = self.pars['EL']  # clamp fired neurons to resting potential
+
+        # UPDATE DEADIMES  ###########
+        self.deaddur[self.deaddur > 0] += self.pars['h']  # increment deaddur
+        self.deaddur[self.deaddur > self.pars['dead']] = 0  # reanimate newly the living
+        self.deaddur[fired_ids] = self.pars['h']/10  # set deaddur of the fired neurons != 0
+
+        # Update adaptation variable
+        self.__w += self.pars['h'] * (self.model.a * (self.__v - self.pars['EL']) - self.__w)/self.pars['tau_w']
+        self.__w[fired_ids] += self.model.b[fired_ids]  # increment adaptation variable of fired neurons
+
+        self.__fired_ids = fired_ids  # store fired neurons for synaptic input in next iteration
+
+        # SEND TO HANDLER ###
+        self.outputHandler.turn_off()
+        self.outputHandler.update_external(ext_fired_ids)
+        self.outputHandler.update(np.array(np.union1d(self.__fired_ids, ext_fired_ids), int))
+
+        if self.__client is not None:
+            n_rec = 200
+            rec_data = {'v': self.__v[0:n_rec],
+                        'g_e': self.__ge[0:n_rec],
+                        'g_i': self.__gi[0:n_rec],
+                        'w': self.__w[0:n_rec]}
+            pkl = pickle.dumps(rec_data)
+            try:
+                self.__client.send_message(config.osc.RECORDING_ADDRESS, pkl)
+            except OverflowError:
+                print('Not recording, float too large to pack!')
+
+        self.__T += self.pars['h']
 
 
 class ConfigParser:
@@ -174,20 +183,23 @@ class MainApp:
         self.__fullscreen = False
 
         self.pars = pars
-        # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
+
+        print("wiring....")
+        network_model = Network()
+        print('wiring completed')
+
+    # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
 
         inputHandler = InputHandler(
             spike_inputs=deviceManager.get_spike_inputs(),
             parameter_inputs=deviceManager.get_parameter_inputs(),
+            exc_ids=network_model.exc_ids,
             pars=pars
         )
         outputHandler = OutputHandler(deviceManager.outputs, pars, display=outputDevices.DisplayAdapter())
+        client = SimpleUDPClient(IP, RECORDING_PORT)
 
-        print("wiring....")
-        connectivity_matrix = ConnectivityMatrix().get()
-        print('wiring completed')
-
-        self.network = SensoryNetwork(inputHandler, outputHandler, pars, connectivity_matrix)
+        self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
 
     async def run(self):
         last_updated = time.time()
@@ -198,7 +210,7 @@ class MainApp:
                 self.network.update()
                 last_updated = time.time()
 
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(0.00001)
 
 
 async def init_main():

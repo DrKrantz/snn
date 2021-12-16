@@ -10,6 +10,7 @@ from numpy import array, intersect1d, unique, union1d
 
 import mido
 
+
 class InputDevice:
     def __init__(self, midiport=None):
         self.__messages = []
