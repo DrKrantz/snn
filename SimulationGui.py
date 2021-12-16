@@ -1,5 +1,6 @@
 from tkinter import *
 import numpy as np
+import pickle
 
 import config.osc
 from Dunkel_pars import parameters
@@ -52,6 +53,9 @@ class Gui(Tk):
         Label(self, text="Balance", width=7).pack(side=TOP)
         self.__balance_label = Label(self, text=0, width=7)
         self.__balance_label.pack(side=TOP)
+        self.__reset_button = Button(self, command=self.__reset_cb, text="RESET")
+        self.__reset_button.pack(side=TOP)
+
         self.__pars = pars
 
         self.title(self.__title)
@@ -59,6 +63,7 @@ class Gui(Tk):
         self.__create_osc_client()
         self.__create_slider()
         self.__create_buttons()
+        self.__reset_cb()
 
     def __create_osc_client(self):
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
@@ -82,6 +87,12 @@ class Gui(Tk):
 
     def __button_cb(self, *args):
         self.__client.send_message(config.osc.GUI_SPIKE_ADDRESS, args)
+
+    def __reset_cb(self):
+        self.__client.send_message(config.osc.GUI_RESET_ADDRESS, pickle.dumps(self.__pars))
+        for name, slider in self.slider.items():
+            slider.var.set(self.__pars[name])
+            slider.value_label.config(text=self.__pars[name])
 
     def __update_balance(self):
         balance = self.slider['s_e'].get() * self.slider['lambda_e'].get() - \

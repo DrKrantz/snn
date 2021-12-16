@@ -16,9 +16,9 @@ import asyncio
 import pickle
 import numpy as np
 
-import config.osc
 from Dunkel_pars import parameters
-from config.osc import IP, GUI_PORT, RECORDING_PORT, GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS
+from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
+    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -117,7 +117,7 @@ class SensoryNetwork(object):
                         'w': self.__w[0:n_rec]}
             pkl = pickle.dumps(rec_data)
             try:
-                self.__client.send_message(config.osc.RECORDING_ADDRESS, pkl)
+                self.__client.send_message(RECORDING_ADDRESS, pkl)
             except OverflowError:
                 print('Not recording, float too large to pack!')
 
@@ -228,6 +228,7 @@ async def init_main():
     dispatcher = Dispatcher()
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
+    dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
 
     server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
     transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving

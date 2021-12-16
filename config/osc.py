@@ -7,4 +7,5 @@ RECORDING_PORT = 5020
 SPIKE_DISPLAY_ADDRESS = '/display_spikes'
 GUI_PAR_ADDRESS = '/gui_pars'
 GUI_SPIKE_ADDRESS = '/gui_spikes'
+GUI_RESET_ADDRESS = '/gui_reset'
 RECORDING_ADDRESS = '/record'
