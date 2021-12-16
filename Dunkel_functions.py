@@ -55,8 +55,20 @@ def chromaticConversion():
     listHigh = array(b).flatten()
     return listLow, listHigh
 
+
+def get_direct_visuals():
+    qlist = list(range(42, 59))
+    [qlist.append(idx) for idx in range(64, 82)]
+    [qlist.append(idx) for idx in range(96, 112)]
+    return qlist
+
+
+def get_direct_audio():
+    return list(range(82, 128))
+
+
 def note2neuron(note_id):
-#	pars = parameters()
+    # pars = parameters()
     return note_id-pars['note_add']
 
 

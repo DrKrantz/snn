@@ -1,20 +1,24 @@
 {
   "neuron_notes": {
-    "conversion": 7
+    "conversion": 7,
+    "force_off": true
   },
   "piano": {
     "max_num_signals": 6,
-    "velocity": 80,
+    "velocity": 127,
     "max_note": 127,
     "update_interval": 10,
     "conversion": 7
   },
   "visuals": {
     "max_num_signals": 5,
-    "update_interval": 20
+    "update_interval": 20,
+    "velocity": 127
   },
   "external": {
     "velocity": 1,
-    "conversion": 7
-  }
+    "conversion": 8,
+    "max_num_signals": 1,
+    "update_interval": 30
+  },
 }

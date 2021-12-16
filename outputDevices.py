@@ -14,7 +14,7 @@ from pythonosc.udp_client import SimpleUDPClient
 
 import numpy as np
 import sensoryNetwork
-from Dunkel_functions import chordConversion, chromaticConversion
+from Dunkel_functions import chordConversion, chromaticConversion, get_direct_visuals, get_direct_audio
 
 
 class Neuron2NoteConverter(object):
@@ -28,6 +28,10 @@ class Neuron2NoteConverter(object):
         chromatic1, chromatic2 = chromaticConversion()
         self.__cromatic1 = np.intersect1d(self.__noteRange, chromatic1)
         self.__cromatic2 = np.intersect1d(self.__noteRange, chromatic2)
+        direct_visuals = get_direct_visuals()
+        self.__direct_visuals = np.intersect1d(self.__noteRange, direct_visuals)
+        direct_audio = get_direct_audio()
+        self.__direct_audio = np.intersect1d(self.__noteRange, direct_audio)
 
     def convert(self, neuron_id):
         """ convert neuronId to note value
@@ -39,6 +43,7 @@ class Neuron2NoteConverter(object):
             3 - all excitatory have one note, all inhibitory have another
             4 - linear tonal arrangement in C-dur
             5 - linear tonal arrangement in C-moll
+            6 -
         """
         note = int(np.mod(neuron_id, 127) + 1)
         if self.__conversion == 1:
@@ -59,17 +64,21 @@ class Neuron2NoteConverter(object):
             note = self.__cromatic1[int(np.mod(neuron_id, len(self.__cromatic1)))]
         if self.__conversion == 7:
             note = self.__cromatic2[int(np.mod(neuron_id, len(self.__cromatic2)))]
-
+        if self.__conversion == 8:
+            note = self.__direct_visuals[int(np.mod(neuron_id, len(self.__direct_visuals)))]
+        if self.__conversion == 9:
+            note = self.__direct_audio[int(np.mod(neuron_id, len(self.__direct_audio)))]
         return note
 
 
 class OutputDevice:
     def __init__(self, midiport='IAC Driver Bus 1', max_num_signals=None,
                  update_interval=1, instrument=1, velocity=64, min_note=1, max_note=127,
-                 conversion=1):
+                 conversion=1, force_off=False):
         self.__port = mido.open_output(midiport)
         self.__converter = Neuron2NoteConverter(conversion, min_note, max_note)
         self.__velocity = velocity
+        self.__force_off = force_off
         # self.set_instrument(deviceStruct['instrument'])  # TODO set instrument in mido (via channels?)
 
         self.__max_num_signals = max_num_signals
@@ -113,7 +122,7 @@ class OutputDevice:
             self.__now = now
             if len(self.__active_times) < self.__max_num_signals:
                 self.__send_note(note)
-                if self.__active_notes.__contains__(note):
+                if note in self.__active_notes:
                     idx = self.__active_notes.index(note)
                     self.__active_notes.remove(note)
                     self.__active_times.pop(idx)
@@ -121,6 +130,10 @@ class OutputDevice:
                 self.__active_times.append(0)
 
     def __send_note(self, note, note_type='note_on'):
+        if self.__force_off and note_type == 'note_on':
+            self.__port.send(
+                mido.Message('note_off', note=note, velocity=self.__velocity)
+            )
         self.__port.send(
             mido.Message(note_type, note=note, velocity=self.__velocity)
         )
@@ -128,7 +141,7 @@ class OutputDevice:
     def turn_all_off(self):
         for note in self.__on_notes:
             if note != 1:
-                    self.__send_note(note, 'note_off')
+                self.__send_note(note, 'note_off')
         self.__on_notes = set()
 
 
