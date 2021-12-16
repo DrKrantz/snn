@@ -14,7 +14,8 @@ def parameters():
     pars = dict()
 
     # parameters of the neuron model
-    pars['h'] = 1e-4  # resolution of simulation in s
+    pars['h'] = 0.1e-3  # resolution of simulation in s
+    pars['pause'] = 25e-3  # 1 simulation timestep will take 'pause' seconds in real time (0.025 is good!)
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
     pars['Cm'] = 1e-6  # membrane capacitance, F/cm2
     pars['gL'] = 0.05e-3  # leak conductances, S/cm2
@@ -92,7 +93,6 @@ def parameters():
     pars['cam_ext'] = pars['cam_ext_start']
 
     ''' parameters of MIDI stimulation generation '''
-    pars['pause'] = 0.025
     pars['n_read'] = 100 # buffersize to be read from the input in each simulation step
     pars['velocity'] = 64 
     pars['note_add'] = 36
