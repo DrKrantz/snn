@@ -63,6 +63,7 @@ class Gui(Tk):
         self.__create_osc_client()
         self.__create_slider()
         self.__create_buttons()
+        self.__reset_cb()
 
     def __create_osc_client(self):
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
@@ -89,6 +90,9 @@ class Gui(Tk):
 
     def __reset_cb(self):
         self.__client.send_message(config.osc.GUI_RESET_ADDRESS, pickle.dumps(self.__pars))
+        for name, slider in self.slider.items():
+            slider.var.set(self.__pars[name])
+            slider.value_label.config(text=self.__pars[name])
 
     def __update_balance(self):
         balance = self.slider['s_e'].get() * self.slider['lambda_e'].get() - \
