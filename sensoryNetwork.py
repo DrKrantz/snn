@@ -26,7 +26,7 @@ import inputDevices
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
-from networks.thalamus_unconnected import Network
+from networks.thalamus import Network
 
 
 class SensoryNetwork(object):
@@ -44,7 +44,7 @@ class SensoryNetwork(object):
         self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
         
         self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
-        self.__w = self.model.b  # Initial values of adaptation variable w
+        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
         self.__neurons = np.array([])   # neuron IDs
         self.__hasPrinted = False
         self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
@@ -117,7 +117,7 @@ class SensoryNetwork(object):
         self.__T += self.pars['h']
 
         if self.__client is not None:
-            n_rec = 100
+            n_rec = 200
             rec_data = {'v': self.__v[0:n_rec],
                         'g_e': self.__ge[0:n_rec],
                         'g_i': self.__gi[0:n_rec],
