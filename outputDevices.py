@@ -74,11 +74,12 @@ class Neuron2NoteConverter(object):
 class OutputDevice:
     def __init__(self, midiport='IAC Driver Bus 1', max_num_signals=None,
                  update_interval=1, instrument=1, velocity=64, min_note=1, max_note=127,
-                 conversion=1, force_off=False):
+                 conversion=1, force_off=False, synchrony_limit=1):
         self.__port = mido.open_output(midiport)
         self.__converter = Neuron2NoteConverter(conversion, min_note, max_note)
         self.__velocity = velocity
         self.__force_off = force_off
+        self.__synchrony_limit = synchrony_limit
         # self.set_instrument(deviceStruct['instrument'])  # TODO set instrument in mido (via channels?)
 
         self.__max_num_signals = max_num_signals
@@ -91,6 +92,15 @@ class OutputDevice:
 
     def setNeuron2NoteConversion(self, conversion):
         self.__neuron2NoteConversion = conversion
+
+    def update(self, neuron_ids):
+        if len(neuron_ids) >= self.__synchrony_limit:
+            if self.__synchrony_limit == 1:
+                [self.note_on(neuron_id) for neuron_id in neuron_ids]
+
+            else:
+                neuron_id = np.random.choice(neuron_ids)
+                self.note_on(neuron_id)
 
     def note_on(self, neuron_id):
         """

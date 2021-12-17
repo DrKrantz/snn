@@ -8,17 +8,19 @@
     "velocity": 127,
     "max_note": 127,
     "update_interval": 10,
-    "conversion": 7
+    "conversion": 7,
+    "synchrony_limit": 4
   },
   "visuals": {
     "max_num_signals": 5,
-    "update_interval": 20,
-    "velocity": 127
+    "update_interval": 30,
+    "velocity": 127,
+    "synchrony_limit": 2
   },
   "external": {
     "velocity": 1,
     "conversion": 8,
     "max_num_signals": 1,
-    "update_interval": 30
+    "update_interval": 20
   }
 }

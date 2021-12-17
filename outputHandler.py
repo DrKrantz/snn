@@ -5,7 +5,7 @@ global pars
 
 
 class OutputHandler(object):
-    def __init__(self, outputs, pars, neuron2NoteConversion=4, display=None):
+    def __init__(self, outputs, pars, neuron2NoteConversion=7, display=None):
         self.pars = pars
         super(OutputHandler, self).__init__()
 
@@ -27,9 +27,8 @@ class OutputHandler(object):
             print('OutputHandler: fired: ', neuron_ids)
             self.__checkKeyChange(neuron_ids)
 
-            for neuron_id in neuron_ids:
-                for name, output in self.__output.items():
-                    output.note_on(neuron_id)
+            for output in self.__output.values():
+                output.update(neuron_ids)
 
         if self.display:
             # display spikes and update display
@@ -50,8 +49,8 @@ class OutputHandler(object):
                 self.__output[name].turn_all_off()
 
     def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids) > 20:
-            self.__neuron2NoteConversion = (1 if self.__neuron2NoteConversion == 7 else 7)
+        if len(neuron_ids) > self.pars['N_concious']:
+            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 7 else 7)
             self.__output["neuron_notes"].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
             )
