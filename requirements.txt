@@ -1,4 +1,4 @@
-pygame==1.9.6
+
 tk
 numpy
 python-rtmidi
