@@ -19,10 +19,10 @@ import numpy as np
 from Dunkel_pars import parameters
 from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
     GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS
-from outputHandler import OutputHandler
-from inputHandler import InputHandler
-import outputDevices
-import inputDevices
+from output.outputHandler import OutputHandler
+from input.inputHandler import InputHandler
+from output import outputDevices
+from input import inputDevices
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
