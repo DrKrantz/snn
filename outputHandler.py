@@ -25,14 +25,22 @@ class OutputHandler(object):
 
         if len(neuron_ids) > 0:
             print('OutputHandler: fired: ', neuron_ids)
-            self.__checkKeyChange(neuron_ids)
 
-            for output in self.__output.values():
-                output.update(neuron_ids)
+            if len(neuron_ids) > self.pars['N_concious']:
+                neuron_2_note = (6 if self.__neuron2NoteConversion == 7 else 7)
+                self.set_note_conversion(neuron_2_note)
+            [output.update(neuron_ids) for output in self.__output.values()]
 
         if self.display:
             # display spikes and update display
             self.display.update(fired)
+
+    def set_note_conversion(self, neuron_2_note):
+        print('----------------------------------------key change')
+        self.__neuron2NoteConversion = neuron_2_note
+        self.__output["neuron_notes"].setNeuron2NoteConversion(
+            self.__neuron2NoteConversion
+        )
 
     def update_external(self, fired):
         if self.__output_external is not None:
@@ -44,20 +52,8 @@ class OutputHandler(object):
                     self.__output_external.note_on(neuron_id)
 
     def turn_off(self):
-        for name in self.__output.keys():
-            if name == "neuron_notes":
-                self.__output[name].turn_all_off()
-
-    def __checkKeyChange(self, neuron_ids):
-        if len(neuron_ids) > self.pars['N_concious']:
-            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 7 else 7)
-            self.__output["neuron_notes"].setNeuron2NoteConversion(
-                self.__neuron2NoteConversion
-            )
-            # [output.setNeuron2NoteConversion(self.__neuron2NoteConversion) for
-            #             name, output in self.__output.iteritems()]
-
-            print('----------------------------------------key change')
+        if "neuron_notes" in self.__output:
+            self.__output["neuron_notes"].turn_all_off()
 
     @staticmethod
     def __filter_fired(fired):
