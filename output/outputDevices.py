@@ -13,62 +13,7 @@ import json
 from pythonosc.udp_client import SimpleUDPClient
 
 import numpy as np
-import sensoryNetwork
-from Dunkel_functions import chordConversion, chromaticConversion, get_direct_visuals, get_direct_audio
-
-
-class Neuron2NoteConverter(object):
-    def __init__(self, conversion=1, min_note=1, max_note=127):
-        self.__conversion = conversion
-        self.__noteRange = list(range(min_note, max_note))
-
-        alldur, allmoll = chordConversion()
-        self.__durlist = np.intersect1d(self.__noteRange, alldur)
-        self.__mollist = np.intersect1d(self.__noteRange, allmoll)
-        chromatic1, chromatic2 = chromaticConversion()
-        self.__cromatic1 = np.intersect1d(self.__noteRange, chromatic1)
-        self.__cromatic2 = np.intersect1d(self.__noteRange, chromatic2)
-        direct_visuals = get_direct_visuals()
-        self.__direct_visuals = np.intersect1d(self.__noteRange, direct_visuals)
-        direct_audio = get_direct_audio()
-        self.__direct_audio = np.intersect1d(self.__noteRange, direct_audio)
-
-    def convert(self, neuron_id):
-        """ convert neuronId to note value
-            :param neuron_id:
-            :return:
-        conversion_type:
-            1 - linear tonal arrangement
-            2 - neurons are arranged on a grid, the row determines the note
-            3 - all excitatory have one note, all inhibitory have another
-            4 - linear tonal arrangement in C-dur
-            5 - linear tonal arrangement in C-moll
-            6 -
-        """
-        note = int(np.mod(neuron_id, 127) + 1)
-        if self.__conversion == 1:
-            note = int(np.mod(neuron_id, 127)+1)
-        # if self.__neuron2NoteConversion == 2:
-        #     coord = linear2grid(neuron_id, pars['N_col'])
-        #     note = coord[1]
-        # if self.__neuron2NoteConversion == 3:
-        #     if any((self.pars['Exc_ids'] - neuron_id) == 0):
-        #         note = 120
-        #     else:
-        #         note = 20
-        if self.__conversion == 4:
-            note = self.__durlist[int(np.mod(neuron_id, len(self.__durlist)))]
-        if self.__conversion == 5:
-            note = self.__mollist[int(np.mod(neuron_id, len(self.__mollist)))]
-        if self.__conversion == 6:
-            note = self.__cromatic1[int(np.mod(neuron_id, len(self.__cromatic1)))]
-        if self.__conversion == 7:
-            note = self.__cromatic2[int(np.mod(neuron_id, len(self.__cromatic2)))]
-        if self.__conversion == 8:
-            note = self.__direct_visuals[int(np.mod(neuron_id, len(self.__direct_visuals)))]
-        if self.__conversion == 9:
-            note = self.__direct_audio[int(np.mod(neuron_id, len(self.__direct_audio)))]
-        return note
+from output.conversion import Neuron2NoteConverter
 
 
 class OutputDevice:

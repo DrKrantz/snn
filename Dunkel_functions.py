@@ -2,6 +2,8 @@ from numpy import *
 
 
 from Dunkel_pars import parameters
+from output.conversion import chord_conversion
+
 global pars
 pars = parameters()
 # Created by B. Staude to simulate the Thalamic Network (Figs. 3 and 4) of Destexhe 2009, J Comp Neurosci.
@@ -11,60 +13,9 @@ pars = parameters()
 # included parameter- and spiking display
 
 
-def chordConversion():
-    """
-    create the midi notes of a major and a minor scale
-    :return:
-    """
-
-    #dur
-    a = array([0, 2, 4, 5, 7, 9, 11])
-    b = []
-    [b.append(a + k * 12) for k in range(11)]
-    durlist = array(b).flatten()
-
-    #moll
-    a = array([0, 2, 3, 5, 7, 8, 10])
-    b = []
-    [b.append(a + k * 12) for k in range(11)]
-    molllist = array(b).flatten()
-    return durlist, molllist
-
-
-def chromaticConversion():
-    """
-    create the midi notes of a major scale and its transpose (half-tome up)
-    :return:
-    """
-    #low
-    a = array([0, 2, 4, 5, 7, 9, 11])
-    b = []
-    [b.append(a + k * 12) for k in range(11)]
-    listLow = array(b).flatten()
-
-    #high
-    a += 1
-    b = []
-    [b.append(a + k * 12) for k in range(11)]
-    listHigh = array(b).flatten()
-    return listLow, listHigh
-
-
-def get_direct_visuals():
-    qlist = list(range(42, 59))
-    [qlist.append(idx) for idx in range(64, 82)]
-    [qlist.append(idx) for idx in range(96, 112)]
-    return qlist
-
-
-def get_direct_audio():
-    return list(range(82, 128))
-
-
 def note2neuron(note_id):
     # pars = parameters()
     return note_id-pars['note_add']
-
 
 
 def neuron2note(neuron_id, conversion_type):
@@ -86,11 +37,11 @@ def neuron2note(neuron_id, conversion_type):
         else:
             note = 20
     if conversion_type == 4:
-        durlist, mollist = chordConversion()
+        durlist, mollist = chord_conversion()
         nnotes = len(durlist)
         note = durlist[int(mod(neuron_id, nnotes))]
     if conversion_type == 5:
-        durlist, molllist = chordConversion()
+        durlist, molllist = chord_conversion()
         nnotes=len(molllist)
         #print mod(neuron_id,nnotes)
         #print molllist
