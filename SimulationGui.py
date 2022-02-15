@@ -14,31 +14,34 @@ class OutputController(Frame):
     def __init__(self, parent, output_name, *args):
         super(OutputController, self).__init__(parent, bg=self.color, bd=2, relief="groove")
 
-        self.title = Label(self, text=output_name, width=12, font="Helvetica 16", anchor="w", bg=self.color)
+        self.title = Label(self, text=output_name, width=8, font="Helvetica 16", anchor="w", bg=self.color)
         self.send_button = Button(self, command=self.__send, text="send")
+        self.reset_button = Button(self, command=self.__reset, text="reset")
         self.max_num_signals = HorizontalSlider(self, "MaxNumSignals", 0, 10, 1, bg=self.color)
         self.update_interval = HorizontalSlider(self, "Update Interval", 0, 60, 5, bg=self.color)
         self.synchrony_limit = HorizontalSlider(self, "Synchrony Limit", 0, 10, 1, bg=self.color)
 
         self.title.grid(column=0, row=0)
-        self.send_button.grid(column=1, row=0)
-        self.max_num_signals.grid(column=0, row=1, columnspan=2)
-        self.update_interval.grid(column=0, row=2, columnspan=2)
-        self.synchrony_limit.grid(column=0, row=3, columnspan=2)
+        self.reset_button.grid(column=1, row=0)
+        self.send_button.grid(column=2, row=0)
+        self.max_num_signals.grid(column=0, row=1, columnspan=3)
+        self.update_interval.grid(column=0, row=2, columnspan=3)
+        self.synchrony_limit.grid(column=0, row=3, columnspan=3)
 
     def __send(self):
         self.max_num_signals.set_current()
         self.update_interval.set_current()
         self.synchrony_limit.set_current()
 
+    def __reset(self):
+        pass
+
 
 class SpikeButton(Frame):
-    width = 7
 
     def __init__(self, parent, title, send_cb, *args):
         super(SpikeButton, self).__init__(parent, *args)
-        # Label(self, text=title, width=self.width).pack(side=RIGHT)
-        self.button = Button(self, command=lambda: send_cb(title))
+        self.button = Button(self, text=title, width=1, command=lambda: send_cb(title))
         self.button.pack(side=LEFT)
 
 
@@ -48,9 +51,9 @@ class HorizontalSlider(Frame):
 
         self.var = IntVar(value=0)
         self.slider = Scale(self, label=title, from_=from_, to=to, resolution=resolution,
-                            command=self.__slider_release_cb, length=150, orient=HORIZONTAL,
+                            command=self.__slider_release_cb, length=180, orient=HORIZONTAL,
                             **kwargs)
-        self.current_label = Label(self, text=self.var.get(), **kwargs)
+        self.current_label = Label(self, width=2, text=self.var.get(), **kwargs)
 
         self.slider.grid(column=0, row=0)
         self.current_label.grid(column=1, row=0)
@@ -90,8 +93,9 @@ class LabelledSlider(Frame):
 
 
 class Gui(Tk):
-    __size = '930x380'
+    __size = '510x510'
     __title = "Parameter controller"
+    pady=10
 
     def __init__(self, pars, **kwargs):
         super(Gui, self).__init__(**kwargs)
@@ -101,17 +105,16 @@ class Gui(Tk):
         self.geometry(self.__size)
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
 
-        self.reset_button = Button(self, command=self.__reset_cb, text="RESET")
         self.slider_frame = self.__create_slider()
         self.spike_button_frame = self.__create_buttons()
         self.piano_frame = OutputController(self, "piano".upper())
         self.visuals_frame = OutputController(self, "visuals".upper())
 
-        self.slider_frame.grid(column=0, row=1)
-        self.spike_button_frame.grid(column=0, row=2)
-        self.piano_frame.grid(column=1, row=1)
-        self.visuals_frame.grid(column=3, row=1)
-        self.reset_button.grid(column=1, row=0)
+        # self.reset_button.grid(column=1, row=0)
+        self.slider_frame.grid(column=0, row=1, columnspan=2, pady=self.pady)
+        self.spike_button_frame.grid(column=0, row=2, columnspan=2, pady=self.pady)
+        self.piano_frame.grid(column=0, row=3, pady=self.pady)
+        self.visuals_frame.grid(column=1, row=3, pady=self.pady)
 
         self.__reset_cb()
 
@@ -123,11 +126,14 @@ class Gui(Tk):
                                     self.__pars[name + "_step"], self.__slider_cb)
             slider.pack(side=LEFT)
             self.slider[name] = slider
+
+        reset_button = Button(slider_frame, command=self.__reset_cb, text="RESET")
+        reset_button.pack(side=BOTTOM)
         return slider_frame
 
     def __create_buttons(self):
-        spike_button_frame = Frame(self,  bd=2, relief="groove")
-        for k in range(11):
+        spike_button_frame = Frame(self,  bd=2)
+        for k in range(10):
             button = SpikeButton(spike_button_frame, k+70, self.__button_cb)
             button.pack(side=LEFT)
             self.__buttons = [button]
