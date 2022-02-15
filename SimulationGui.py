@@ -9,13 +9,51 @@ from pythonosc.udp_client import SimpleUDPClient
 PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
 
+class OutputController(Frame):
+    color = "#312B2F"
+
+    def __init__(self, parent, output_name, *args):
+        super(OutputController, self).__init__(parent, bg=self.color)
+
+        self.title = Label(self, text=output_name, width=18, font="Helvetica 16", anchor="w", bg=self.color)
+        self.title.pack()
+
+        self.max_num_signals = 0
+        self.max_num_signals_slider = Scale(self, label="MaxNumSignals", from_=0, to=10, resolution=1,
+                                            command=self.__set_max_num_signals,length=150, orient=HORIZONTAL,
+                                            bg=self.color)
+        self.max_num_signals_slider.pack(side=TOP)
+
+        self.update_interval = 0
+        self.update_interval_slider = Scale(self, label="Update Interval", from_=0, to=60, resolution=5,
+                                            command=self.__set_update_interval, length=150, orient=HORIZONTAL,
+                                            bg=self.color)
+        self.update_interval_slider.pack(side=TOP)
+
+        self.synchrony_limit = 0
+        self.synchrony_limit_slider = Scale(self, label="Synchrony Limit", from_=0, to=10, resolution=1,
+                                            command=self.__set_synchrony_limit, length=150, orient=HORIZONTAL,
+                                            bg=self.color)
+        self.synchrony_limit_slider.pack(side=TOP)
+
+    def __set_max_num_signals(self, value):
+        self.max_num_signals = value
+
+    def __set_update_interval(self, value):
+        self.update_interval = value
+
+    def __set_synchrony_limit(self, value):
+        self.synchrony_limit = value
+
+
 class SpikeButton(Frame):
     width = 7
 
     def __init__(self, parent, title, send_cb, *args):
         super(SpikeButton, self).__init__(parent, *args)
         # Label(self, text=title, width=self.width).pack(side=RIGHT)
-        self.button = Button(self, command=lambda: send_cb(title)).pack(side=TOP)
+        self.button = Button(self, command=lambda: send_cb(title))
+        self.button.pack(side=LEFT)
 
 
 class LabelledSlider(Frame):
@@ -45,7 +83,7 @@ class LabelledSlider(Frame):
 
 
 class Gui(Tk):
-    __size = '530x380'
+    __size = '930x380'
     __title = "Parameter controller"
 
     def __init__(self, pars, **kwargs):
@@ -62,7 +100,8 @@ class Gui(Tk):
         self.geometry(self.__size)
         self.__create_osc_client()
         self.__create_slider()
-        self.__create_buttons()
+        # self.__create_buttons()
+        self.__create_output_controller()
         self.__reset_cb()
 
     def __create_osc_client(self):
@@ -81,6 +120,10 @@ class Gui(Tk):
             button = SpikeButton(self, k+70, self.__button_cb)
             button.pack(side=TOP)
             self.__buttons = [button]
+
+    def __create_output_controller(self):
+        self.__output_controller = OutputController(self, "piano".upper())
+        self.__output_controller.pack(side=LEFT)
 
     def __slider_cb(self, *args):
         self.__client.send_message(config.osc.GUI_PAR_ADDRESS, args)
