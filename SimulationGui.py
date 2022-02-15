@@ -1,5 +1,4 @@
 from tkinter import *
-import numpy as np
 import pickle
 
 import config.osc
@@ -13,37 +12,24 @@ class OutputController(Frame):
     color = "#312B2F"
 
     def __init__(self, parent, output_name, *args):
-        super(OutputController, self).__init__(parent, bg=self.color)
+        super(OutputController, self).__init__(parent, bg=self.color, bd=2, relief="groove")
 
-        self.title = Label(self, text=output_name, width=18, font="Helvetica 16", anchor="w", bg=self.color)
-        self.title.pack()
+        self.title = Label(self, text=output_name, width=12, font="Helvetica 16", anchor="w", bg=self.color)
+        self.send_button = Button(self, command=self.__send, text="send")
+        self.max_num_signals = HorizontalSlider(self, "MaxNumSignals", 0, 10, 1, bg=self.color)
+        self.update_interval = HorizontalSlider(self, "Update Interval", 0, 60, 5, bg=self.color)
+        self.synchrony_limit = HorizontalSlider(self, "Synchrony Limit", 0, 10, 1, bg=self.color)
 
-        self.max_num_signals = 0
-        self.max_num_signals_slider = Scale(self, label="MaxNumSignals", from_=0, to=10, resolution=1,
-                                            command=self.__set_max_num_signals,length=150, orient=HORIZONTAL,
-                                            bg=self.color)
-        self.max_num_signals_slider.pack(side=TOP)
+        self.title.grid(column=0, row=0)
+        self.send_button.grid(column=1, row=0)
+        self.max_num_signals.grid(column=0, row=1, columnspan=2)
+        self.update_interval.grid(column=0, row=2, columnspan=2)
+        self.synchrony_limit.grid(column=0, row=3, columnspan=2)
 
-        self.update_interval = 0
-        self.update_interval_slider = Scale(self, label="Update Interval", from_=0, to=60, resolution=5,
-                                            command=self.__set_update_interval, length=150, orient=HORIZONTAL,
-                                            bg=self.color)
-        self.update_interval_slider.pack(side=TOP)
-
-        self.synchrony_limit = 0
-        self.synchrony_limit_slider = Scale(self, label="Synchrony Limit", from_=0, to=10, resolution=1,
-                                            command=self.__set_synchrony_limit, length=150, orient=HORIZONTAL,
-                                            bg=self.color)
-        self.synchrony_limit_slider.pack(side=TOP)
-
-    def __set_max_num_signals(self, value):
-        self.max_num_signals = value
-
-    def __set_update_interval(self, value):
-        self.update_interval = value
-
-    def __set_synchrony_limit(self, value):
-        self.synchrony_limit = value
+    def __send(self):
+        self.max_num_signals.set_current()
+        self.update_interval.set_current()
+        self.synchrony_limit.set_current()
 
 
 class SpikeButton(Frame):
@@ -54,6 +40,27 @@ class SpikeButton(Frame):
         # Label(self, text=title, width=self.width).pack(side=RIGHT)
         self.button = Button(self, command=lambda: send_cb(title))
         self.button.pack(side=LEFT)
+
+
+class HorizontalSlider(Frame):
+    def __init__(self, parent, title, from_, to, resolution, **kwargs):
+        super(HorizontalSlider, self).__init__(parent, **kwargs)
+
+        self.var = IntVar(value=0)
+        self.slider = Scale(self, label=title, from_=from_, to=to, resolution=resolution,
+                            command=self.__slider_release_cb, length=150, orient=HORIZONTAL,
+                            **kwargs)
+        self.current_label = Label(self, text=self.var.get(), **kwargs)
+
+        self.slider.grid(column=0, row=0)
+        self.current_label.grid(column=1, row=0)
+
+    def __slider_release_cb(self, value):
+        self.var.set(value)
+        self.current_label.config(fg='blue')
+
+    def set_current(self):
+        self.current_label.config(text=self.var.get(), fg='white')
 
 
 class LabelledSlider(Frame):
@@ -88,42 +95,43 @@ class Gui(Tk):
 
     def __init__(self, pars, **kwargs):
         super(Gui, self).__init__(**kwargs)
-        Label(self, text="Balance", width=7).pack(side=TOP)
-        self.__balance_label = Label(self, text=0, width=7)
-        self.__balance_label.pack(side=TOP)
-        self.__reset_button = Button(self, command=self.__reset_cb, text="RESET")
-        self.__reset_button.pack(side=TOP)
-
         self.__pars = pars
 
         self.title(self.__title)
         self.geometry(self.__size)
-        self.__create_osc_client()
-        self.__create_slider()
-        # self.__create_buttons()
-        self.__create_output_controller()
-        self.__reset_cb()
-
-    def __create_osc_client(self):
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
+
+        self.reset_button = Button(self, command=self.__reset_cb, text="RESET")
+        self.slider_frame = self.__create_slider()
+        self.spike_button_frame = self.__create_buttons()
+        self.piano_frame = OutputController(self, "piano".upper())
+        self.visuals_frame = OutputController(self, "visuals".upper())
+
+        self.slider_frame.grid(column=0, row=1)
+        self.spike_button_frame.grid(column=0, row=2)
+        self.piano_frame.grid(column=1, row=1)
+        self.visuals_frame.grid(column=3, row=1)
+        self.reset_button.grid(column=1, row=0)
+
+        self.__reset_cb()
 
     def __create_slider(self):
         self.slider = {}
+        slider_frame = Frame(self,  bd=2, relief="groove")
         for col, name in enumerate(PARAMETERS):
-            slider = LabelledSlider(self, name, self.__pars[name], self.__pars[name + "_range"],
+            slider = LabelledSlider(slider_frame, name, self.__pars[name], self.__pars[name + "_range"],
                                     self.__pars[name + "_step"], self.__slider_cb)
             slider.pack(side=LEFT)
             self.slider[name] = slider
+        return slider_frame
 
     def __create_buttons(self):
-        for k in range(10):
-            button = SpikeButton(self, k+70, self.__button_cb)
-            button.pack(side=TOP)
+        spike_button_frame = Frame(self,  bd=2, relief="groove")
+        for k in range(11):
+            button = SpikeButton(spike_button_frame, k+70, self.__button_cb)
+            button.pack(side=LEFT)
             self.__buttons = [button]
-
-    def __create_output_controller(self):
-        self.__output_controller = OutputController(self, "piano".upper())
-        self.__output_controller.pack(side=LEFT)
+        return spike_button_frame
 
     def __slider_cb(self, *args):
         self.__client.send_message(config.osc.GUI_PAR_ADDRESS, args)
@@ -137,14 +145,7 @@ class Gui(Tk):
             slider.var.set(self.__pars[name])
             slider.value_label.config(text=self.__pars[name])
 
-    def __update_balance(self):
-        balance = self.slider['s_e'].get() * self.slider['lambda_e'].get() - \
-                  self.slider['s_i'].get() * self.slider['lambda_i'].get()
-        self.__balance_label.config(text=np.around(balance, decimals=10))
-        self.after(500, self.__update_balance)
-
     def start(self):
-        self.after(500, self.__update_balance)
         self.mainloop()
 
 
