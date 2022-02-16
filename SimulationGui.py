@@ -4,6 +4,7 @@ import pickle
 import config.osc
 from Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
+from sensoryNetwork import ConfigParser
 
 PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
@@ -11,30 +12,26 @@ PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 class OutputController(Frame):
     color = "#312B2F"
 
-    def __init__(self, parent, output_name, *args):
+    def __init__(self, parent, output_name, output_conf, *args):
         super(OutputController, self).__init__(parent, bg=self.color, bd=2, relief="groove")
 
         self.title = Label(self, text=output_name, width=8, font="Helvetica 16", anchor="w", bg=self.color)
         self.send_button = Button(self, command=self.__send, text="send")
         self.reset_button = Button(self, command=self.__reset, text="reset")
-        self.max_num_signals = HorizontalSlider(self, "MaxNumSignals", 0, 10, 1, bg=self.color)
-        self.update_interval = HorizontalSlider(self, "Update Interval", 0, 60, 5, bg=self.color)
-        self.synchrony_limit = HorizontalSlider(self, "Synchrony Limit", 0, 10, 1, bg=self.color)
+        self.sliders = [HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
+                        HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
+                        HorizontalSlider(self, "Synchrony Limit", output_conf["synchrony_limit"], 0, 10, 1, bg=self.color)]
 
         self.title.grid(column=0, row=0)
         self.reset_button.grid(column=1, row=0)
         self.send_button.grid(column=2, row=0)
-        self.max_num_signals.grid(column=0, row=1, columnspan=3)
-        self.update_interval.grid(column=0, row=2, columnspan=3)
-        self.synchrony_limit.grid(column=0, row=3, columnspan=3)
+        [slider.grid(column=0, row=k+1, columnspan=3) for  k, slider in enumerate(self.sliders)]
 
     def __send(self):
-        self.max_num_signals.set_current()
-        self.update_interval.set_current()
-        self.synchrony_limit.set_current()
+        [slider.set_current() for slider in self.sliders]
 
     def __reset(self):
-        pass
+        [slider.reset() for slider in self.sliders]
 
 
 class SpikeButton(Frame):
@@ -46,11 +43,12 @@ class SpikeButton(Frame):
 
 
 class HorizontalSlider(Frame):
-    def __init__(self, parent, title, from_, to, resolution, **kwargs):
+    def __init__(self, parent, title, default, from_, to, resolution, **kwargs):
         super(HorizontalSlider, self).__init__(parent, **kwargs)
 
-        self.var = IntVar(value=0)
-        self.slider = Scale(self, label=title, from_=from_, to=to, resolution=resolution,
+        self.var = IntVar(value=default)
+        self.default = default
+        self.slider = Scale(self, label=title, from_=from_, to=to, resolution=resolution, variable=self.var,
                             command=self.__slider_release_cb, length=180, orient=HORIZONTAL,
                             **kwargs)
         self.current_label = Label(self, width=2, text=self.var.get(), **kwargs)
@@ -58,12 +56,15 @@ class HorizontalSlider(Frame):
         self.slider.grid(column=0, row=0)
         self.current_label.grid(column=1, row=0)
 
-    def __slider_release_cb(self, value):
-        self.var.set(value)
+    def __slider_release_cb(self, *args):
         self.current_label.config(fg='blue')
 
     def set_current(self):
         self.current_label.config(text=self.var.get(), fg='white')
+
+    def reset(self):
+        self.var.set(self.default)
+        self.__slider_release_cb()
 
 
 class LabelledSlider(Frame):
@@ -97,7 +98,7 @@ class Gui(Tk):
     __title = "Parameter controller"
     pady=10
 
-    def __init__(self, pars, **kwargs):
+    def __init__(self, pars, output_conf, **kwargs):
         super(Gui, self).__init__(**kwargs)
         self.__pars = pars
 
@@ -107,8 +108,8 @@ class Gui(Tk):
 
         self.slider_frame = self.__create_slider()
         self.spike_button_frame = self.__create_buttons()
-        self.piano_frame = OutputController(self, "piano".upper())
-        self.visuals_frame = OutputController(self, "visuals".upper())
+        self.piano_frame = OutputController(self, "piano".upper(), output_conf["piano"])
+        self.visuals_frame = OutputController(self, "visuals".upper(), output_conf["visuals"])
 
         # self.reset_button.grid(column=1, row=0)
         self.slider_frame.grid(column=0, row=1, columnspan=2, pady=self.pady)
@@ -156,5 +157,7 @@ class Gui(Tk):
 
 
 if __name__ == "__main__":
-    gui = Gui(parameters())
+    parser = ConfigParser()
+    pars = parameters()
+    gui = Gui(pars, parser.get_outputs())
     gui.start()

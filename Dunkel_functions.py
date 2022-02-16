@@ -1,11 +1,11 @@
 from numpy import *
-import pygame
+# import pygame
 
 
 # packages need for the webcam
 
 # packages needed for the parameter-display
-from pygame.locals import *
+# from pygame.locals import *
 
 from Dunkel_pars import parameters
 global pars
