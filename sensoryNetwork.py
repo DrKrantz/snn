@@ -171,8 +171,10 @@ class DeviceManager:
             self.outputs[name] = outputDevices.OutputDevice(**settings)
             print("SETUP OUTPUT. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
-    def update_output_settings(self, device_name, **kwargs):
-        pass
+    def update_output_settings(self, _, device_name, max_num_signals, update_interval, synchrony_limit):
+        print("Setting", device_name, max_num_signals, update_interval, synchrony_limit)
+        if device_name in self.outputs:
+            self.outputs[device_name].set_vars(max_num_signals, update_interval, synchrony_limit)
 
     def get_spike_inputs(self):
         return list(self.spike_inputs.values())

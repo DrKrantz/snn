@@ -20,27 +20,26 @@ class OutputController(Frame):
         self.title = Label(self, text=output_name.upper(), width=8, font="Helvetica 16", anchor="w", bg=self.color)
         self.send_button = Button(self, command=self.__send, text="send")
         self.reset_button = Button(self, command=self.__reset, text="reset")
-        self.sliders = {
-            "max_num_signals": HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
-            "update_interval": HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
-            "synchrony_limit": HorizontalSlider(self, "Synchrony Limit", output_conf["synchrony_limit"], 0, 10, 1, bg=self.color)
-        }
+        self.sliders = [
+            HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
+            HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
+            HorizontalSlider(self, "Synchrony Limit", output_conf["synchrony_limit"], 0, 10, 1, bg=self.color)
+        ]
 
         self.title.grid(column=0, row=0)
         self.reset_button.grid(column=1, row=0)
         self.send_button.grid(column=2, row=0)
-        [slider.grid(column=0, row=k+1, columnspan=3) for k, slider in enumerate(self.sliders.values())]
+        [slider.grid(column=0, row=k+1, columnspan=3) for k, slider in enumerate(self.sliders)]
 
     def __send(self):
         values = [self.device_name]
-        for name, slider in self.sliders.items():
-            values.append(name)
+        for slider in self.sliders:
             values.append(slider.var.get())
             slider.set_current()
         self.client.send_message(config.osc.GUI_OUTPUT_SETTINGS_ADDRESS, values)
 
     def __reset(self):
-        [slider.reset() for slider in self.sliders.values()]
+        [slider.reset() for slider in self.sliders]
 
 
 class SpikeButton(Frame):

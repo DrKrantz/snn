@@ -79,11 +79,11 @@ class OutputDevice:
         self.__converter = Neuron2NoteConverter(conversion, min_note, max_note)
         self.__velocity = velocity
         self.__force_off = force_off
-        self.__synchrony_limit = synchrony_limit
-        # self.set_instrument(deviceStruct['instrument'])  # TODO set instrument in mido (via channels?)
 
+        # self.set_instrument(deviceStruct['instrument'])  # TODO set instrument in mido (via channels?)
         self.__max_num_signals = max_num_signals
         self.__update_interval = update_interval
+        self.__synchrony_limit = synchrony_limit
         self.__on_notes = set()
         if self.__max_num_signals is not None:
             self.__active_notes = []
@@ -138,6 +138,11 @@ class OutputDevice:
                     self.__active_times.pop(idx)
                 self.__active_notes.append(note)
                 self.__active_times.append(0)
+
+    def set_vars(self, max_num_signals, update_interval, synchrony_limit):
+        self.__max_num_signals = max_num_signals
+        self.__update_interval = update_interval
+        self.__synchrony_limit = synchrony_limit
 
     def __send_note(self, note, note_type='note_on'):
         if self.__force_off and note_type == 'note_on':
