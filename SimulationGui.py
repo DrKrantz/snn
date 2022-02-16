@@ -5,6 +5,7 @@ import config.osc
 from Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
 from sensoryNetwork import ConfigParser
+from config import osc
 
 PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
@@ -12,30 +13,37 @@ PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 class OutputController(Frame):
     color = "#312B2F"
 
-    def __init__(self, parent, output_name, output_conf, *args):
+    def __init__(self, parent, output_name, output_conf, client: SimpleUDPClient, *args):
         super(OutputController, self).__init__(parent, bg=self.color, bd=2, relief="groove")
-
-        self.title = Label(self, text=output_name, width=8, font="Helvetica 16", anchor="w", bg=self.color)
+        self.client = client
+        self.device_name = output_name
+        self.title = Label(self, text=output_name.upper(), width=8, font="Helvetica 16", anchor="w", bg=self.color)
         self.send_button = Button(self, command=self.__send, text="send")
         self.reset_button = Button(self, command=self.__reset, text="reset")
-        self.sliders = [HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
-                        HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
-                        HorizontalSlider(self, "Synchrony Limit", output_conf["synchrony_limit"], 0, 10, 1, bg=self.color)]
+        self.sliders = {
+            "max_num_signals": HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
+            "update_interval": HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
+            "synchrony_limit": HorizontalSlider(self, "Synchrony Limit", output_conf["synchrony_limit"], 0, 10, 1, bg=self.color)
+        }
 
         self.title.grid(column=0, row=0)
         self.reset_button.grid(column=1, row=0)
         self.send_button.grid(column=2, row=0)
-        [slider.grid(column=0, row=k+1, columnspan=3) for  k, slider in enumerate(self.sliders)]
+        [slider.grid(column=0, row=k+1, columnspan=3) for k, slider in enumerate(self.sliders.values())]
 
     def __send(self):
-        [slider.set_current() for slider in self.sliders]
+        values = [self.device_name]
+        for name, slider in self.sliders.items():
+            values.append(name)
+            values.append(slider.var.get())
+            slider.set_current()
+        self.client.send_message(config.osc.GUI_OUTPUT_SETTINGS_ADDRESS, values)
 
     def __reset(self):
-        [slider.reset() for slider in self.sliders]
+        [slider.reset() for slider in self.sliders.values()]
 
 
 class SpikeButton(Frame):
-
     def __init__(self, parent, title, send_cb, *args):
         super(SpikeButton, self).__init__(parent, *args)
         self.button = Button(self, text=title, width=1, command=lambda: send_cb(title))
@@ -96,7 +104,7 @@ class LabelledSlider(Frame):
 class Gui(Tk):
     __size = '510x510'
     __title = "Parameter controller"
-    pady=10
+    pady = 10
 
     def __init__(self, pars, output_conf, **kwargs):
         super(Gui, self).__init__(**kwargs)
@@ -108,8 +116,10 @@ class Gui(Tk):
 
         self.slider_frame = self.__create_slider()
         self.spike_button_frame = self.__create_buttons()
-        self.piano_frame = OutputController(self, "piano".upper(), output_conf["piano"])
-        self.visuals_frame = OutputController(self, "visuals".upper(), output_conf["visuals"])
+        if "piano" in output_conf:
+            self.piano_frame = OutputController(self, "piano", output_conf["piano"], self.__client)
+        if "visuals" in output_conf:
+            self.visuals_frame = OutputController(self, "visuals", output_conf["visuals"], self.__client)
 
         # self.reset_button.grid(column=1, row=0)
         self.slider_frame.grid(column=0, row=1, columnspan=2, pady=self.pady)
