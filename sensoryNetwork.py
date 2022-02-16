@@ -18,7 +18,7 @@ import numpy as np
 
 from Dunkel_pars import parameters
 from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
-    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS
+    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS, GUI_OUTPUT_SETTINGS_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -171,6 +171,9 @@ class DeviceManager:
             self.outputs[name] = outputDevices.OutputDevice(**settings)
             print("SETUP OUTPUT. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
+    def update_output_settings(self, device_name, **kwargs):
+        pass
+
     def get_spike_inputs(self):
         return list(self.spike_inputs.values())
 
@@ -228,6 +231,7 @@ async def init_main():
     dispatcher = Dispatcher()
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
+    dispatcher.map(GUI_OUTPUT_SETTINGS_ADDRESS, dm.update_output_settings)
     dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
 
     server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
