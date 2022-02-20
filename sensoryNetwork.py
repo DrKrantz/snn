@@ -18,7 +18,8 @@ import numpy as np
 
 from Dunkel_pars import parameters
 from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
-    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS, GUI_OUTPUT_SETTINGS_ADDRESS
+    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS, GUI_OUTPUT_SETTINGS_ADDRESS, GUI_START_ADDRESS,\
+    GUI_STOP_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -36,22 +37,10 @@ class SensoryNetwork(object):
         self.outputHandler = outputHandler
         self.pars = pars
         self.model = network_model
-        self.__fired_ids = np.array([])
-        self.__A = self.model.A
-        n = self.model.N
-
-        self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
-        self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
-        
-        self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
-        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
-        self.__neurons = np.array([])   # neuron IDs
-        self.__hasPrinted = False
-        self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
         self.__client = client
+        self.__A = self.model.A
 
-        self.__T = 0
-        self.__stim_ids = np.random.choice(np.arange(n), int(pars['p_stim']*n), False)  # stimulated neurons
+        self.reset()
         
     def update(self):
         #  UPDATE VIEWER & INPUTS ###########
@@ -123,6 +112,19 @@ class SensoryNetwork(object):
 
         self.__T += self.pars['h']
 
+    def reset(self):
+        n = self.model.N
+        self.__fired_ids = np.array([])
+        self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
+        self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
+        self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
+        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
+        # self.__neurons = np.array([])   # neuron IDs
+        # self.__hasPrinted = False
+        self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
+        self.__T = 0
+        self.__stim_ids = np.random.choice(np.arange(n), int(self.pars['p_stim']*n), False)  # stimulated neurons
+
 
 class ConfigParser:
     def __init__(self):
@@ -185,15 +187,13 @@ class DeviceManager:
 
 class MainApp:
     def __init__(self, deviceManager, pars):
-        self.__fullscreen = False
-
         self.pars = pars
-
+        self.__is_running = False
         print("wiring....")
         network_model = Network()
         print('wiring completed')
 
-    # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
+        # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
 
         inputHandler = InputHandler(
             spike_inputs=deviceManager.get_spike_inputs(),
@@ -208,14 +208,28 @@ class MainApp:
 
     async def run(self):
         last_updated = time.time()
+        self.__is_running = True
         while True:
-            if time.time()-last_updated < self.pars['pause']:
-                pass
+            if self.__is_running:
+                if time.time()-last_updated < self.pars['pause']:
+                    pass
+                else:
+                    self.network.update()
+                    last_updated = time.time()
+                await asyncio.sleep(0.00001)
             else:
-                self.network.update()
-                last_updated = time.time()
+                await asyncio.sleep(1)
+                print("pausing")
 
-            await asyncio.sleep(0.00001)
+    def stop(self, *_):
+        self.network.reset()
+        self.__is_running = False
+
+    def pause(self):
+        self.__is_running = False
+
+    def start(self, *_):
+        self.__is_running = True
 
 
 async def init_main():
@@ -234,6 +248,8 @@ async def init_main():
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
     dispatcher.map(GUI_OUTPUT_SETTINGS_ADDRESS, dm.update_output_settings)
+    dispatcher.map(GUI_START_ADDRESS, app.start)
+    dispatcher.map(GUI_STOP_ADDRESS, app.stop)
     dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
 
     server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())

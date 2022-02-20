@@ -19,7 +19,7 @@ class OutputController(Frame):
         self.device_name = output_name
         self.title = Label(self, text=output_name.upper(), width=8, font="Helvetica 16", anchor="w", bg=self.color)
         self.send_button = Button(self, command=self.__send, text="send")
-        self.reset_button = Button(self, command=self.__reset, text="reset")
+        self.reset_button = Button(self, command=self.reset, text="reset")
         self.sliders = [
             HorizontalSlider(self, "MaxNumSignals", output_conf["max_num_signals"], 0, 10, 1, bg=self.color),
             HorizontalSlider(self, "Update Interval", output_conf["update_interval"], 0, 60, 5, bg=self.color),
@@ -38,7 +38,7 @@ class OutputController(Frame):
             slider.set_current()
         self.client.send_message(config.osc.GUI_OUTPUT_SETTINGS_ADDRESS, values)
 
-    def __reset(self):
+    def reset(self):
         [slider.reset() for slider in self.sliders]
 
 
@@ -113,18 +113,24 @@ class Gui(Tk):
         self.geometry(self.__size)
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
 
+        self.control_frame = self.__create_control_buttons()
         self.slider_frame = self.__create_slider()
         self.spike_button_frame = self.__create_buttons()
-        if "piano" in output_conf:
-            self.piano_frame = OutputController(self, "piano", output_conf["piano"], self.__client)
-        if "visuals" in output_conf:
-            self.visuals_frame = OutputController(self, "visuals", output_conf["visuals"], self.__client)
+        self.piano_frame = None
+        self.visuals_frame = None
+        self.piano_frame = OutputController(self, "piano", output_conf["piano"], self.__client) if \
+            "piano" in output_conf else None
+        self.visuals_frame = OutputController(self, "visuals", output_conf["visuals"], self.__client) if \
+            "visuals" in output_conf else None
 
         # self.reset_button.grid(column=1, row=0)
+        self.control_frame.grid(column=0, row=0, columnspan=2, pady=self.pady)
         self.slider_frame.grid(column=0, row=1, columnspan=2, pady=self.pady)
         self.spike_button_frame.grid(column=0, row=2, columnspan=2, pady=self.pady)
-        self.piano_frame.grid(column=0, row=3, pady=self.pady)
-        self.visuals_frame.grid(column=1, row=3, pady=self.pady)
+        if self.piano_frame is not None:
+                self.piano_frame.grid(column=0, row=3, pady=self.pady)
+        if self.visuals_frame is not None:
+            self.visuals_frame.grid(column=1, row=3, pady=self.pady)
 
         self.__reset_cb()
 
@@ -149,11 +155,38 @@ class Gui(Tk):
             self.__buttons = [button]
         return spike_button_frame
 
+    def __create_control_buttons(self):
+        control_button_frame = Frame(self,  bd=2)
+        start_button = Button(
+            control_button_frame,
+            command=lambda: self.__client.send_message(config.osc.GUI_START_ADDRESS, 'ping'),
+            text='start'
+        )
+        stop_button = Button(
+            control_button_frame,
+            command=self.__stop_simulation,
+            text='stop'
+        )
+        stop_button.pack(side=LEFT)
+        start_button.pack(side=LEFT)
+        return control_button_frame
+
     def __slider_cb(self, *args):
         self.__client.send_message(config.osc.GUI_PAR_ADDRESS, args)
 
     def __button_cb(self, *args):
         self.__client.send_message(config.osc.GUI_SPIKE_ADDRESS, args)
+
+    def __stop_simulation(self, *args):
+        self.__client.send_message(config.osc.GUI_STOP_ADDRESS, args),
+        if self.piano_frame is not None:
+            self.visuals_frame.reset()
+        if self.visuals_frame is not None:
+            self.visuals_frame.reset()
+
+        for name, slider in self.slider.items():
+            slider.var.set(self.__pars[name])
+            slider.value_label.config(text=self.__pars[name])
 
     def __reset_cb(self):
         self.__client.send_message(config.osc.GUI_RESET_ADDRESS, pickle.dumps(self.__pars))
