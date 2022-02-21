@@ -1,5 +1,6 @@
 from tkinter import *
 import pickle
+import argparse
 
 import config.osc
 from Dunkel_pars import parameters
@@ -199,7 +200,12 @@ class Gui(Tk):
 
 
 if __name__ == "__main__":
-    parser = ConfigParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_wiring", default="input_wiring.json", nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-o", "--output_wiring", default="output_wiring.json", nargs=1, help="input wiring file name", action="store")
+    args = parser.parse_args()
+
+    parser = ConfigParser(args.input_wiring[0], args.output_wiring[0])
     pars = parameters()
     gui = Gui(pars, parser.get_outputs())
     gui.start()

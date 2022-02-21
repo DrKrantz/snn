@@ -15,6 +15,8 @@ import sys
 import asyncio
 import pickle
 import numpy as np
+import argparse
+import os
 
 from Dunkel_pars import parameters
 from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
@@ -127,18 +129,18 @@ class SensoryNetwork(object):
 
 
 class ConfigParser:
-    def __init__(self):
+    def __init__(self, input_wiring, output_wiring):
         self.input_config = {}
         self.output_config = {}
-        self.__load_config()
+        self.__load_config(input_wiring, output_wiring)
 
-    def __load_config(self):
-        input_wiring = json.load(open('config/input_wiring.json', 'r'))
+    def __load_config(self, input_wiring, output_wiring):
+        input_wiring = json.load(open(os.path.join('config', input_wiring), 'r'))
         for name, port in input_wiring.items():
             self.input_config[name] = {'midiport': port}
 
         outputs = json.load(open('config/outputs.json', 'r'))
-        output_wiring = json.load(open('config/output_wiring.json', 'r'))
+        output_wiring = json.load(open(os.path.join('config', output_wiring), 'r'))
         for name, port in output_wiring.items():
             if name not in outputs:
                 print("No config for device {} available, using default".format(name))
@@ -232,7 +234,7 @@ class MainApp:
         self.__is_running = True
 
 
-async def init_main():
+async def init_main(input_wiring, output_wiring):
     pars = parameters()
     for i, value in enumerate(sys.argv):
         if value == '-w':
@@ -240,7 +242,7 @@ async def init_main():
         if value == '-h':
             pars['screen_size'][1] = int(sys.argv[i+1])
 
-    parser = ConfigParser()
+    parser = ConfigParser(input_wiring, output_wiring)
     dm = DeviceManager(parser.get_inputs(), parser.get_outputs(), pars)
     app = MainApp(dm, pars)
 
@@ -264,4 +266,10 @@ async def init_main():
 
 
 if __name__ == '__main__':
-    asyncio.run(init_main())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_wiring", default=["input_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-o", "--output_wiring", default=["output_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    args = parser.parse_args()
+    print(args.input_wiring, args.output_wiring)
+
+    asyncio.run(init_main(args.input_wiring[0], args.output_wiring[0]))
