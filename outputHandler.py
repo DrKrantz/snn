@@ -24,9 +24,8 @@ class OutputHandler(object):
         neuron_ids = self.__filter_fired(fired)
 
         if len(neuron_ids) > 0:
-            print('OutputHandler: fired: ', neuron_ids)
+            # print('OutputHandler: fired: ', neuron_ids)
             self.__checkKeyChange(neuron_ids)
-
             for output in self.__output.values():
                 output.update(neuron_ids)
 

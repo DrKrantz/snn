@@ -32,6 +32,9 @@ from pythonosc.udp_client import SimpleUDPClient
 from networks.cortex import Network
 
 
+BASE_PATH = os.path.dirname(__file__)
+
+
 class SensoryNetwork(object):
     def __init__(self, inputHandler, outputHandler, pars, network_model, client=None):
         super(SensoryNetwork, self).__init__()
@@ -96,7 +99,7 @@ class SensoryNetwork(object):
         self.__fired_ids = fired_ids  # store fired neurons for synaptic input in next iteration
 
         # SEND TO HANDLER ###
-        self.outputHandler.turn_off()
+        # self.outputHandler.turn_off()
         self.outputHandler.update_external(ext_fired_ids)
         self.outputHandler.update(np.array(np.union1d(self.__fired_ids, ext_fired_ids), int))
 
@@ -135,12 +138,12 @@ class ConfigParser:
         self.__load_config(input_wiring, output_wiring)
 
     def __load_config(self, input_wiring, output_wiring):
-        input_wiring = json.load(open(os.path.join('config', input_wiring), 'r'))
+        input_wiring = json.load(open(os.path.join(BASE_PATH, 'config', input_wiring), 'r'))
         for name, port in input_wiring.items():
             self.input_config[name] = {'midiport': port}
 
-        outputs = json.load(open('config/outputs.json', 'r'))
-        output_wiring = json.load(open(os.path.join('config', output_wiring), 'r'))
+        outputs = json.load(open(os.path.join(BASE_PATH, 'config', 'outputs.json'), 'r'))
+        output_wiring = json.load(open(os.path.join(BASE_PATH, 'config', output_wiring), 'r'))
         for name, port in output_wiring.items():
             if name not in outputs:
                 print("No config for device {} available, using default".format(name))
