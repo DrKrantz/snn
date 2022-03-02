@@ -102,7 +102,8 @@ class LabelledSlider(Frame):
 
 
 class Gui(Tk):
-    __size = '510x510'
+    __size = '650x570'
+    __position = '+600+10'
     __title = "Parameter controller"
     pady = 10
 
@@ -112,6 +113,7 @@ class Gui(Tk):
 
         self.title(self.__title)
         self.geometry(self.__size)
+        self.geometry(self.__position)
         self.__client = SimpleUDPClient(config.osc.IP, config.osc.GUI_PORT)
 
         self.control_frame = self.__create_control_buttons()
@@ -123,15 +125,20 @@ class Gui(Tk):
             "piano" in output_conf else None
         self.visuals_frame = OutputController(self, "visuals", output_conf["visuals"], self.__client) if \
             "visuals" in output_conf else None
+        self.spherical_frame = OutputController(self, "spherical", output_conf["spherical"], self.__client) if \
+            "spherical" in output_conf else None
 
         # self.reset_button.grid(column=1, row=0)
-        self.control_frame.grid(column=0, row=0, columnspan=2, pady=self.pady)
-        self.slider_frame.grid(column=0, row=1, columnspan=2, pady=self.pady)
-        self.spike_button_frame.grid(column=0, row=2, columnspan=2, pady=self.pady)
+        self.control_frame.grid(column=0, row=0, columnspan=3, pady=self.pady)
+        self.slider_frame.grid(column=0, row=1, columnspan=3, pady=self.pady)
+        self.spike_button_frame.grid(column=0, row=2, columnspan=3, pady=self.pady)
         if self.piano_frame is not None:
-                self.piano_frame.grid(column=0, row=3, pady=self.pady)
+            self.piano_frame.grid(column=0, row=3, pady=self.pady)
         if self.visuals_frame is not None:
             self.visuals_frame.grid(column=1, row=3, pady=self.pady)
+
+        if self.spherical_frame is not None:
+            self.spherical_frame.grid(column=2, row=3, pady=self.pady)
 
         self.__reset_cb()
 
@@ -201,8 +208,8 @@ class Gui(Tk):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_wiring", default="input_wiring.json", nargs=1, help="input wiring file name", action="store")
-    parser.add_argument("-o", "--output_wiring", default="output_wiring.json", nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-i", "--input_wiring", default=["input_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-o", "--output_wiring", default=["output_wiring.json"], nargs=1, help="input wiring file name", action="store")
     args = parser.parse_args()
 
     parser = ConfigParser(args.input_wiring[0], args.output_wiring[0])
