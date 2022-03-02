@@ -1,26 +1,39 @@
 {
   "neuron_notes": {
+    "min_note": 45,
     "conversion": 7,
     "force_off": true
   },
   "piano": {
     "max_num_signals": 6,
     "velocity": 127,
+    "max_note": 70,
+    "update_interval": 10,
+    "conversion": 7,
+    "synchrony_limit": 4,
+    "force_off": true
+  },
+  "spherical": {
+    "max_num_signals": 6,
+    "velocity": 127,
     "max_note": 127,
     "update_interval": 10,
     "conversion": 7,
-    "synchrony_limit": 4
+    "synchrony_limit": 4,
+    "force_off": true
   },
   "visuals": {
     "max_num_signals": 5,
     "update_interval": 30,
     "velocity": 127,
-    "synchrony_limit": 2
+    "synchrony_limit": 2,
+    "force_off": true
   },
   "external": {
     "velocity": 1,
     "conversion": 8,
     "max_num_signals": 1,
-    "update_interval": 20
+    "update_interval": 10,
+    "force_off": true
   }
 }

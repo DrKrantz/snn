@@ -15,7 +15,7 @@ def parameters():
 
     # parameters of the neuron model
     pars['h'] = 0.1e-3  # resolution of simulation in s
-    pars['pause'] = 25e-3  # 1 simulation timestep will take 'pause' seconds in real time (0.025 is good!)
+    pars['pause'] = 70e-3  # 1 simulation timestep will take 'pause' seconds in real time (0.025 is good!)
     pars['threshold'] = -50e-3  # firing threshold of individual neurons, V
     pars['Cm'] = 1e-6  # membrane capacitance, F/cm2
     pars['gL'] = 0.05e-3  # leak conductances, S/cm2
@@ -38,7 +38,7 @@ def parameters():
     
     pars['tau_e_range'] = (5e-5, 5e-2)
     pars['tau_e_step'] = np.diff(pars['tau_e_range'])[0] / 127
-    pars['tau_e'] = 5e-3  # sec
+    pars['tau_e'] = 3.6e-3  # sec
     pars['tau_e_def'] = pars['tau_e_range'][0]
 
     pars['tau_i_range'] = (5e-5, 5e-2)
