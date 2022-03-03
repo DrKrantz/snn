@@ -22,7 +22,7 @@ void setup() {
 
   frameRate(20);
   size(displayWidth, displayHeight);
-  fullScreen();
+  fullScreen(1);
 
   
   linear2grid = loadJSONObject("/Users/snn/snn/data/linear2grid_400_20.json");
