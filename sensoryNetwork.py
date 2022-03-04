@@ -212,6 +212,7 @@ class MainApp:
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
 
     async def run(self):
+        self.network.outputHandler.initialize_visuals()
         last_updated = time.time()
         self.__is_running = True
         while True:

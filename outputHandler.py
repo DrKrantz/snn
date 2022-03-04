@@ -42,6 +42,10 @@ class OutputHandler(object):
                 for neuron_id in neuron_ids:
                     self.__output_external.note_on(neuron_id)
 
+    def initialize_visuals(self):
+        if "visuals" in self.__output:
+            self.__output["visuals"].note_on(70, overwrite_conversion=True)
+
     def turn_off(self):
         for name in self.__output.keys():
             if name == "neuron_notes":
