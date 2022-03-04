@@ -175,8 +175,19 @@ class Gui(Tk):
             command=self.__stop_simulation,
             text='stop'
         )
+
+        conversion_label = Label(control_button_frame, text="Conversion:")
+        conversion_var = StringVar()
+        conversions = ['dur', 'moll', 'chromatic']
+        conversion_selector = OptionMenu(control_button_frame, conversion_var, *conversions)
+        def on_select(*args):
+            print(conversion_var.get())
+        conversion_var.trace('w', on_select)
+
         stop_button.pack(side=LEFT)
         start_button.pack(side=LEFT)
+        conversion_label.pack(side=LEFT)
+        conversion_selector.pack(side=LEFT)
         return control_button_frame
 
     def __slider_cb(self, *args):
