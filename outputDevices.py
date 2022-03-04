@@ -33,6 +33,9 @@ class Neuron2NoteConverter(object):
         direct_audio = get_direct_audio()
         self.__direct_audio = np.intersect1d(self.__noteRange, direct_audio)
 
+    def set_conversion(self, conversion):
+        self.__conversion = conversion
+
     def convert(self, neuron_id):
         """ convert neuronId to note value
             :param neuron_id:
@@ -91,7 +94,7 @@ class OutputDevice:
             self.__now = time.time()
 
     def setNeuron2NoteConversion(self, conversion):
-        self.__neuron2NoteConversion = conversion
+        self.__converter.set_conversion(conversion)
 
     def update(self, neuron_ids):
         if len(neuron_ids) >= self.__synchrony_limit:

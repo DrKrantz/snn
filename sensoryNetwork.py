@@ -252,10 +252,11 @@ async def init_main(input_wiring, output_wiring):
     dispatcher = Dispatcher()
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
+    dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
     dispatcher.map(GUI_OUTPUT_SETTINGS_ADDRESS, dm.update_output_settings)
     dispatcher.map(GUI_START_ADDRESS, app.start)
     dispatcher.map(GUI_STOP_ADDRESS, app.stop)
-    dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
+
 
     server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
     transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
