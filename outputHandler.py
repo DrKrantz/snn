@@ -53,7 +53,7 @@ class OutputHandler(object):
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids) > self.pars['N_concious']:
-            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 7 else 7)
+            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 2 else 2)
             self.__output["neuron_notes"].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
             )

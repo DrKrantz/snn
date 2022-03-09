@@ -48,29 +48,24 @@ class Neuron2NoteConverter(object):
             5 - linear tonal arrangement in C-moll
             6 -
         """
-        note = int(np.mod(neuron_id, 127) + 1)
-        if self.__conversion == 1:
-            note = int(np.mod(neuron_id, 127)+1)
-        # if self.__neuron2NoteConversion == 2:
-        #     coord = linear2grid(neuron_id, pars['N_col'])
-        #     note = coord[1]
-        # if self.__neuron2NoteConversion == 3:
-        #     if any((self.pars['Exc_ids'] - neuron_id) == 0):
-        #         note = 120
-        #     else:
-        #         note = 20
-        if self.__conversion == 4:
+        if self.__conversion == 2:  # all notes in range
+            complete_scale = np.intersect1d(self.__noteRange, list(range(1, 127)))
+            range_scale = np.intersect1d(self.__noteRange, complete_scale)
+            note = range_scale[int(np.mod(neuron_id, len(range_scale)))]
+        elif self.__conversion == 4:  # major scale
             note = self.__durlist[int(np.mod(neuron_id, len(self.__durlist)))]
-        if self.__conversion == 5:
+        elif self.__conversion == 5:  # minor scale
             note = self.__mollist[int(np.mod(neuron_id, len(self.__mollist)))]
-        if self.__conversion == 6:
+        elif self.__conversion == 6:  # major scale
             note = self.__cromatic1[int(np.mod(neuron_id, len(self.__cromatic1)))]
-        if self.__conversion == 7:
+        elif self.__conversion == 7:  # major scale half tone up
             note = self.__cromatic2[int(np.mod(neuron_id, len(self.__cromatic2)))]
-        if self.__conversion == 8:
+        elif self.__conversion == 8:
             note = self.__direct_visuals[int(np.mod(neuron_id, len(self.__direct_visuals)))]
-        if self.__conversion == 9:
+        elif self.__conversion == 9:
             note = self.__direct_audio[int(np.mod(neuron_id, len(self.__direct_audio)))]
+        else:
+            note = int(np.mod(neuron_id, 127) + 1)
         return note
 
 
