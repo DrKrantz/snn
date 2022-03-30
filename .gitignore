@@ -58,6 +58,9 @@ docs/_build/
 #OSX files
 .DS_store
 
+# exported processing application
+processing/JAVA/spike_display_pde/application.macosx
+
 #Project specific files
 .idea
 .vagrant

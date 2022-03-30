@@ -15,10 +15,13 @@ import sys
 import asyncio
 import pickle
 import numpy as np
+import argparse
+import os
 
 from Dunkel_pars import parameters
 from config.osc import IP, GUI_PORT, RECORDING_PORT, RECORDING_ADDRESS, \
-    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS
+    GUI_PAR_ADDRESS, GUI_SPIKE_ADDRESS, GUI_RESET_ADDRESS, GUI_OUTPUT_SETTINGS_ADDRESS, GUI_START_ADDRESS,\
+    GUI_STOP_ADDRESS
 from outputHandler import OutputHandler
 from inputHandler import InputHandler
 import outputDevices
@@ -29,6 +32,9 @@ from pythonosc.udp_client import SimpleUDPClient
 from networks.cortex import Network
 
 
+BASE_PATH = os.path.dirname(__file__)
+
+
 class SensoryNetwork(object):
     def __init__(self, inputHandler, outputHandler, pars, network_model, client=None):
         super(SensoryNetwork, self).__init__()
@@ -36,22 +42,10 @@ class SensoryNetwork(object):
         self.outputHandler = outputHandler
         self.pars = pars
         self.model = network_model
-        self.__fired_ids = np.array([])
-        self.__A = self.model.A
-        n = self.model.N
-
-        self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
-        self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
-        
-        self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
-        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
-        self.__neurons = np.array([])   # neuron IDs
-        self.__hasPrinted = False
-        self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
         self.__client = client
+        self.__A = self.model.A
 
-        self.__T = 0
-        self.__stim_ids = np.random.choice(np.arange(n), int(pars['p_stim']*n), False)  # stimulated neurons
+        self.reset()
         
     def update(self):
         #  UPDATE VIEWER & INPUTS ###########
@@ -105,7 +99,7 @@ class SensoryNetwork(object):
         self.__fired_ids = fired_ids  # store fired neurons for synaptic input in next iteration
 
         # SEND TO HANDLER ###
-        self.outputHandler.turn_off()
+        # self.outputHandler.turn_off()
         self.outputHandler.update_external(ext_fired_ids)
         self.outputHandler.update(np.array(np.union1d(self.__fired_ids, ext_fired_ids), int))
 
@@ -123,20 +117,33 @@ class SensoryNetwork(object):
 
         self.__T += self.pars['h']
 
+    def reset(self):
+        n = self.model.N
+        self.__fired_ids = np.array([])
+        self.__ge = self.pars['s_e']*np.ones(n)  # conductances of excitatory synapses
+        self.__gi = self.pars['s_i']*np.ones(n)  # conductances of inhibitory synapses
+        self.__v = self.pars['EL']*np.ones(n)  # Initial values of the mmbrane potential v
+        self.__w = np.ndarray.copy(self.model.b)  # Initial values of adaptation variable w
+        # self.__neurons = np.array([])   # neuron IDs
+        # self.__hasPrinted = False
+        self.deaddur = np.zeros(n)  # duration (secs) the dead neurons have been dead (is 0 for aluve neurons)
+        self.__T = 0
+        self.__stim_ids = np.random.choice(np.arange(n), int(self.pars['p_stim']*n), False)  # stimulated neurons
+
 
 class ConfigParser:
-    def __init__(self):
+    def __init__(self, input_wiring, output_wiring):
         self.input_config = {}
         self.output_config = {}
-        self.__load_config()
+        self.__load_config(input_wiring, output_wiring)
 
-    def __load_config(self):
-        input_wiring = json.load(open('config/input_wiring.json', 'r'))
+    def __load_config(self, input_wiring, output_wiring):
+        input_wiring = json.load(open(os.path.join(BASE_PATH, 'config', input_wiring), 'r'))
         for name, port in input_wiring.items():
             self.input_config[name] = {'midiport': port}
 
-        outputs = json.load(open('config/outputs.json', 'r'))
-        output_wiring = json.load(open('config/output_wiring.json', 'r'))
+        outputs = json.load(open(os.path.join(BASE_PATH, 'config', 'outputs.json'), 'r'))
+        output_wiring = json.load(open(os.path.join(BASE_PATH, 'config', output_wiring), 'r'))
         for name, port in output_wiring.items():
             if name not in outputs:
                 print("No config for device {} available, using default".format(name))
@@ -171,6 +178,11 @@ class DeviceManager:
             self.outputs[name] = outputDevices.OutputDevice(**settings)
             print("SETUP OUTPUT. Device `{}` connected to port `{}`".format(name, settings['midiport']))
 
+    def update_output_settings(self, _, device_name, max_num_signals, update_interval, synchrony_limit):
+        print("Setting", device_name, max_num_signals, update_interval, synchrony_limit)
+        if device_name in self.outputs:
+            self.outputs[device_name].set_vars(max_num_signals, update_interval, synchrony_limit)
+
     def get_spike_inputs(self):
         return list(self.spike_inputs.values())
 
@@ -180,15 +192,13 @@ class DeviceManager:
 
 class MainApp:
     def __init__(self, deviceManager, pars):
-        self.__fullscreen = False
-
         self.pars = pars
-
+        self.__is_running = False
         print("wiring....")
         network_model = Network()
         print('wiring completed')
 
-    # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
+        # self.keyboardInput = deviceManager.spike_inputs['KeyboardInput']
 
         inputHandler = InputHandler(
             spike_inputs=deviceManager.get_spike_inputs(),
@@ -202,18 +212,33 @@ class MainApp:
         self.network = SensoryNetwork(inputHandler, outputHandler, pars, network_model, client=client)
 
     async def run(self):
+        self.network.outputHandler.initialize_visuals()
         last_updated = time.time()
+        self.__is_running = True
         while True:
-            if time.time()-last_updated < self.pars['pause']:
-                pass
+            if self.__is_running:
+                if time.time()-last_updated < self.pars['pause']:
+                    pass
+                else:
+                    self.network.update()
+                    last_updated = time.time()
+                await asyncio.sleep(0.00001)
             else:
-                self.network.update()
-                last_updated = time.time()
+                await asyncio.sleep(1)
+                print("pausing")
 
-            await asyncio.sleep(0.00001)
+    def stop(self, *_):
+        self.network.reset()
+        self.__is_running = False
+
+    def pause(self):
+        self.__is_running = False
+
+    def start(self, *_):
+        self.__is_running = True
 
 
-async def init_main():
+async def init_main(input_wiring, output_wiring):
     pars = parameters()
     for i, value in enumerate(sys.argv):
         if value == '-w':
@@ -221,7 +246,7 @@ async def init_main():
         if value == '-h':
             pars['screen_size'][1] = int(sys.argv[i+1])
 
-    parser = ConfigParser()
+    parser = ConfigParser(input_wiring, output_wiring)
     dm = DeviceManager(parser.get_inputs(), parser.get_outputs(), pars)
     app = MainApp(dm, pars)
 
@@ -229,6 +254,10 @@ async def init_main():
     dispatcher.map(GUI_PAR_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_par_receive)
     dispatcher.map(GUI_SPIKE_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_spike_receive)
     dispatcher.map(GUI_RESET_ADDRESS, dm.parameter_inputs[inputDevices.GuiAdapter.NAME].on_reset)
+    dispatcher.map(GUI_OUTPUT_SETTINGS_ADDRESS, dm.update_output_settings)
+    dispatcher.map(GUI_START_ADDRESS, app.start)
+    dispatcher.map(GUI_STOP_ADDRESS, app.stop)
+
 
     server = AsyncIOOSCUDPServer((IP, GUI_PORT), dispatcher, asyncio.get_event_loop())
     transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
@@ -242,4 +271,10 @@ async def init_main():
 
 
 if __name__ == '__main__':
-    asyncio.run(init_main())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_wiring", default=["input_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-o", "--output_wiring", default=["output_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    args = parser.parse_args()
+    print(args.input_wiring, args.output_wiring)
+
+    asyncio.run(init_main(args.input_wiring[0], args.output_wiring[0]))
