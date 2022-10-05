@@ -2,8 +2,8 @@ import java.util.Collections;
 
 class SpikeSurface {
   PGraphics surface;
-  int circleSize = 5;
-  int lineWidth = 2;
+  int circleSize = 4;
+  int lineWidth = 4;
   int border = 5;
   int sWidth, sHeight, pos_x, pos_y;
   int nCol, nRow;

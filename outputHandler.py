@@ -24,9 +24,8 @@ class OutputHandler(object):
         neuron_ids = self.__filter_fired(fired)
 
         if len(neuron_ids) > 0:
-            print('OutputHandler: fired: ', neuron_ids)
+            # print('OutputHandler: fired: ', neuron_ids)
             self.__checkKeyChange(neuron_ids)
-
             for output in self.__output.values():
                 output.update(neuron_ids)
 
@@ -43,6 +42,10 @@ class OutputHandler(object):
                 for neuron_id in neuron_ids:
                     self.__output_external.note_on(neuron_id)
 
+    def initialize_visuals(self):
+        if "visuals" in self.__output:
+            self.__output["visuals"].note_on(70, overwrite_conversion=True)
+
     def turn_off(self):
         for name in self.__output.keys():
             if name == "neuron_notes":
@@ -50,7 +53,7 @@ class OutputHandler(object):
 
     def __checkKeyChange(self, neuron_ids):
         if len(neuron_ids) > self.pars['N_concious']:
-            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 7 else 7)
+            self.__neuron2NoteConversion = (6 if self.__neuron2NoteConversion == 2 else 2)
             self.__output["neuron_notes"].setNeuron2NoteConversion(
                 self.__neuron2NoteConversion
             )
