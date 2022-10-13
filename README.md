@@ -60,6 +60,13 @@ port A vom MIDISPORT 2x2 anschliessen, so brauche ich eine Datei mit Inhalt (sie
 ```
 Für die Konfiguration mit keinem Eingangsgerät, betrachte die Datei  `config/input_wiring_local.json`.
 
+
+#### WARNUNG
+Aus mir nicht bekannten Gründen haben die Namen der MIDI-ports manchmal am Ende ein eigentlich überflüssiges Leerzeichen,
+z.B. bei `"MIDISPORT 2x2 Anniv A "`. Wenn man dieses Leerzeichen in der Konfigurationsdatei weglässt, wird das Gerät NICHT gefunden!
+Es ist also immer darauf zu achten, das Gerät in der `wiring`-Datei genau so zu bennenen, wie es von dem 
+`show_midi_ports.py`-Skript ausgegeben wird.
+
 ## 2. Starten
 Der Simulator wird gestartet durch das Skript `sensoryNetwork.py`. Ohne weitere Argumente startet die Simulation mit der 
 Eingangskonfiguration `config/input_wirings_local.json` und der Ausgangskonfiguration `config/output_wirings_local.json`.

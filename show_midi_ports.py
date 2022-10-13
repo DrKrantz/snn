@@ -1,9 +1,11 @@
 import mido as md
 
-in_devices = md.get_input_names()
-print("INPUTS:")
-[print(device_name) for device_name in md.get_input_names()]
 
+inputs_names = {}.fromkeys(md.get_input_names())
+print("INPUTS:")
+[print('  "{}"'.format(device_name)) for device_name in inputs_names]
+
+output_names = {}.fromkeys(md.get_output_names())
 
 print("OUTPUTS:")
-[print(device_name) for device_name in md.get_output_names()]
+[print('  "{}"'.format(device_name)) for device_name in output_names]
