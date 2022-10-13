@@ -35,5 +35,10 @@
     "max_num_signals": 1,
     "update_interval": 60,
     "force_off": true
+  },
+  "internal_sensor": {
+    "min_note": 45,
+    "conversion": 2,
+    "force_off": true
   }
 }
