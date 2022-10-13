@@ -272,8 +272,8 @@ async def init_main(input_wiring, output_wiring):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_wiring", default=["input_wiring.json"], nargs=1, help="input wiring file name", action="store")
-    parser.add_argument("-o", "--output_wiring", default=["output_wiring.json"], nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-i", "--input_wiring", default=["input_wiring_local.json"], nargs=1, help="input wiring file name", action="store")
+    parser.add_argument("-o", "--output_wiring", default=["output_wiring_local.json"], nargs=1, help="input wiring file name", action="store")
     args = parser.parse_args()
     print(args.input_wiring, args.output_wiring)
 
