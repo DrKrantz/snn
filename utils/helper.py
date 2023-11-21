@@ -27,7 +27,7 @@ class Linear2GridConverter:
     def __write(self, n, n_col):
         filename = "linear2grid_{}_{}.json".format(n, n_col)
         # print(self.__data)
-        with open(os.path.join('data', filename), 'w') as fp:
+        with open(os.path.join('../data', filename), 'w') as fp:
             json.dump(self.__data, fp)
 
 

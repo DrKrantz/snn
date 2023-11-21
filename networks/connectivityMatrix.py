@@ -7,9 +7,8 @@ __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
 import random
-import numpy as np
 
-from Dunkel_functions import *
+from utils.Dunkel_functions import *
 
 
 class ConnectivityMatrix(object):

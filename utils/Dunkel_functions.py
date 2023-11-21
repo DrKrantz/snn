@@ -7,7 +7,7 @@ from numpy import *
 # packages needed for the parameter-display
 # from pygame.locals import *
 
-from Dunkel_pars import parameters
+from utils.Dunkel_pars import parameters
 global pars
 pars = parameters()
 # Created by B. Staude to simulate the Thalamic Network (Figs. 3 and 4) of Destexhe 2009, J Comp Neurosci.

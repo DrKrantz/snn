@@ -6,7 +6,7 @@ __author__ = "Benjamin Staude"
 __email__ = "benjamin.staude@gmail.com"
 __date__ = 140620
 
-from Dunkel_functions import *
+from utils.Dunkel_functions import *
 
 
 class Display:
@@ -98,7 +98,6 @@ class DisplayTest:
     def __init__(self):
         pygame.init()
         pm.init()
-        import time
         self.__display = Display(pars['N_col'],pars['N_row'],\
                 ['Ne','Ni','s_e','s_i','tau_e','tau_i','midi_ext_e','midi_ext_i','cam_ext','cam_external_max'],\
                 'lines')

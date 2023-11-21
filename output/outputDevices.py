@@ -13,8 +13,7 @@ import json
 from pythonosc.udp_client import SimpleUDPClient
 
 import numpy as np
-import sensoryNetwork
-from Dunkel_functions import chordConversion, chromaticConversion, get_direct_visuals, get_direct_audio
+from utils.Dunkel_functions import chordConversion, chromaticConversion, get_direct_visuals, get_direct_audio
 
 
 class Neuron2NoteConverter(object):

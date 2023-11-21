@@ -3,10 +3,9 @@ import pickle
 import argparse
 
 import config.osc
-from Dunkel_pars import parameters
+from utils.Dunkel_pars import parameters
 from pythonosc.udp_client import SimpleUDPClient
 from sensoryNetwork import ConfigParser
-from config import osc
 
 PARAMETERS = ['s_e', 's_i', 'tau_e', 'tau_i', 'lambda_e', 'lambda_i']
 
